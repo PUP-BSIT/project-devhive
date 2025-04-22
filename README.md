@@ -24,9 +24,9 @@ seamless and interactive experience.
 
 ## 🌍 Web Hosting Link
 
-[![Hostinger](https://img.shields.io/badge/Hostinger-blueviolet?style=for-the-badge&logo=hostinger&logoColor=white)](https://mediumslateblue-tapir-985631.hostingersite.com/)
+[![Temporary Hosting](https://img.shields.io/badge/Temporary_Hosting-Hostinger-blueviolet?style=for-the-badge&logo=hostinger&logoColor=white)](https://mediumslateblue-tapir-985631.hostingersite.com/)
 
-[![Official Domain](https://img.shields.io/badge/devhivespace.com-00C7B7?style=for-the-badge&logo=hostinger&labelColor=0D0D0D&logoColor=white)](https://devhivespace.com/)
+[![Official Domain](https://img.shields.io/badge/Official_Domain-devhivespace.com-00C7B7?style=for-the-badge&logo=netlify&labelColor=0D0D0D)](https://devhivespace.com/)
 
 ---
 
