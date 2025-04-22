@@ -41,4 +41,13 @@ seamless and interactive experience.
 
 [![Hostinger](https://img.shields.io/badge/Hostinger-673DE6?style=for-the-badge&logo=hostinger&logoColor=white)](https://www.hostinger.com/)
 
+---
+
+## ⭐ Team Composition
+
+- 👩‍💻 **Project Manager/Developer:** James Michael Mejares
+- 👨‍💻 **Tech Lead/Developer:** Aleck Alejandro
+- 👨‍💻 **Tester/Developer:** Hannah Lorainne Genandoy
+- 👩‍💻 **UI/UX Designer/Developer:** Mikka Kette Esparagoza
+
 </div>
