@@ -1,0 +1,145 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  body {
+    background-image: url('../../assets/background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  
+  .container {
+    background: #fff;
+    border-radius: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 1000px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    overflow: hidden;
+    width: 100%;
+  }
+  
+  .left {
+    background: linear-gradient(to bottom, #3182ce, #63b3ed);
+    color: #fff;
+    flex: 1 1 300px;
+    padding: 30px;
+    font-size: 16px;
+  }
+  
+  .left h2 {
+    font-family: 'Anton', sans-serif;
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .left ul {
+    list-style: none;
+  }
+  
+  .left li {
+    margin-bottom: 12px;
+  }
+  
+  .right {
+    flex: 1 1 400px;
+    padding: 30px;
+    background: #fefefe;
+  }
+  
+  .right h1 {
+    font-family: 'Anton', sans-serif;
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+  
+  .right p {
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #444;
+  }
+  
+  form input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  
+  button[type="submit"] {
+    background: #ffcc00;
+    color: #000;
+    border: none;
+    padding: 12px 0;
+    width: 100%;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+  }
+  
+  button[type="submit"]:hover {
+    background: #e6b800;
+  }
+  
+  .or {
+    text-align: center;
+    margin: 20px 0 10px;
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .social-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .social-buttons button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    background: #f3f3f3;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .login-link {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 14px;
+  }
+  
+  .login-link a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .login-link a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .container {
+      flex-direction: column;
+    }
+  
+    .left, .right {
+      flex: 1 1 100%;
+    }
+  }
+  
