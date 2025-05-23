@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - DevHive</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Coda+Caption:wght@800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="top-nav">
+            <div class="logo">
+                <img src="../assets/devhive_logo.png" alt="DevHive">
+            </div>
+            <div class="nav-icons">
+                <img src="../assets/notifbell.png" alt="Notifications" class="notification-icon">
+                <img src="../assets/human.png" alt="Profile" class="profile-icon">
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="menu-item">
+                    <img src="../assets/DASHBOARD.png" alt="">
+                    <span>Dashboard</span>
+                </div>
+                <div class="menu-item">
+                    <img src="../assets/global_feed.png" alt="">
+                    <span>Global Wall</span>
+                </div>
+                <div class="menu-item active">
+                    <img src="../assets/human.png" alt="">
+                    <span>Profile</span>
+                </div>
+                <div class="menu-item">
+                    <img src="../assets/create_post.png" alt="">
+                    <span>Create Post</span>
+                </div>
+                <div class="menu-item">
+                    <img src="../assets/link.png" alt="">
+                    <span>Connected Accounts</span>
+                </div>
+                <div class="menu-item">
+                    <img src="../assets/analytics.png" alt="">
+                    <span>Analytics</span>
+                </div>
+                <div class="menu-item">
+                    <img src="../assets/settings.png" alt="">
+                    <span>Settings</span>
+                </div>
+            </aside>
+
+            <!-- Dashboard Content -->
+            <div class="dashboard-content">
+                <h1>Profile</h1>
+                
+                <!-- Profile Card -->
+                <div class="profile-card">
+                    <div class="profile-info">
+                        <div class="profile-avatar">
+                            <img src="../assets/human.png" alt="Profile Picture">
+                        </div>
+                        <div class="profile-details">
+                            <h2>Your Design Studio</h2>
+                            <div class="profile-meta">
+                                <span>UI/UX Design Agency</span>
+                                <span class="separator">|</span>
+                                <span>San Francisco, CA</span>
+                            </div>
+                            <p class="profile-bio">Creating intuitive and accessible design solutions since 2018</p>
+                            <div class="profile-stats">
+                                <span>4.6k Followers</span>
+                                <span class="separator">|</span>
+                                <span>350 Following</span>
+                                <span class="separator">|</span>
+                                <span>125 Posts</span>
+                            </div>
+                        </div>
+                        <button class="edit-profile-btn">Edit Profile</button>
+                    </div>
+                </div>
+
+                <!-- Profile Tabs -->
+                <div class="profile-tabs">
+                    <button class="tab-btn active">Posts</button>
+                    <button class="tab-btn">Analytics</button>
+                    <button class="tab-btn">Mentions</button>
+                </div>
+
+                <!-- Posts Section -->
+                <div class="posts-section">
+                    <!-- Post Card -->
+                    <div class="post-item">
+                        <div class="post-header">
+                            <div class="post-author">
+                                <img src="../assets/human.png" alt="Profile Picture" class="post-avatar">
+                                <div class="post-meta">
+                                    <h3>Your Design Studio</h3>
+                                    <p>Posted 2 hours ago on Facebook</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="post-content">
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                        </div>
+                        <div class="post-actions">
+                            <div class="action-stats">
+                                <span class="likes"><img src="../assets/heart.png" alt="Likes"> 45 Likes</span>
+                                <span class="comments"><img src="../assets/comment.png" alt="Comments"> 12 Comments</span>
+                                <span class="shares"><img src="../assets/share.png" alt="Shares"> 8 Shares</span>
+                            </div>
+                            <div class="post-buttons">
+                                <button class="edit-btn">Edit</button>
+                                <button class="delete-btn">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Duplicate Post Card -->
+                    <div class="post-item">
+                        <div class="post-header">
+                            <div class="post-author">
+                                <img src="../assets/human.png" alt="Profile Picture" class="post-avatar">
+                                <div class="post-meta">
+                                    <h3>Your Design Studio</h3>
+                                    <p>Posted 2 hours ago on Facebook</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="post-content">
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                        </div>
+                        <div class="post-actions">
+                            <div class="action-stats">
+                                <span class="likes"><img src="../assets/heart.png" alt="Likes"> 45 Likes</span>
+                                <span class="comments"><img src="../assets/comment.png" alt="Comments"> 12 Comments</span>
+                                <span class="shares"><img src="../assets/share.png" alt="Shares"> 8 Shares</span>
+                            </div>
+                            <div class="post-buttons">
+                                <button class="edit-btn">Edit</button>
+                                <button class="delete-btn">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 
