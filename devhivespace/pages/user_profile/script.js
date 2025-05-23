@@ -1,21 +1,15 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Get all tab buttons
     const tabButtons = document.querySelectorAll('.tab-btn');
     
-    // Add click event to each tab button
     tabButtons.forEach(button => {
         button.addEventListener('click', () => {
-            // Remove active class from all buttons
             tabButtons.forEach(btn => btn.classList.remove('active'));
-            // Add active class to clicked button
             button.classList.add('active');
             
-            // Here you would typically show/hide content based on the selected tab
             console.log(`Switched to ${button.textContent} tab`);
         });
     });
 
-    // Button hover effects
     const buttons = document.querySelectorAll('button');
     buttons.forEach(button => {
         button.addEventListener('mouseenter', function() {
@@ -27,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Menu item click handler
     const menuItems = document.querySelectorAll('.menu-item');
     menuItems.forEach(item => {
         item.addEventListener('click', function() {
@@ -36,7 +29,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Edit and Delete button handlers
     document.querySelectorAll('.edit-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const postItem = this.closest('.post-item');
@@ -53,7 +45,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Edit Profile button handler
     document.querySelector('.edit-profile-btn').addEventListener('click', function() {
         console.log('Edit profile clicked');
     });
