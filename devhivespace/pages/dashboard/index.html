@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4169E1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Coda+Caption:wght@800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="top-nav">
+            <div class="logo">
+                <img src="../assets/devhive_logo.png" alt="DevHive">
+            </div>
+            <div class="nav-icons">
+                <img src="../assets/notifbell.png" alt="Notifications" class="notification-icon">
+                <img src="../assets/human.png" alt="Profile" class="profile-icon">
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="menu-item active">
+                    <img src="../assets/DASHBOARD.png" alt="">
+                    <span>Dashboard</span>
+                </div>
+                <div class="menu-item">
+                    <img src="../assets/global_feed.png" alt="">
+                    <span>Global Wall</span>
+                </div>
+                <div class="menu-item" data-page="profile">
+                    <img src="../assets/human.png" alt="">
+                    <span>Profile</span>
+                </div>
+                <div class="menu-item">
+                    <img src="../assets/create_post.png" alt="">
+                    <span>Create Post</span>
+                </div>
+                <div class="menu-item">
+                    <img src="../assets/link.png" alt="">
+                    <span>Connected Accounts</span>
+                </div>
+                <div class="menu-item">
+                    <img src="../assets/analytics.png" alt="">
+                    <span>Analytics</span>
+                </div>
+                <div class="menu-item">
+                    <img src="../assets/settings.png" alt="">
+                    <span>Settings</span>
+                </div>
+            </aside>
+
+            <!-- Dashboard Content -->
+            <div class="dashboard-content">
+                <h1>Dashboard</h1>
+                
+                <div class="welcome-card">
+                    <h2>Welcome back, User!</h2>
+                    <p>Here's a summary of your recent activity and account statistics.</p>
+                    
+                    <div class="stats-container">
+                        <div class="stat-card">
+                            <h3>Post Created</h3>
+                            <p>XXX</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Total Engagement</h3>
+                            <p>XXX</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Connected Platform</h3>
+                            <p>2/4</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-grid">
+                    <!-- Recent Posts Section -->
+                    <section class="recent-posts">
+                        <h2>Recent Post</h2>
+                        <div class="posts-list">
+                            <div class="post-card">
+                                <h3>Content 1 - Lorem ipsum Dolor sit amet,</h3>
+                                <p>Posted 2 days ago | 45 engagements</p>
+                                <span class="platform">Facebook</span>
+                            </div>
+                            <div class="post-card">
+                                <h3>Content 1 - Lorem ipsum Dolor sit amet,</h3>
+                                <p>Posted 2 days ago | 90 engagements</p>
+                                <span class="platform">Instagram</span>
+                            </div>
+                            <div class="post-card">
+                                <h3>Content 1 - Lorem ipsum Dolor sit amet,</h3>
+                                <p>Posted 2 days ago | 270 engagements</p>
+                                <span class="platform">LinkedIn</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Right Column -->
+                    <div class="right-column">
+                        <!-- Quick Actions Section -->
+                        <section class="quick-actions">
+                            <h2>Quick Actions</h2>
+                            <button class="create-post-btn">Create New Post</button>
+                            <button class="connect-platform-btn">Connect New Platform</button>
+                        </section>
+
+                        <!-- Platform Performance Section -->
+                        <section class="platform-performance">
+                            <h2>Platform Performance</h2>
+                            <div class="performance-bars">
+                                <div class="performance-bar">
+                                    <span class="platform-name">Facebook</span>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 75%"></div>
+                                    </div>
+                                    <span class="percentage">75%</span>
+                                </div>
+                                <div class="performance-bar">
+                                    <span class="platform-name">Instagram</span>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 75%"></div>
+                                    </div>
+                                    <span class="percentage">75%</span>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 
