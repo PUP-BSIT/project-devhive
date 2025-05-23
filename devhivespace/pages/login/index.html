@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="login.css" rel="stylesheet" />
+    <script src="login.js"></script>
+    <title>DevHive Space - Login</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="login-section">
+        <div class="logo">
+          <div class="logo-icon">
+            <img
+              src="/devhivespace/pages/assets/devhive_logo.png"
+              alt="DevHive Space" />
+          </div>
+          <div class="logo-text">DevHive Space</div>
+        </div>
+
+        <h1 class="welcome-title">Welcome to your content Hive</h1>
+        <p class="welcome-subtitle">
+          Log in to start posting everywhere at once and expand your digital
+          reach.
+        </p>
+
+        <form id="loginForm">
+          <div class="form-group">
+            <label class="form-label" for="email">Email Address</label>
+            <input
+              type="email"
+              id="email"
+              class="form-input"
+              placeholder="Your work email"
+              required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              class="form-input"
+              placeholder="••••••••••••"
+              required />
+          </div>
+
+          <div class="remember-row">
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="remember" />
+              <label for="remember">Remember me</label>
+            </div>
+            <a href="#" class="forgot-link">Forgot Password?</a>
+          </div>
+
+          <button type="submit" class="login-btn">Access Your Hive</button>
+        </form>
+
+        <div class="divider">
+          <p>Or log in with</p>
+        </div>
+
+        <div class="social-buttons">
+          <a href="#" class="social-btn google-btn">Continue with Google</a>
+          <a href="#" class="social-btn apple-btn">Continue with Apple</a>
+        </div>
+
+        <div class="signup-section">
+          <strong>New content creator?</strong><br />
+          <a href="#" class="signup-link"
+            >Sign up now and save hours on content distribution</a
+          >
+        </div>
+      </div>
+
+      <div class="image-section">
+        <div class="floating-elements">
+          <div class="floating-circle"></div>
+          <div class="floating-circle"></div>
+          <div class="floating-circle"></div>
+        </div>
+        <div class="image-placeholder">
+          <img
+            src="/devhivespace/pages/assets/login_image.png"
+            alt="DevHive Space" />
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
