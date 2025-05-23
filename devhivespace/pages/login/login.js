@@ -28,11 +28,8 @@ document.getElementById("loginForm").addEventListener("submit", function (e) {
   handleLoginLoading(true);
 
   setTimeout(() => {
-    alert("Login successful! Welcome to DevHive.Space");
     handleLoginLoading(false);
-    document.getElementById("loginForm").reset();
-    emailInput.classList.remove("success");
-    passwordInput.classList.remove("success");
+    window.location.href = '../dashboard/index.html';
   }, 2000);
 });
 
