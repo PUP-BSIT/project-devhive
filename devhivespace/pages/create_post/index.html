@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Post - DevHive Space</title>
+    <link rel="stylesheet" href="create.css" />
+  </head>
+  <body>
+
+    <nav class="top-nav">
+      <div class="logo">
+          <img src="/devhivespace/pages/assets/devhive_logo.png" 
+          alt="DevHive">
+      </div>
+      <div class="nav-icons">
+          <img src="/devhivespace/pages/assets/notifbell.png" 
+          alt="Notifications" 
+          class="notification-icon">
+          <img src="/devhivespace/pages/assets/human.png" 
+          alt="Profile"
+           class="profile-icon">
+      </div>
+  </nav>
+
+    <div class="container">
+      <div class="left-section">
+        <aside class="sidebar">
+          <div class="menu-item">
+              <img src="/devhivespace/pages/assets/DASHBOARD.png" alt="">
+              <span>Dashboard</span>
+          </div>
+          <div class="menu-item">
+              <img src="/devhivespace/pages/assets/global_feed.png" alt="">
+              <span>Global Wall</span>
+          </div>
+          <div class="menu-item" data-page="profile">
+              <img src="/devhivespace/pages/assets/human.png" alt="">
+              <span>Profile</span>
+          </div>
+          <div class="menu-item active">
+              <img src="/devhivespace/pages/assets/create_post.png" alt="">
+              <span>Create Post</span>
+          </div>
+          <div class="menu-item">
+              <img src="/devhivespace/pages/assets/link.png" alt="">
+              <span>Connected Accounts</span>
+          </div>
+          <div class="menu-item">
+              <img src="/devhivespace/pages/assets/analytics.png" alt="">
+              <span>Analytics</span>
+          </div>
+          <div class="menu-item">
+              <img src="/devhivespace/pages/assets/settings.png" alt="">
+              <span>Settings</span>
+          </div>
+      </aside>
+    </div>
+    <div class="right-section">
+     <h1 class="page-title">Create Post</h1>
+
+      <main class="main-content"> 
+        <form id="post-form">
+          <div class="form-group">
+            <label class="form-label">Post to:</label>
+            <div class="platform-buttons">
+              <button
+                type="button"
+                class="platform-btn active"
+                data-platform="all">
+                All
+              </button>
+              <button
+                type="button"
+                class="platform-btn instagram"
+                data-platform="instagram">
+                Instagram
+              </button>
+              <button
+                type="button"
+                class="platform-btn twitter"
+                data-platform="twitter">
+                Twitter / X
+              </button>
+              <button
+                type="button"
+                class="platform-btn facebook"
+                data-platform="facebook">
+                Facebook
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="post-title">Post Title:</label>
+            <input
+              type="text"
+              id="post-title"
+              class="input-field"
+              placeholder="Enter your post title..." />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="post-content">Content:</label>
+            <textarea
+              id="post-content"
+              class="content-textarea"
+              placeholder="What's on your mind?"></textarea>
+
+            <div class="toolbar">
+              <button
+                type="button"
+                class="toolbar-btn"
+                data-format="bold"
+                title="Bold">
+                B
+              </button>
+              <button
+                type="button"
+                class="toolbar-btn"
+                data-format="italic"
+                title="Italic">
+                I
+              </button>
+              <button
+                type="button"
+                class="toolbar-btn"
+                data-format="underline"
+                title="Underline">
+                U
+              </button>
+              <button
+                type="button"
+                class="toolbar-btn"
+                data-format="link"
+                title="Link">
+                🔗
+              </button>
+              <button
+                type="button"
+                class="toolbar-btn"
+                data-format="image"
+                title="Image">
+                🖼️
+              </button>
+              <button
+                type="button"
+                class="toolbar-btn"
+                data-format="video"
+                title="Video">
+                📹
+              </button>
+              <button
+                type="button"
+                class="toolbar-btn"
+                data-format="attachment"
+                title="Attachment">
+                📎
+              </button>
+              <button
+                type="button"
+                class="toolbar-btn"
+                data-format="emoji"
+                title="Emoji">
+                😊
+              </button>
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <button type="button" class="btn btn-secondary" id="preview-btn">
+              Preview
+            </button>
+            <button type="button" class="btn btn-secondary" id="save-draft-btn">
+              Save Draft
+            </button>
+            <button type="button" class="btn btn-primary" id="share-post-btn">
+              Share Post
+            </button>
+          </div>
+        </form>
+      </main>
+    </div>
+    <script src="create.js"></script>
+  </body>
+</html>
