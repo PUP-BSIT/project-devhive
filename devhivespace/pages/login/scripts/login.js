@@ -77,33 +77,12 @@ document.querySelectorAll(".form-input").forEach((input) => {
     this.parentElement.classList.add("focused");
     this.parentElement.classList.remove("unfocused");
   });
-
+` `
   input.addEventListener("blur", function () {
     this.parentElement.classList.add("unfocused");
     this.parentElement.classList.remove("focused");
   });
 });
-
-function addFloatingHexagon() {
-  const hexagon = document.createElement("div");
-  hexagon.className = "floating-hexagon";
-
-  const size = Math.random() * 20 + 10;
-  hexagon.style.width = size + "px";
-  hexagon.style.height = size + "px";
-  hexagon.style.left = Math.random() * 100 + "%";
-  hexagon.style.top = "100%";
-
-  document.body.appendChild(hexagon);
-
-  setTimeout(() => {
-    if (hexagon.parentNode) {
-      hexagon.remove();
-    }
-  }, 8000);
-}
-
-setInterval(addFloatingHexagon, 3000);
 
 document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll(".form-group").forEach((group) => {
