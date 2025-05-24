@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="../login/styles/forget_pass.css" rel="stylesheet" />
+
+    <title>DevHive Space - Forgot Password</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="forgot-password-card">
+        <div class="pass-icon">
+          <img src="../assets/password.png" alt="Lock Icon" />
+        </div>
+
+        <h1>Forgot your password?</h1>
+        <p class="subtitle">
+          Enter your email address and we'll send you a link to reset your
+          password
+        </p>
+
+        <form id="forgotPasswordForm">
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input
+              type="email"
+              id="email"
+              class="form-input"
+              placeholder="Enter your email"
+              required />
+          </div>
+
+          <button type="submit" class="send-btn">Send Email</button>
+
+          <div class="back-to-login">
+            <a href="./index.html">Back to Login</a>
+          </div>
+        </form>
+      </div>
+    </div>
+    <script src="../login/scripts/forget_pass.js"></script>
+  </body>
+</html>
