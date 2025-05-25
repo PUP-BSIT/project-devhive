@@ -6,7 +6,7 @@
 
 body {
   font-family: "Inter", sans-serif;
-  background: url("/devhivespace/pages/assets/background.png") no-repeat center
+  background: url("../assets/background.png") no-repeat center
     center fixed;
   background-size: cover;
   min-height: 100vh;
