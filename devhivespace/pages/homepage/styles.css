@@ -433,10 +433,6 @@ body {
 }
 
 @media (max-width: 768px) {
-    .features-grid {
-        grid-direction: 1fr;
-    }
-
     .hero h1 {
         font-size: 2.5rem;
     }
