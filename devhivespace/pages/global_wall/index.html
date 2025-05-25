@@ -3,9 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Global Wall - DevHive</title>
+    <link href="https://fonts.googleapis.com/css2?family=Coda+Caption:wght@800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    
+    <div class="dashboard-container">
+        <nav class="top-nav">
+            <div class="logo">
+                <img src="../assets/devhive_logo.png" alt="DevHive Logo">
+            </div>
+            <div class="nav-icons">
+                <img src="../assets/notifbell.png" alt="Notifications" class="notification-icon">
+                <img src="../assets/human.png" alt="Profile" class="profile-icon">
+            </div>
+        </nav>
+
+        <div class="main-content">
+            <aside class="sidebar">
+                <ul class="nav-menu">
+                    <li><a href="#"><img src="../assets/DASHBOARD.png" alt="Dashboard">Dashboard</a></li>
+                    <li class="active"><a href="#"><img src="../assets/global_feed.png" alt="Global Wall">Global Wall</a></li>
+                    <li><a href="#"><img src="../assets/human.png" alt="Profile">Profile</a></li>
+                    <li><a href="#"><img src="../assets/create_post.png" alt="Create Post">Create Post</a></li>
+                    <li><a href="#"><img src="../assets/link.png" alt="Connected Accounts">Connected Accounts</a></li>
+                    <li><a href="#"><img src="../assets/analytics.png" alt="Analytics">Analytics</a></li>
+                    <li><a href="#"><img src="../assets/settings.png" alt="Settings">Settings</a></li>
+                </ul>
+            </aside>
+
+            <div class="global-wall-content">
+                <div class="global-wall-header">
+                    <h1>Global Wall</h1>
+                    <div class="post-filters">
+                        <button class="active">All Post</button>
+                        <button>Facebook</button>
+                        <button>Instagram</button>
+                        <button>More</button>
+                    </div>
+                </div>
+
+                <div class="posts-container">
+                    <div class="post">
+                        <div class="post-header">
+                            <img src="../assets/human.png" alt="Profile">
+                            <div class="post-info">
+                                <h3>Your Design Studio</h3>
+                                <p>Posted 2 hours ago on Facebook</p>
+                            </div>
+                        </div>
+                        <p class="post-content">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                        <div class="post-stats">
+                            <div class="stat">
+                                <img src="../assets/heart.png" alt="Likes">
+                                <span>45 Likes</span>
+                            </div>
+                            <div class="stat">
+                                <img src="../assets/comment.png" alt="Comments">
+                                <span>12 Comments</span>
+                            </div>
+                            <div class="stat">
+                                <img src="../assets/share.png" alt="Shares">
+                                <span>8 Shares</span>
+                            </div>
+                            <button class="view-btn">View</button>
+                        </div>
+                    </div>
+
+                    <div class="post">
+                        <div class="post-header">
+                            <img src="../assets/human.png" alt="Profile">
+                            <div class="post-info">
+                                <h3>Your Design Studio</h3>
+                                <p>Posted 2 hours ago on Instagram</p>
+                            </div>
+                        </div>
+                        <p class="post-content">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                        <div class="post-stats">
+                            <div class="stat">
+                                <img src="../assets/heart.png" alt="Likes">
+                                <span>45 Likes</span>
+                            </div>
+                            <div class="stat">
+                                <img src="../assets/comment.png" alt="Comments">
+                                <span>12 Comments</span>
+                            </div>
+                            <div class="stat">
+                                <img src="../assets/share.png" alt="Shares">
+                                <span>8 Shares</span>
+                            </div>
+                            <button class="view-btn">View</button>
+                        </div>
+                    </div>
+
+                    <div class="post">
+                        <div class="post-header">
+                            <img src="../assets/human.png" alt="Profile">
+                            <div class="post-info">
+                                <h3>Your Design Studio</h3>
+                                <p>Posted 2 hours ago on Facebook</p>
+                            </div>
+                        </div>
+                        <p class="post-content">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                        <div class="post-stats">
+                            <div class="stat">
+                                <img src="../assets/heart.png" alt="Likes">
+                                <span>45 Likes</span>
+                            </div>
+                            <div class="stat">
+                                <img src="../assets/comment.png" alt="Comments">
+                                <span>12 Comments</span>
+                            </div>
+                            <div class="stat">
+                                <img src="../assets/share.png" alt="Shares">
+                                <span>8 Shares</span>
+                            </div>
+                            <button class="view-btn">View</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
