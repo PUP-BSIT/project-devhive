@@ -1,3 +1,5 @@
+devhivespace/api/auth/google_oauth/vendor/
+
 /vendor/
 composer.lock
 
