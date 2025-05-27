@@ -85,7 +85,6 @@ body::before {
     transform: scale(1.2);
 }
 
-/* Main Content Layout */
 .main-content {
     display: flex;
     gap: 24px;
