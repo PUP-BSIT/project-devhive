@@ -5,12 +5,11 @@
 }
 
 body {
-  font-family: "Inter", sans-serif;
-  background: url("../assets/background.png") no-repeat center
-    center fixed;
-  background-size: cover;
-  min-height: 100vh;
-  padding: 20px;
+    font-family: "Inter", sans-serif;
+    background: url("../assets/background.png") no-repeat center center fixed;
+    background-size: cover;
+    min-height: 100vh;
+    padding: 20px;
 }
 
 body::before {
@@ -20,23 +19,18 @@ body::before {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.15) 2px,
-    transparent 2px
-  );
-  background-size: 30px 30px;
-  opacity: 0.3;
+  background: url("../assets/background.png") repeat;
+  opacity: 0.15;
   z-index: -1;
 }
 
-.header {
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 12px 20px;
-  font-size: 16px;
-  font-weight: 500;
-  margin-bottom: 24px;
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: calc(100vh - 40px);
 }
 
 .top-nav {
@@ -46,9 +40,6 @@ body::before {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1400px;
-  margin: 0 auto;
-  margin-bottom: 20px;
 }
 
 .logo img {
@@ -75,17 +66,6 @@ body::before {
   height: calc(100vh - 100px);
 }
 
-.left-section {
-  flex: 0 0 220px;
-}
-
-.right-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
 .page-title {
   font-family: "Coda Caption", sans-serif;
   font-size: 48px;
@@ -96,13 +76,12 @@ body::before {
 }
 
 .sidebar {
-  background: #4169e1;
-  border-radius: 16px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  width: 220px;
-  height: 50vh - 100px;
+    background: #2563EB;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    width: 220px;
 }
 
 .menu-item {
