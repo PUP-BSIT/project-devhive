@@ -33,7 +33,6 @@ try {
     session_start();
     $_SESSION['google_auth_url'] = $authUrl;
 
-    // Return the auth URL
     echo json_encode(['auth_url' => $authUrl]);
     exit;
 
