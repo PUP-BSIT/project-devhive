@@ -2,50 +2,100 @@ document.getElementById('signup-form').addEventListener('submit', function(e) {
     e.preventDefault();
     
     const form = e.target;
-    const formData = new FormData();
-    formData.append('email', form.querySelector('input[type="email"]').value);
-    formData.append('name', form.querySelector('input[type="text"]').value);
-    
-    const passwords = form.querySelectorAll('input[type="password"]');
-    formData.append('password', passwords[0].value);
-    formData.append('confirmPassword', passwords[1].value);
+    const userData = {
+        email: form.querySelector('input[name="email"]').value,
+        username: form.querySelector('input[name="username"]').value,
+        first_name: form.querySelector('input[name="firstName"]').value,
+        middle_name: form.querySelector('input[name="middleName"]').value || null,
+        last_name: form.querySelector('input[name="lastName"]').value,
+        birthday: form.querySelector('input[name="birthday"]').value,
+        password: form.querySelector('input[name="password"]').value,
+        confirm_password: form.querySelector('input[name="confirmPassword"]').value
+    };
+
+    console.log('Sending user data:', { ...userData, password: '***', confirm_password: '***' });
 
     // Send form data to backend
     fetch('/devhivespace/api/auth/register.php', {
         method: 'POST',
-        body: formData
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData)
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error('Server response: ' + text);
+            });
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             // Store verification token in sessionStorage
             sessionStorage.setItem('verification_token', data.verification_token);
+            sessionStorage.setItem('user_id', data.user_id);
+            sessionStorage.setItem('email', userData.email);
             window.location.href = 'emailVerify.html';
         } else {
-            alert(data.message);
+            console.error('Registration failed:', data);
+            alert(data.message || 'Registration failed. Please try again.');
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred. Please try again.');
+        console.error('Error details:', error);
+        alert('An error occurred. Please check the console for details and try again.');
     });
 });
 
-// Handle Google Sign Up
-document.querySelector('.social-buttons button:first-child').addEventListener('click', function() {
-    // Use the original google.php endpoint
-    fetch('/devhivespace/api/auth/google_oauth/google.php')
-        .then(response => response.json())
-        .then(data => {
-            if (data.auth_url) {
-                // Store sign-up flow indicator in sessionStorage
-                sessionStorage.setItem('auth_flow', 'signup');
-                window.location.href = data.auth_url;
-            } else {
-                console.error('Failed to get Google auth URL');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-});
+// Handle Google Sign-In callback
+function handleGoogleCallback(response) {
+    // Decode the JWT token
+    const jwt = response.credential;
+    const parts = jwt.split('.');
+    const payload = JSON.parse(atob(parts[1]));
+
+    // Extract user info from payload
+    const userData = {
+        email: payload.email,
+        first_name: payload.given_name,
+        last_name: payload.family_name,
+        profile_picture: payload.picture,
+        provider: 'google',
+        provider_user_id: payload.sub
+    };
+
+    // Send to our backend
+    fetch('/devhivespace/api/auth/google_oauth/callback.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error('Server response: ' + text);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Store user session data
+            sessionStorage.setItem('user_id', data.user_id);
+            sessionStorage.setItem('email', data.email);
+            // Redirect to dashboard
+            window.location.href = '../dashboard/index.html';
+        } else {
+            console.error('Google sign-in failed:', data);
+            alert(data.message || 'Failed to complete Google sign up');
+        }
+    })
+    .catch(error => {
+        console.error('Error details:', error);
+        alert('An error occurred during Google sign up. Please check the console for details.');
+    });
+}

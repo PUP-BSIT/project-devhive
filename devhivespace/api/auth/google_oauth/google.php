@@ -29,9 +29,17 @@ try {
     // Generate the Google OAuth URL
     $authUrl = $client->createAuthUrl();
 
-    // Store auth URL in session for the JavaScript to use
+    // Start session and store flow information
     session_start();
-    $_SESSION['google_auth_url'] = $authUrl;
+    
+    // Get the request body
+    $json = file_get_contents('php://input');
+    $data = json_decode($json, true);
+    
+    // Set signup flow if specified
+    if (isset($data['flow']) && $data['flow'] === 'signup') {
+        $_SESSION['signup_flow'] = true;
+    }
 
     echo json_encode(['auth_url' => $authUrl]);
     exit;
