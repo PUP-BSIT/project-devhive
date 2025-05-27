@@ -24,21 +24,29 @@
         <h1>Join DevHive Space</h1>
         <p>Start posting smarter across all your platforms</p>
         <form id="signup-form">
-          <input type="email" placeholder="Your work email" required />
-          <input type="text" placeholder="Your name" required />
+          <input type="email" name="email" placeholder="Your work email" required />
+          <input type="text" name="username" placeholder="Choose a username" required />
+          <div class="name-fields">
+            <input type="text" name="firstName" placeholder="First name" required />
+            <input type="text" name="middleName" placeholder="Middle name" />
+            <input type="text" name="lastName" placeholder="Last name" required />
+          </div>
+          <input type="date" name="birthday" placeholder="Birthday" required />
           <input
             type="password"
+            name="password"
             placeholder="Create a secure password (8+ characters)"
             required />
           <input
             type="password"
+            name="confirmPassword"
             placeholder="Re-enter your password"
             required />
           <button type="submit">Create My Account</button>
         </form>
         <div class="or">Or sign up with</div>
         <div class="social-buttons">
-          <button>
+          <button onclick="handleGoogleSignUp()">
             <img src="../assets/google.png" alt="Google" style="width: 16px" />
             Continue with Google
           </button>
@@ -52,6 +60,31 @@
         </div>
       </div>
     </div>
+    <script>
+      function handleGoogleSignUp() {
+        // Fetch Google auth URL
+        fetch('/devhivespace/api/auth/google_oauth/google.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ flow: 'signup' })
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.auth_url) {
+              window.location.href = data.auth_url;
+            } else {
+              console.error('Failed to get Google auth URL:', data.error || 'Unknown error');
+              alert('Failed to initialize Google sign-in. Please try again.');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+          });
+      }
+    </script>
     <script src="scripts/sign_up.js"></script>
   </body>
 </html>
