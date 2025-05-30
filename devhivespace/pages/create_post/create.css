@@ -10,7 +10,7 @@ body {
     min-height: 100vh;
     padding: 20px;
     position: relative;
-}
+  }
 
 body::before {
     content: "";
@@ -36,7 +36,6 @@ body::before {
     min-height: calc(100vh - 40px);
 }
 
-/* Top Navigation */
 .top-nav {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
