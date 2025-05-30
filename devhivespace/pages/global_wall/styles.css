@@ -38,7 +38,6 @@ body::before {
     min-height: calc(100vh - 40px);
 }
 
-/* Top Navigation */
 .top-nav {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
@@ -91,7 +90,21 @@ body::before {
     flex: 1;
 }
 
-/* Enhanced Sidebar */
+.page-title {
+    font-family: "Coda Caption", sans-serif;
+    font-size: 48px;
+    color: #ffffff;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    font-weight: 700;
+}
+
+.page-title:hover {
+    transform: translateY(-2px);
+    text-shadow: 4px 4px 12px rgba(0, 0, 0, 0.3);
+}
+
 .sidebar {
     background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     border-radius: 16px;
@@ -174,7 +187,6 @@ body::before {
     background: #f59e0b;
 }
 
-/* Global Wall Content */
 .global-wall-content {
     flex: 1;
     display: flex;
@@ -191,6 +203,7 @@ body::before {
     transition: all 0.3s ease;
     border: 1px solid rgba(255, 255, 255, 0.2);
     animation: fadeInUp 0.6s ease forwards;
+    margin-top: none;
 }
 
 .global-wall-header:hover {
@@ -213,14 +226,13 @@ body::before {
     text-shadow: 4px 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* Enhanced Post Filters */
 .post-filters {
     display: flex;
     gap: 12px;
 }
 
 .post-filters button {
-    padding: 12px 20px;
+    padding: 10px 20px;
     background: rgba(241, 245, 249, 0.9);
     color: #64748b;
     border: none;
