@@ -150,15 +150,99 @@ class PostCreator {
   }
 
   insertImage() {
-    this.showNotification("Image upload feature would be implemented here");
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.multiple = true;
+    
+    input.onchange = (e) => {
+      const files = Array.from(e.target.files);
+      files.forEach(file => {
+        if (file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const textarea = document.getElementById("post-content");
+            const imagePreview = `\n[Image: ${file.name}]\n`;
+            this.insertAtCursor(textarea, imagePreview);
+            
+            // Create preview element
+            const previewContainer = document.createElement('div');
+            previewContainer.className = 'file-preview';
+            const img = document.createElement('img');
+            img.src = event.target.result;
+            img.style.maxWidth = '200px';
+            previewContainer.appendChild(img);
+            textarea.parentElement.appendChild(previewContainer);
+          };
+          reader.readAsDataURL(file);
+        } else {
+          this.showNotification(`${file.name} is not an image file`);
+        }
+      });
+    };
+    input.click();
   }
 
   insertVideo() {
-    this.showNotification("Video upload feature would be implemented here");
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'video/*';
+    input.multiple = true;
+    
+    input.onchange = (e) => {
+      const files = Array.from(e.target.files);
+      files.forEach(file => {
+        if (file.type.startsWith('video/')) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const textarea = document.getElementById("post-content");
+            const videoPreview = `\n[Video: ${file.name}]\n`;
+            this.insertAtCursor(textarea, videoPreview);
+            
+            const previewContainer = document.createElement('div');
+            previewContainer.className = 'file-preview';
+            const video = document.createElement('video');
+            video.src = event.target.result;
+            video.style.maxWidth = '200px';
+            video.controls = true;
+            previewContainer.appendChild(video);
+            textarea.parentElement.appendChild(previewContainer);
+          };
+          reader.readAsDataURL(file);
+        } else {
+          this.showNotification(`${file.name} is not a video file`);
+        }
+      });
+    };
+    input.click();
   }
 
   insertAttachment() {
-    this.showNotification("File attachment feature would be implemented here");
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = true;
+    
+    input.onchange = (e) => {
+      const files = Array.from(e.target.files);
+      files.forEach(file => {
+        const textarea = document.getElementById("post-content");
+        const attachmentPreview = `\n[Attachment: ${file.name}]\n`;
+        this.insertAtCursor(textarea, attachmentPreview);
+        
+        const previewContainer = document.createElement('div');
+        previewContainer.className = 'file-preview';
+        const fileInfo = document.createElement('div');
+        fileInfo.className = 'file-info';
+        fileInfo.innerHTML = `
+          <img src="../assets/attachment.png" alt="Attachment" style="width: 24px; height: 24px;">
+          <span>${file.name}</span>
+          <span>(${(file.size / 1024).toFixed(2)} KB)</span>
+        `;
+        previewContainer.appendChild(fileInfo);
+        textarea.parentElement.appendChild(previewContainer);
+      });
+    };
+    input.click();
   }
 
   insertEmoji() {
@@ -214,25 +298,35 @@ class PostCreator {
   sharePost() {
     const title = document.getElementById("post-title").value;
     const content = document.getElementById("post-content").value;
-
-    if (!title && !content) {
-      this.showNotification("Please enter some content to share");
+    const previews = document.querySelectorAll('.file-preview');
+    
+    if (!title && !content && previews.length === 0) {
+      this.showNotification("Please enter a title, content, or add files to share");
       return;
     }
 
-    console.log("Share post:", {
+    // Collect all files and content
+    const postData = {
       title,
       content,
       platforms: this.selectedPlatforms,
-    });
-    this.showNotification(
-      `Post shared to ${this.selectedPlatforms.join(", ")}!`
-    );
+      files: Array.from(previews).map(preview => {
+        const mediaElement = preview.querySelector('img, video');
+        const fileInfo = preview.querySelector('.file-info');
+        return {
+          type: mediaElement ? (mediaElement.tagName === 'IMG' ? 'image' : 'video') : 'attachment',
+          src: mediaElement ? mediaElement.src : null,
+          name: fileInfo ? fileInfo.querySelector('span').textContent : null
+        };
+      })
+    };
 
-    setTimeout(() => {
-      document.getElementById("post-title").value = "";
-      document.getElementById("post-content").value = "";
-    }, 1000);
+    console.log("Sharing post:", postData);
+    this.showNotification("Post shared successfully!");
+    
+    document.getElementById("post-title").value = "";
+    document.getElementById("post-content").value = "";
+    previews.forEach(preview => preview.remove());
   }
 
   showNotifications() {
@@ -244,26 +338,18 @@ class PostCreator {
   }
 
   showNotification(message) {
-    const notification = document.createElement("div");
-    notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: #4a90e2;
-                color: white;
-                padding: 12px 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                z-index: 1000;
-                font-size: 14px;
-                max-width: 300px;
-            `;
+    const notification = document.createElement('div');
+    notification.className = 'notification';
     notification.textContent = message;
     document.body.appendChild(notification);
-
+    
     setTimeout(() => {
-      notification.remove();
-    }, 3000);
+      notification.classList.add('show');
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }, 100);
   }
 }
 
