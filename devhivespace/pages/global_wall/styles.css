@@ -177,14 +177,14 @@ body::before {
 }
 
 .nav-menu li.active a {
-    background: #f59e0b;
+    background: #e9b949;
     color: #1e1e1e;
     box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
     transform: translateX(8px);
 }
 
 .nav-menu li.active a:hover {
-    background: #f59e0b;
+    background: #e3963a;
 }
 
 .global-wall-content {
