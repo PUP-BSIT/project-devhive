@@ -114,25 +114,6 @@ class PostCreator {
     }
   }
 
-  applyTextFormatting(format) {
-    const textarea = document.getElementById("post-content");
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = textarea.value.substring(start, end);
-
-    let formattedText = "";
-    switch (format) {
-      case "bold":
-        formattedText = `**${selectedText || "bold text"}**`;
-        break;
-      case "italic":
-        formattedText = `*${selectedText || "italic text"}*`;
-        break;
-      case "underline":
-        formattedText = `__${selectedText || "underlined text"}__`;
-        break;
-    }
-
     textarea.value =
       textarea.value.substring(0, start) +
       formattedText +
