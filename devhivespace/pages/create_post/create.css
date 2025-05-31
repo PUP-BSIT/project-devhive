@@ -113,7 +113,7 @@ body::before {
     text-decoration: none;
     color: #1e1e1e;
     background: rgba(255, 255, 255, 0.95);
-    padding: 14px 18px;
+    padding: 0;
     border-radius: 12px;
     font-size: 14px;
     gap: 12px;
@@ -122,6 +122,17 @@ body::before {
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.menu-item a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    width: 100%;
+    text-decoration: none;
+    color: inherit;
 }
 
 .menu-item::before {
