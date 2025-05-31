@@ -13,7 +13,11 @@ document.getElementById('signup-form').addEventListener('submit', function(e) {
         confirm_password: form.querySelector('input[name="confirmPassword"]').value
     };
 
-    console.log('Sending user data:', { ...userData, password: '***', confirm_password: '***' });
+    console.log('Sending user data:', { 
+        ...userData, 
+        password: '***', 
+        confirm_password: '***' 
+    });
 
     fetch('/devhivespace/api/auth/register.php', {
         method: 'POST',
@@ -43,7 +47,8 @@ document.getElementById('signup-form').addEventListener('submit', function(e) {
     })
     .catch(error => {
         console.error('Error details:', error);
-        alert('An error occurred. Please check the console for details and try again.');
+        alert('An error occurred. Please check the console for details ' +
+            'and try again.');
     });
 });
 
@@ -88,6 +93,7 @@ function handleGoogleCallback(response) {
     })
     .catch(error => {
         console.error('Error details:', error);
-        alert('An error occurred during Google sign up. Please check the console for details.');
+        alert('An error occurred during Google sign up. Please check the ' +
+            'console for details.');
     });
 }

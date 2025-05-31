@@ -45,7 +45,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    document.querySelector('.edit-profile-btn').addEventListener('click', function() {
-        console.log('Edit profile clicked');
-    });
-}); 
+    document.querySelector('.edit-profile-btn').addEventListener('click', 
+        function() {
+            console.log('Edit profile clicked');
+        }
+    );
+});

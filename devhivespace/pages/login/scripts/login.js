@@ -79,7 +79,11 @@ document.addEventListener('DOMContentLoaded', function() {
     .catch(error => {
       console.error('Detailed error:', error);
       if (error.message === 'Failed to fetch') {
-        alert('Error: Unable to connect to the server. Please make sure:\n1. You are accessing the site through a web server (http://localhost)\n2. The web server (like XAMPP) is running\n3. PHP is properly configured');
+        alert('Error: Unable to connect to the server. Please make sure:\n' +
+              '1. You are accessing the site through a web server ' +
+              '(http://localhost)\n' +
+              '2. The web server (like XAMPP) is running\n' +
+              '3. PHP is properly configured');
       } else {
         alert('Error initiating Google sign-in: ' + error.message);
       }

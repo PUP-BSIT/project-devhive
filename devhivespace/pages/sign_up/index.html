@@ -4,8 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DevHive Space Sign Up</title>
-    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Coda+Caption&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter&display=swap" 
+          rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Coda+Caption&display=swap" 
+          rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="style/sign_up.css" />
   </head>
@@ -24,14 +26,20 @@
         <h1>Join DevHive Space</h1>
         <p>Start posting smarter across all your platforms</p>
         <form id="signup-form">
-          <input type="email" name="email" placeholder="Your work email" required />
-          <input type="text" name="username" placeholder="Choose a username" required />
+          <input type="email" name="email" placeholder="Your work email" 
+                required />
+          <input type="text" name="username" 
+                placeholder="Choose a username" required />
           <div class="name-fields">
-            <input type="text" name="firstName" placeholder="First name" required />
-            <input type="text" name="middleName" placeholder="Middle name" />
-            <input type="text" name="lastName" placeholder="Last name" required />
+            <input type="text" name="firstName" placeholder="First name" 
+                  required />
+            <input type="text" name="middleName" 
+                  placeholder="Middle name" />
+            <input type="text" name="lastName" placeholder="Last name" 
+                  required />
           </div>
-          <input type="date" name="birthday" placeholder="Birthday" required />
+          <input type="date" name="birthday" placeholder="Birthday" 
+                required />
           <input
             type="password"
             name="password"
@@ -47,16 +55,19 @@
         <div class="or">Or sign up with</div>
         <div class="social-buttons">
           <button onclick="handleGoogleSignUp()">
-            <img src="../assets/google.png" alt="Google" style="width: 16px" />
+            <img src="../assets/google.png" alt="Google" 
+                style="width: 16px" />
             Continue with Google
           </button>
           <button>
-            <img src="../assets/apple.png" alt="Apple" style="width: 16px" />
+            <img src="../assets/apple.png" alt="Apple" 
+                style="width: 16px" />
             Continue with Apple
           </button>
         </div>
         <div class="login-link">
-          Already have an account? <a href="../login/index.html">Log in</a>
+          Already have an account? 
+          <a href="../login/index.html">Log in</a>
         </div>
       </div>
     </div>
@@ -74,7 +85,8 @@
             if (data.auth_url) {
               window.location.href = data.auth_url;
             } else {
-              console.error('Failed to get Google auth URL:', data.error || 'Unknown error');
+              console.error('Failed to get Google auth URL:', 
+                          data.error || 'Unknown error');
               alert('Failed to initialize Google sign-in. Please try again.');
             }
           })

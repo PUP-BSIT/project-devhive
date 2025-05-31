@@ -1,4 +1,3 @@
-/* Enhanced Global Settings Styles */
 * {
     margin: 0;
     padding: 0;
@@ -21,9 +20,12 @@ body::before {
     right: 0;
     bottom: 0;
     background-image: 
-        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
-        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
-        radial-gradient(circle at 40% 60%, rgba(255, 255, 255, 0.05) 3px, transparent 3px);
+        radial-gradient(circle at 20% 20%, 
+                    rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+        radial-gradient(circle at 80% 80%, 
+                    rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+        radial-gradient(circle at 40% 60%, 
+                    rgba(255, 255, 255, 0.05) 3px, transparent 3px);
     background-size: 60px 60px, 80px 80px, 100px 100px;
     z-index: -1;
     pointer-events: none;
@@ -38,7 +40,6 @@ body::before {
     min-height: calc(100vh - 40px);
 }
 
-/* Top Navigation */
 .top-nav {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
@@ -94,7 +95,6 @@ body::before {
     flex: 1;
 }
 
-/* Enhanced Sidebar */
 .sidebar {
     background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     border-radius: 16px;
@@ -156,7 +156,6 @@ body::before {
     transition: transform 0.3s ease;
 }
 
-/* Settings Content */
 .settings-content {
     flex: 1;
     display: flex;
@@ -300,7 +299,6 @@ body::before {
     box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
 }
 
-/* Toggle Switch */
 .toggle-switch {
     position: relative;
     width: 50px;
@@ -332,7 +330,6 @@ body::before {
     transform: translateX(26px);
 }
 
-/* Dropdown */
 .dropdown {
     position: relative;
     width: 200px;
@@ -364,7 +361,6 @@ body::before {
     border-top: 5px solid #666;
 }
 
-/* Action Buttons */
 .action-btn {
     background: linear-gradient(135deg, #2563EB 0%, #1d4ed8 100%);
     color: white;
@@ -414,7 +410,6 @@ body::before {
     box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
 }
 
-/* Responsive Design */
 @media screen and (max-width: 1024px) {
     .main-content {
         flex-direction: column;
@@ -514,7 +509,6 @@ body::before {
     }
 }
 
-/* Performance Optimization */
 .settings-container,
 .settings-header,
 .top-nav,
@@ -522,7 +516,6 @@ body::before {
     will-change: transform;
 }
 
-/* Accessibility Improvements */
 .nav-menu li a:focus,
 .toggle-switch:focus,
 .change-photo-btn:focus,
@@ -535,7 +528,6 @@ body::before {
     outline-offset: 2px;
 }
 
-/* Smooth Scrolling for Better UX */
 html {
     scroll-behavior: smooth;
 }

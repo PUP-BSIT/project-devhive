@@ -245,7 +245,7 @@ class PostCreator {
   }
 
   insertEmoji() {
-    const emojis = ["😊", "😂", "❤️", "👍", "🎉", "🔥", "💯", "✨"];
+    const emojis = ["😊", "😂", "❤️", "👍", "🎉", "🔥", "💯", "✨", "💅"];
     const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
     const textarea = document.getElementById("post-content");
     this.insertAtCursor(textarea, randomEmoji);
