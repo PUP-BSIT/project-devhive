@@ -111,19 +111,28 @@ body::before {
 .menu-item {
     display: flex;
     align-items: center;
-    text-decoration: none;
+    gap: 12px;
+    padding: 0;
+    border-radius: 12px;
+    cursor: pointer;
     color: #1e1e1e;
     background: rgba(255, 255, 255, 0.95);
-    padding: 14px 18px;
-    border-radius: 12px;
-    font-size: 14px;
-    gap: 12px;
-    cursor: pointer;
+    margin-bottom: 8px;
     font-weight: 500;
+    font-size: 14px;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
-    margin-bottom: 8px;
+}
+
+.menu-item a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    width: 100%;
+    text-decoration: none;
+    color: inherit;
 }
 
 .menu-item::before {
@@ -133,8 +142,7 @@ body::before {
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, 
-                            rgba(255, 255, 255, 0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
     transition: left 0.5s;
 }
 
@@ -148,6 +156,10 @@ body::before {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
+.menu-item:last-child {
+    margin-bottom: 0;
+}
+
 .menu-item img {
     width: 20px;
     height: 20px;
@@ -158,6 +170,10 @@ body::before {
     transform: scale(1.1);
 }
 
+.menu-item span {
+    font-size: 14px;
+}
+
 .menu-item.active {
     background: #f59e0b;
     color: #1e1e1e;
@@ -166,7 +182,7 @@ body::before {
 }
 
 .menu-item.active:hover {
-    background: #f59e0b;
+    background: #e3963a;
 }
 
 .dashboard-content {
