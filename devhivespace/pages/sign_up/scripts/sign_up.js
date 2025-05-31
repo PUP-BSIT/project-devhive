@@ -15,7 +15,6 @@ document.getElementById('signup-form').addEventListener('submit', function(e) {
 
     console.log('Sending user data:', { ...userData, password: '***', confirm_password: '***' });
 
-    // Send form data to backend
     fetch('/devhivespace/api/auth/register.php', {
         method: 'POST',
         headers: {
@@ -33,7 +32,6 @@ document.getElementById('signup-form').addEventListener('submit', function(e) {
     })
     .then(data => {
         if (data.success) {
-            // Store verification token in sessionStorage
             sessionStorage.setItem('verification_token', data.verification_token);
             sessionStorage.setItem('user_id', data.user_id);
             sessionStorage.setItem('email', userData.email);
@@ -49,14 +47,11 @@ document.getElementById('signup-form').addEventListener('submit', function(e) {
     });
 });
 
-// Handle Google Sign-In callback
 function handleGoogleCallback(response) {
-    // Decode the JWT token
     const jwt = response.credential;
     const parts = jwt.split('.');
     const payload = JSON.parse(atob(parts[1]));
 
-    // Extract user info from payload
     const userData = {
         email: payload.email,
         first_name: payload.given_name,
@@ -66,7 +61,6 @@ function handleGoogleCallback(response) {
         provider_user_id: payload.sub
     };
 
-    // Send to our backend
     fetch('/devhivespace/api/auth/google_oauth/callback.php', {
         method: 'POST',
         headers: {
@@ -84,10 +78,8 @@ function handleGoogleCallback(response) {
     })
     .then(data => {
         if (data.success) {
-            // Store user session data
             sessionStorage.setItem('user_id', data.user_id);
             sessionStorage.setItem('email', data.email);
-            // Redirect to dashboard
             window.location.href = '../dashboard/index.html';
         } else {
             console.error('Google sign-in failed:', data);

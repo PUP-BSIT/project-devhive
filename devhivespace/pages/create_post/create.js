@@ -165,7 +165,6 @@ class PostCreator {
             const imagePreview = `\n[Image: ${file.name}]\n`;
             this.insertAtCursor(textarea, imagePreview);
             
-            // Create preview element
             const previewContainer = document.createElement('div');
             previewContainer.className = 'file-preview';
             const img = document.createElement('img');
@@ -234,7 +233,7 @@ class PostCreator {
         const fileInfo = document.createElement('div');
         fileInfo.className = 'file-info';
         fileInfo.innerHTML = `
-          <img src="../assets/attachment.png" alt="Attachment" style="width: 24px; height: 24px;">
+          <img src="../assets/.png" alt="" style="width: 24px; height: 24px;">
           <span>${file.name}</span>
           <span>(${(file.size / 1024).toFixed(2)} KB)</span>
         `;
@@ -305,7 +304,6 @@ class PostCreator {
       return;
     }
 
-    // Collect all files and content
     const postData = {
       title,
       content,
