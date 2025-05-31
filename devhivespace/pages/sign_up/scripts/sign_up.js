@@ -19,7 +19,7 @@ document.getElementById('signup-form').addEventListener('submit', function(e) {
         confirm_password: '***' 
     });
 
-    fetch('/devhivespace/api/auth/register.php', {
+    fetch('http://localhost/WebDev/devhivespace/api/auth/register.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
