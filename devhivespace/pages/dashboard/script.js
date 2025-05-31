@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
         item.addEventListener('click', function() {
             const page = this.getAttribute('data-page');
             if (page === 'profile') {
-                window.location.href = '../USER_PROFILE/index.html';
+                window.location.href = '../user_profile/index.html';
             }
         });
     });
@@ -125,6 +125,6 @@ document.addEventListener('DOMContentLoaded', function() {
         '.menu-item span:contains("Profile")'
     ).parentElement;
     profileMenuItem.addEventListener('click', function() {
-        window.location.href = '../USER_PROFILE/index.html';
+        window.location.href = "../user_profile/index.html";
     });
 });

@@ -449,7 +449,6 @@ body::before {
     transform: translateX(4px);
 }
 
-/* Enhanced Trusted Section */
 .trusted {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(15px);
@@ -470,7 +469,6 @@ body::before {
     text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Enhanced Contact Section */
 .contact {
     position: relative;
     padding: 80px 0;
@@ -629,7 +627,6 @@ body::before {
     font-weight: 600;
 }
 
-/* DevHive Space Banner */
 .devhive-banner {
     background: linear-gradient(135deg, #1E3A8A 0%, #1d4ed8 100%);
     padding: 25px 0;
@@ -662,7 +659,6 @@ body::before {
     text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Animations */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -674,13 +670,11 @@ body::before {
     }
 }
 
-/* Headings */
 h1, h2, h3 {
     font-family: 'Coda Caption', sans-serif;
     font-weight: 800;
 }
 
-/* Enhanced Responsive Design */
 @media (max-width: 1024px) {
     .features-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -763,7 +757,6 @@ h1, h2, h3 {
     }
 }
 
-/* Performance Optimization */
 .laptop-mockup,
 .feature-card,
 .contact-content,
@@ -773,7 +766,6 @@ h1, h2, h3 {
     will-change: transform;
 }
 
-/* Accessibility Improvements */
 .btn:focus,
 .login-btn:focus,
 .signup-btn:focus,
@@ -783,7 +775,6 @@ h1, h2, h3 {
     outline-offset: 2px;
 }
 
-/* Smooth Scrolling */
 html {
     scroll-behavior: smooth;
 }

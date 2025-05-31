@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
     forgotPasswordForm.reset();
 
     setTimeout(() => {
-      window.location.href = "login.html";
+      window.location.href = "../login/index.html";
     }, 3000);
   });
 });

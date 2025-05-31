@@ -57,7 +57,6 @@ document.addEventListener('DOMContentLoaded', function() {
     e.preventDefault();
     console.log("Google button clicked");
     
-    // Make an AJAX request to get the Google auth URL
     fetch('/devhivespace/api/auth/google_oauth/google.php')
     .then(response => {
       console.log("Response received:", response);

@@ -132,7 +132,6 @@
     text-decoration: underline;
   }
   
-  /* Mobile responsiveness */
   @media (max-width: 768px) {
     .container {
       flex-direction: column;
