@@ -518,40 +518,6 @@ body::before {
     gap: 12px;
 }
 
-.edit-btn, .delete-btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.edit-btn {
-    background: rgba(37, 99, 235, 0.1);
-    color: #2563eb;
-}
-
-.edit-btn:hover {
-    background: rgba(37, 99, 235, 0.2);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
-}
-
-.delete-btn {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-}
-
-.delete-btn:hover {
-    background: rgba(239, 68, 68, 0.2);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
-}
-
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -586,10 +552,6 @@ body::before {
         flex-direction: column;
         text-align: center;
         gap: 16px;
-    }
-
-    .edit-profile-btn {
-        align-self: center;
     }
 }
 
@@ -694,10 +656,7 @@ body::before {
 }
 
 .menu-item:focus,
-.tab-btn:focus,
-.edit-profile-btn:focus,
-.edit-btn:focus,
-.delete-btn:focus {
+.tab-btn:focus {
     outline: 2px solid #2563eb;
     outline-offset: 2px;
 }
