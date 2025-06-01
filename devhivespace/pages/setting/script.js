@@ -11,12 +11,10 @@ function initializeSettingsPage() {
     initializePrivacySettings();
     initializeAdvancedSettings();
     
-    // Initialize save button
     const saveButton = document.querySelector('.save-btn');
     saveButton.addEventListener('click', saveAllSettings);
 }
 
-// Profile Section Functions
 function initializeProfileSection() {
     const changePhotoBtn = document.querySelector('.change-photo-btn');
     changePhotoBtn.addEventListener('click', handleProfilePhotoChange);
@@ -33,7 +31,7 @@ function handleProfilePhotoChange() {
             const reader = new FileReader();
             reader.onload = (e) => {
                 const profileAvatar = document.querySelector('.profile-avatar');
-                profileAvatar.innerHTML = ''; // Clear the default emoji
+                profileAvatar.innerHTML = '';
                 profileAvatar.style.backgroundImage = `url(${e.target.result})`;
                 profileAvatar.style.backgroundSize = 'cover';
                 profileAvatar.style.backgroundPosition = 'center';
@@ -45,20 +43,17 @@ function handleProfilePhotoChange() {
     input.click();
 }
 
-// Account Settings Functions
+
 function initializeAccountSettings() {
-    // Display Name and Email Input Handlers
     const displayNameInput = document.querySelector('input[placeholder="User Name"]');
     const emailInput = document.querySelector('input[placeholder="user.example@gmail.com"]');
     
     displayNameInput.addEventListener('change', validateAndUpdateDisplayName);
     emailInput.addEventListener('change', validateAndUpdateEmail);
     
-    // Password Update Button
     const updatePasswordBtn = document.querySelector('.update-btn');
     updatePasswordBtn.addEventListener('click', handlePasswordUpdate);
     
-    // Two-Factor Authentication Toggle
     const twoFactorToggle = document.querySelector('.setting-item:nth-child(4) .toggle-switch');
     twoFactorToggle.addEventListener('click', () => toggleSwitch(twoFactorToggle));
 }
@@ -126,7 +121,6 @@ function updatePassword() {
         return;
     }
     
-    // Here you would typically make an API call to update the password
     closePasswordModal();
     alert('Password updated successfully');
 }
@@ -138,7 +132,6 @@ function closePasswordModal() {
     }
 }
 
-// Notification Settings Functions
 function initializeNotificationSettings() {
     const notificationToggles = document.querySelectorAll('.settings-section:nth-child(2) .toggle-switch');
     notificationToggles.forEach(toggle => {
@@ -146,7 +139,6 @@ function initializeNotificationSettings() {
     });
 }
 
-// Privacy Settings Functions
 function initializePrivacySettings() {
     const profileVisibilityDropdown = document.querySelector('.settings-section:nth-child(3) .dropdown-btn');
     const dataSharingToggle = document.querySelector('.settings-section:nth-child(3) .toggle-switch');
@@ -161,21 +153,18 @@ function handleProfileVisibilityDropdown(e) {
     const dropdown = e.target.closest('.dropdown');
     const options = ['Public', 'Private', 'Friends Only'];
     
-    // Remove existing dropdown menu if it exists
     const existingMenu = document.querySelector('.dropdown-menu');
     if (existingMenu) {
         existingMenu.remove();
         return;
     }
     
-    // Create and show dropdown menu
     const menu = document.createElement('div');
     menu.className = 'dropdown-menu';
     menu.innerHTML = options.map(option => `<div class="dropdown-item">${option}</div>`).join('');
     
     dropdown.appendChild(menu);
-    
-    // Add click events to dropdown items
+
     menu.querySelectorAll('.dropdown-item').forEach(item => {
         item.addEventListener('click', () => {
             e.target.textContent = item.textContent;
@@ -185,11 +174,9 @@ function handleProfileVisibilityDropdown(e) {
 }
 
 function handleManagePermissions() {
-    // Here you would typically navigate to a permissions management page
     alert('Navigating to permissions management...');
 }
 
-// Advanced Settings Functions
 function initializeAdvancedSettings() {
     const timeZoneDropdown = document.querySelector('.settings-section:nth-child(4) .dropdown-btn:nth-child(1)');
     const languageDropdown = document.querySelector('.settings-section:nth-child(4) .dropdown-btn:nth-child(2)');
@@ -229,21 +216,18 @@ function handleLanguageDropdown(e) {
 }
 
 function showDropdownMenu(dropdown, options, button) {
-    // Remove existing dropdown menu if it exists
     const existingMenu = document.querySelector('.dropdown-menu');
     if (existingMenu) {
         existingMenu.remove();
         return;
     }
-    
-    // Create and show dropdown menu
+
     const menu = document.createElement('div');
     menu.className = 'dropdown-menu';
     menu.innerHTML = options.map(option => `<div class="dropdown-item">${option}</div>`).join('');
     
     dropdown.appendChild(menu);
     
-    // Add click events to dropdown items
     menu.querySelectorAll('.dropdown-item').forEach(item => {
         item.addEventListener('click', () => {
             button.textContent = item.textContent;
@@ -253,9 +237,7 @@ function showDropdownMenu(dropdown, options, button) {
 }
 
 function handleDataExport() {
-    // Here you would typically trigger a data export process
     alert('Preparing your data export...');
-    // Simulate export process
     setTimeout(() => {
         const dummyData = {
             profile: { /* user profile data */ },
@@ -276,22 +258,17 @@ function handleDataExport() {
 function handleAccountDeletion() {
     if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
         if (prompt('Please type "DELETE" to confirm account deletion:') === 'DELETE') {
-            // Here you would typically make an API call to delete the account
             alert('Account deletion process initiated. You will be logged out.');
-            // Redirect to logout or home page
             window.location.href = '/';
         }
     }
 }
 
-// Utility Functions
 function toggleSwitch(element) {
     element.classList.toggle('active');
-    // Here you would typically make an API call to update the setting
 }
 
 function saveAllSettings() {
-    // Collect all settings
     const settings = {
         displayName: document.querySelector('input[placeholder="User Name"]').value,
         email: document.querySelector('input[placeholder="user.example@gmail.com"]').value,
@@ -312,8 +289,7 @@ function saveAllSettings() {
             language: document.querySelector('.settings-section:nth-child(4) .dropdown-btn:nth-child(2)').textContent.trim()
         }
     };
-    
-    // Here you would typically make an API call to save all settings
+
     console.log('Saving settings:', settings);
     alert('Settings saved successfully!');
 } 
