@@ -44,15 +44,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     const notificationBell = document.querySelector('.notifications i');
-    notificationBell.addEventListener('click', function() {
-        this.style.transform = 'rotate(15deg)';
-        setTimeout(() => {
-            this.style.transform = 'rotate(-15deg)';
+    if (notificationBell) {
+        notificationBell.addEventListener('click', function() {
+            this.style.transform = 'rotate(15deg)';
             setTimeout(() => {
-                this.style.transform = 'rotate(0)';
+                this.style.transform = 'rotate(-15deg)';
+                setTimeout(() => {
+                    this.style.transform = 'rotate(0)';
+                }, 150);
             }, 150);
-        }, 150);
-    });
+        });
+    }
 
     function animateValue(element, start, end, duration) {
         const range = end - start;
@@ -100,7 +102,6 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(updateStats, 30000);
 
     const tabButtons = document.querySelectorAll('.tab-btn');
-
     tabButtons.forEach(button => {
         button.addEventListener('click', () => {
             tabButtons.forEach(btn => btn.classList.remove('active'));
