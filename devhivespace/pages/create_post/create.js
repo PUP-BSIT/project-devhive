@@ -154,6 +154,22 @@ class PostCreator {
             img.style.objectFit = 'cover';
             previewContainer.appendChild(img);
             textarea.parentElement.appendChild(previewContainer);
+
+            // Improved image storage
+            const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
+            
+            // Use a unique key to prevent overwriting
+            const uniqueKey = `${Date.now()}_${file.name}`;
+            storedImages[uniqueKey] = event.target.result;
+            
+            localStorage.setItem('devhive_uploaded_images', JSON.stringify(storedImages));
+            
+            // Log for debugging
+            console.log('Image stored:', {
+              uniqueKey,
+              fileSize: event.target.result.length,
+              type: file.type
+            });
           };
           reader.readAsDataURL(file);
         } else {
@@ -188,6 +204,11 @@ class PostCreator {
             video.controls = true;
             previewContainer.appendChild(video);
             textarea.parentElement.appendChild(previewContainer);
+
+            // Store the video in local storage
+            const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
+            storedVideos[file.name] = event.target.result;
+            localStorage.setItem('devhive_uploaded_videos', JSON.stringify(storedVideos));
           };
           reader.readAsDataURL(file);
         } else {
@@ -281,38 +302,84 @@ class PostCreator {
   sharePost() {
     const title = document.getElementById("post-title").value;
     const content = document.getElementById("post-content").value;
-    const previews = document.querySelectorAll('.file-preview');
-    
-    if (!title && !content && previews.length === 0) {
-      this.showNotification(
-        "Please enter a title, content, or add files to share"
-      );
+    const platforms = this.selectedPlatforms;
+
+    if (!title.trim() || !content.trim()) {
+      this.showNotification("Please enter both title and content");
       return;
     }
 
-    const postData = {
-      title,
-      content,
-      platforms: this.selectedPlatforms,
-      files: Array.from(previews).map(preview => {
-        const mediaElement = preview.querySelector('img, video');
-        const fileInfo = preview.querySelector('.file-info');
-        return {
-          type: mediaElement ? 
-            (mediaElement.tagName === 'IMG' ? 'image' : 'video') : 
-            'attachment',
-          src: mediaElement ? mediaElement.src : null,
-          name: fileInfo ? fileInfo.querySelector('span').textContent : null
-        };
-      })
+    // Create a post object with unique image references
+    const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
+    const imageKeys = Object.keys(storedImages);
+    
+    // Modify content to use unique image keys
+    const modifiedContent = content.replace(/\[Image: (.+?)\]/g, (match, fileName) => {
+      const matchingKey = imageKeys.find(key => key.endsWith(fileName));
+      return matchingKey ? `[Image: ${matchingKey}]` : match;
+    });
+
+    const post = {
+      id: Date.now(), // Unique identifier
+      title: title,
+      content: modifiedContent,
+      platforms: platforms,
+      timestamp: new Date().toISOString(),
+      author: this.getCurrentUser()
     };
 
-    console.log("Sharing post:", postData);
-    this.showNotification("Post shared successfully!");
-    
+    // Save to local storage
+    this.savePostToLocalStorage(post);
+
+    // Update global wall
+    this.updateGlobalWall(post);
+
+    // Clear form
     document.getElementById("post-title").value = "";
     document.getElementById("post-content").value = "";
+
+    // Remove file previews
+    const previews = document.querySelectorAll('.file-preview');
     previews.forEach(preview => preview.remove());
+
+    this.showNotification("Post shared successfully!");
+  }
+
+  getCurrentUser() {
+    // Implement user authentication logic
+    // For now, return a placeholder
+    return "Current User";
+  }
+
+  savePostToLocalStorage(post) {
+    let posts = JSON.parse(localStorage.getItem('devhive_posts') || '[]');
+    posts.push(post);
+    localStorage.setItem('devhive_posts', JSON.stringify(posts));
+  }
+
+  updateGlobalWall(post) {
+    // Create a new post element
+    const postElement = document.createElement('div');
+    postElement.className = 'global-post';
+    postElement.innerHTML = `
+      <div class="post-header">
+        <h3>${post.title}</h3>
+        <span class="post-author">${post.author}</span>
+        <span class="post-timestamp">${new Date(post.timestamp).toLocaleString()}</span>
+      </div>
+      <div class="post-content">
+        ${post.content}
+      </div>
+      <div class="post-platforms">
+        Platforms: ${post.platforms.join(', ')}
+      </div>
+    `;
+
+    // Add to global wall (assuming there's a container for posts)
+    const globalWallContainer = document.querySelector('.global-wall-posts');
+    if (globalWallContainer) {
+      globalWallContainer.insertBefore(postElement, globalWallContainer.firstChild);
+    }
   }
 
   showNotifications() {
