@@ -191,6 +191,16 @@ body::before {
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.page-title {
+    font-family: "Coda Caption";
+    font-size: 48px;
+    color: #ffffff;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    font-weight: 700;
+}
+
 .settings-section {
     margin-bottom: 40px;
 }
