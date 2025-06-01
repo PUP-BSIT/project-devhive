@@ -28,26 +28,4 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('active');
         });
     });
-
-    document.querySelectorAll('.edit-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const postItem = this.closest('.post-item');
-            console.log('Edit post:', postItem);
-        });
-    });
-
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const postItem = this.closest('.post-item');
-            if (confirm('Are you sure you want to delete this post?')) {
-                console.log('Delete post:', postItem);
-            }
-        });
-    });
-
-    document.querySelector('.edit-profile-btn').addEventListener('click', 
-        function() {
-            console.log('Edit profile clicked');
-        }
-    );
 });

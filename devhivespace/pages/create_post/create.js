@@ -5,24 +5,32 @@ class PostCreator {
   }
 
   initializeEventListeners() {
-    document.querySelectorAll(".platform-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => this.handlePlatformSelection(e));
-    });
+    document
+      .querySelectorAll(".platform-btn")
+      .forEach((btn) => {
+        btn.addEventListener("click", (e) => this.handlePlatformSelection(e));
+      });
 
-    document.querySelectorAll(".nav-item").forEach((item) => {
-      item.addEventListener("click", (e) => this.handleNavigation(e));
-    });
+    document
+      .querySelectorAll(".nav-item")
+      .forEach((item) => {
+        item.addEventListener("click", (e) => this.handleNavigation(e));
+      });
 
-    document.querySelectorAll(".toolbar-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => this.handleFormatting(e));
-    });
+    document
+      .querySelectorAll(".toolbar-btn")
+      .forEach((btn) => {
+        btn.addEventListener("click", (e) => this.handleFormatting(e));
+      });
 
     document
       .getElementById("preview-btn")
       .addEventListener("click", () => this.previewPost());
+    
     document
       .getElementById("save-draft-btn")
       .addEventListener("click", () => this.saveDraft());
+    
     document
       .getElementById("share-post-btn")
       .addEventListener("click", () => this.sharePost());
@@ -30,6 +38,7 @@ class PostCreator {
     document
       .getElementById("notifications")
       .addEventListener("click", () => this.showNotifications());
+    
     document
       .getElementById("profile")
       .addEventListener("click", () => this.showProfile());
@@ -63,7 +72,9 @@ class PostCreator {
         );
       }
       if (this.selectedPlatforms.length === 0) {
-        document.querySelector('[data-platform="all"]').classList.add("active");
+        document
+          .querySelector('[data-platform="all"]')
+          .classList.add("active");
         this.selectedPlatforms = ["all"];
       }
     }
@@ -72,30 +83,24 @@ class PostCreator {
   }
 
   handleNavigation(e) {
-    document.querySelectorAll(".nav-item").forEach((item) => {
-      item.classList.remove("active");
-    });
+    document
+      .querySelectorAll(".nav-item")
+      .forEach((item) => {
+        item.classList.remove("active");
+      });
 
     e.target.classList.add("active");
-
     const navId = e.target.id;
     console.log("Navigate to:", navId);
-
     this.showNotification(`Navigating to ${navId.replace("-", " ")}`);
   }
 
   handleFormatting(e) {
     const format = e.target.dataset.format;
     const textarea = document.getElementById("post-content");
-
     console.log("Apply formatting:", format);
 
     switch (format) {
-      case "bold":
-      case "italic":
-      case "underline":
-        this.applyTextFormatting(format);
-        break;
       case "link":
         this.insertLink();
         break;
@@ -112,13 +117,6 @@ class PostCreator {
         this.insertEmoji();
         break;
     }
-  }
-
-    textarea.value =
-      textarea.value.substring(0, start) +
-      formattedText +
-      textarea.value.substring(end);
-    textarea.focus();
   }
 
   insertLink() {
@@ -150,7 +148,10 @@ class PostCreator {
             previewContainer.className = 'file-preview';
             const img = document.createElement('img');
             img.src = event.target.result;
-            img.style.maxWidth = '200px';
+            img.style.maxWidth = '40px';
+            img.style.height = '40px';
+            img.style.borderRadius = '50%';
+            img.style.objectFit = 'cover';
             previewContainer.appendChild(img);
             textarea.parentElement.appendChild(previewContainer);
           };
@@ -235,8 +236,10 @@ class PostCreator {
   insertAtCursor(textarea, text) {
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    textarea.value =
-      textarea.value.substring(0, start) + text + textarea.value.substring(end);
+    textarea.value = 
+      textarea.value.substring(0, start) + 
+      text + 
+      textarea.value.substring(end);
     textarea.setSelectionRange(start + text.length, start + text.length);
     textarea.focus();
   }
@@ -281,7 +284,9 @@ class PostCreator {
     const previews = document.querySelectorAll('.file-preview');
     
     if (!title && !content && previews.length === 0) {
-      this.showNotification("Please enter a title, content, or add files to share");
+      this.showNotification(
+        "Please enter a title, content, or add files to share"
+      );
       return;
     }
 
@@ -293,7 +298,9 @@ class PostCreator {
         const mediaElement = preview.querySelector('img, video');
         const fileInfo = preview.querySelector('.file-info');
         return {
-          type: mediaElement ? (mediaElement.tagName === 'IMG' ? 'image' : 'video') : 'attachment',
+          type: mediaElement ? 
+            (mediaElement.tagName === 'IMG' ? 'image' : 'video') : 
+            'attachment',
           src: mediaElement ? mediaElement.src : null,
           name: fileInfo ? fileInfo.querySelector('span').textContent : null
         };
