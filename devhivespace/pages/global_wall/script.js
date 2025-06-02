@@ -56,6 +56,39 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+function attachVideoEventListeners() {
+    const videos = document.querySelectorAll('video');
+    
+    videos.forEach(video => {
+        // Remove existing listeners to prevent multiple attachments
+        video.removeEventListener('click', videoClickHandler);
+        
+        // Add new click handler
+        video.addEventListener('click', videoClickHandler);
+    });
+}
+
+function videoClickHandler(e) {
+    // Pause all other videos
+    const allVideos = document.querySelectorAll('video');
+    allVideos.forEach(v => {
+        if (v !== e.currentTarget) {
+            v.pause();
+        }
+    });
+
+    // Toggle current video
+    const video = e.currentTarget;
+    if (video.paused) {
+        video.play().catch(error => {
+            console.error('Video play error:', error);
+            alert('Unable to play video. Please check file compatibility.');
+        });
+    } else {
+        video.pause();
+    }
+}
+
 function loadPosts() {
     const globalWallContainer = document.querySelector('.global-wall-posts');
     if (!globalWallContainer) return;
@@ -74,131 +107,164 @@ function loadPosts() {
         const postElement = createPostElement(post);
         globalWallContainer.appendChild(postElement);
     });
+
+    // Attach video event listeners after posts are loaded
+    attachVideoEventListeners();
 }
 
 function createPostElement(post) {
+    // Initialize counts
+    post.likes = post.likes || 0;
+    post.comments = post.comments || [];
+    post.shares = post.shares || 0;
+
+    // Parse media content
+    const parsedContent = parsePostContent(post.content);
+
     const postElement = document.createElement('div');
     postElement.className = 'social-post';
     postElement.setAttribute('data-post-id', post.id);
-    
-    // Calculate time difference
-    const timeDiff = getTimeDifference(new Date(post.timestamp));
-
-    // Render platforms as icons or badges
-    const platformBadges = post.platforms.map(platform => {
-        const platformIcons = {
-            'all': '../assets/global_feed.png',
-            'facebook': '../assets/link.png',
-            'instagram': '../assets/link.png',
-            'twitter': '../assets/link.png'
-        };
-        const iconSrc = platformIcons[platform.toLowerCase()] || '../assets/link.png';
-        return `<img src="${iconSrc}" alt="${platform}" class="platform-badge" title="${platform}">`;
-    }).join('');
-
-    // Parse and render post content with media
-    const parsedContent = parsePostContent(post.content);
 
     postElement.innerHTML = `
         <div class="post-header">
-            <img src="../assets/human.png" alt="Profile" class="profile-pic">
             <div class="post-user-info">
-                <h3 class="post-author">${escapeHTML(post.author)}</h3>
-                <div class="post-meta">
-                    <span class="post-timestamp">${timeDiff}</span>
-                    <div class="platform-badges">
-                        ${platformBadges}
-                    </div>
+                <img src="../assets/human.png" alt="Profile" class="profile-pic">
+                <div class="user-details">
+                    <h3 class="post-author">${escapeHTML(post.author || 'Anonymous')}</h3>
+                    <span class="post-timestamp">${getTimeDifference(new Date(post.timestamp))}</span>
                 </div>
             </div>
-            <div class="post-actions-menu">
-                <button class="post-options-btn">...</button>
+            <div class="post-options">
+                <button class="post-more-btn">...</button>
                 <div class="post-dropdown-menu">
                     <button class="delete-post-btn" data-post-id="${post.id}">
-                        <img src="../assets/delete.png" alt="Delete">
-                        Delete Post
+                        🗑️ Delete Post
                     </button>
                 </div>
             </div>
         </div>
-        
+
         <div class="post-content">
-            <h4 class="post-title">${escapeHTML(post.title)}</h4>
-            <div class="post-text">${parsedContent.text}</div>
-            ${parsedContent.media}
+            <p class="post-text">${parsedContent.text}</p>
+            
+            ${parsedContent.media ? `
+                <div class="post-media-container">
+                    ${parsedContent.media}
+                </div>
+            ` : ''}
         </div>
-        
-        <div class="post-interaction-actions">
-            <button class="action-btn like-btn">
-                <img src="../assets/heart.png" alt="Like">
-                <span>Like</span>
-            </button>
-            <button class="action-btn comment-btn">
-                <img src="../assets/comment.png" alt="Comment">
-                <span>Comment</span>
-            </button>
-            <button class="action-btn share-btn">
-                <img src="../assets/share.png" alt="Share">
-                <span>Share</span>
-            </button>
+
+        <div class="post-interactions">
+            <div class="interaction-stats">
+                <span class="likes-count">
+                    <i class="icon-heart">❤️</i> ${post.likes}
+                </span>
+                <span class="comments-count">
+                    <i class="icon-comment">💬</i> ${post.comments.length}
+                </span>
+                <span class="shares-count">
+                    <i class="icon-share">🔗</i> ${post.shares}
+                </span>
+            </div>
+
+            <div class="interaction-buttons">
+                <button class="btn-like" data-post-id="${post.id}">
+                    <i class="icon-heart">❤️</i> Like
+                </button>
+                <button class="btn-comment" data-post-id="${post.id}">
+                    <i class="icon-comment">💬</i> Comment
+                </button>
+                <button class="btn-share" data-post-id="${post.id}">
+                    <i class="icon-share">🔗</i> Share
+                </button>
+            </div>
+        </div>
+
+        <div class="comments-section">
+            <div class="comments-list">
+                ${post.comments.map(comment => `
+                    <div class="comment">
+                        <img src="../assets/human.png" alt="Profile" class="comment-profile-pic">
+                        <div class="comment-content">
+                            <span class="comment-author">Anonymous User</span>
+                            <p class="comment-text">${escapeHTML(comment.text)}</p>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="comments-input-container">
+                <img src="../assets/human.png" alt="Profile" class="input-profile-pic">
+                <input type="text" class="comment-input" placeholder="Write a comment...">
+                <button class="comment-send-btn">Post</button>
+            </div>
         </div>
     `;
 
-    // Enhanced video handling
-    const videoElements = postElement.querySelectorAll('video');
-    videoElements.forEach(videoEl => {
-        // Add custom play/pause functionality
-        videoEl.addEventListener('click', function() {
-            if (this.paused) {
-                this.play().catch(error => {
-                    console.error('Video play error:', error);
-                    // Fallback error handling
-                    alert('Unable to play video. Please check file compatibility.');
-                });
-            } else {
-                this.pause();
-            }
-        });
+    // Add event listeners for interactions
+    const likeBtn = postElement.querySelector('.btn-like');
+    const commentBtn = postElement.querySelector('.btn-comment');
+    const shareBtn = postElement.querySelector('.btn-share');
+    const commentInput = postElement.querySelector('.comment-input');
+    const commentSendBtn = postElement.querySelector('.comment-send-btn');
+    const commentsList = postElement.querySelector('.comments-list');
 
-        // Debugging video source
-        videoEl.addEventListener('error', function(e) {
-            console.error('Video error details:', {
-                src: this.src,
-                error: e,
-                networkState: this.networkState,
-                readyState: this.readyState
-            });
-        });
-
-        // Preload metadata
-        videoEl.preload = 'metadata';
-    });
-
-    // Add event listener for delete button
-    const deleteBtn = postElement.querySelector('.delete-post-btn');
-    if (deleteBtn) {
-        deleteBtn.addEventListener('click', (e) => {
-            const postId = e.currentTarget.dataset.postId;
-            deletePost(parseInt(postId));
+    // Like button functionality
+    if (likeBtn) {
+        likeBtn.addEventListener('click', () => {
+            toggleLike(post, likeBtn);
         });
     }
 
-    // Add event listener to toggle dropdown menu
-    const optionsBtn = postElement.querySelector('.post-options-btn');
-    if (optionsBtn) {
-        optionsBtn.addEventListener('click', (e) => {
+    // Comment button functionality
+    if (commentBtn) {
+        commentBtn.addEventListener('click', () => {
+            commentInput.focus();
+        });
+    }
+
+    // Share button functionality
+    if (shareBtn) {
+        shareBtn.addEventListener('click', () => {
+            sharePost(post, shareBtn);
+        });
+    }
+
+    // Comment send functionality
+    if (commentSendBtn && commentInput) {
+        commentSendBtn.addEventListener('click', () => {
+            const commentText = commentInput.value.trim();
+            if (commentText) {
+                addComment(post, commentText, commentsList);
+                commentInput.value = '';
+            }
+        });
+    }
+
+    // Add event listener for delete button
+    const deleteBtn = postElement.querySelector('.delete-post-btn');
+    const moreBtn = postElement.querySelector('.post-more-btn');
+    
+    if (moreBtn) {
+        moreBtn.addEventListener('click', (e) => {
             const dropdownMenu = e.currentTarget.nextElementSibling;
             dropdownMenu.classList.toggle('show');
             
             // Close dropdown when clicking outside
             const closeDropdown = (event) => {
-                if (!dropdownMenu.contains(event.target) && event.target !== optionsBtn) {
+                if (!dropdownMenu.contains(event.target) && event.target !== moreBtn) {
                     dropdownMenu.classList.remove('show');
                     document.removeEventListener('click', closeDropdown);
                 }
             };
             
             document.addEventListener('click', closeDropdown);
+        });
+    }
+
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', (e) => {
+            const postId = e.currentTarget.dataset.postId;
+            deletePost(parseInt(postId));
         });
     }
 
@@ -216,127 +282,100 @@ function parsePostContent(content) {
     let text = content;
     const mediaElements = [];
 
-    // Parse images
+    // Parse images with improved visual handling
     const imageMatches = [...text.matchAll(imageRegex)];
     imageMatches.forEach(match => {
         const fileName = match[1];
         
         // Check if it's a local storage image or uploaded image
         const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
-        const imageData = storedImages[fileName] || storedImages[Object.keys(storedImages).find(key => key.endsWith(fileName))];
+        const imageData = storedImages[fileName] || 
+            storedImages[Object.keys(storedImages).find(key => key.endsWith(fileName))];
         
         const filePreview = document.createElement('div');
-        filePreview.className = 'post-media-preview';
+        filePreview.className = 'post-media-preview image-preview';
         
         filePreview.innerHTML = `
             <div class="media-item image-item">
-                <img src="${imageData || '/uploads/images/' + fileName}" 
-                     alt="${fileName}" 
-                     title="${fileName}"
-                     onerror="this.src='../assets/image-placeholder.png'">
-                <span class="media-caption">${fileName}</span>
+                <div class="image-wrapper">
+                    <img src="${imageData || '/uploads/images/' + fileName}" 
+                         alt="${fileName}" 
+                         title="${fileName}"
+                         onerror="this.src='../assets/image-placeholder.png'"
+                         loading="lazy"
+                    >
+                    <div class="image-overlay">
+                        <span class="media-caption">${fileName}</span>
+                    </div>
+                </div>
             </div>
         `;
         mediaElements.push(filePreview.outerHTML);
         text = text.replace(match[0], '');
     });
 
-    // Parse videos with enhanced debugging
+    // Parse videos with enhanced handling
     const videoMatches = [...text.matchAll(videoRegex)];
     videoMatches.forEach(match => {
         const fileName = match[1];
-        console.log('Processing video file:', fileName);
         
-        // Check multiple storage locations
+        // Check multiple storage locations for video
         const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
-        const localStorageVideo = storedVideos[fileName] || 
+        const videoData = storedVideos[fileName] || 
             storedVideos[Object.keys(storedVideos).find(key => key.endsWith(fileName))];
         
-        // Potential video sources
         const videoSources = [
-            localStorageVideo,  // Local storage video data
+            videoData,  // Local storage video data
             `/uploads/videos/${fileName}`,  // Server-uploaded video
-            `../assets/video-placeholder.png`  // Fallback placeholder
         ].filter(Boolean);  // Remove any undefined sources
 
-        const filePreview = document.createElement('div');
-        filePreview.className = 'post-media-preview';
+        const videoPreview = document.createElement('div');
+        videoPreview.className = 'post-media-preview video-preview';
         
-        filePreview.innerHTML = `
+        videoPreview.innerHTML = `
             <div class="media-item video-item">
-                <video 
-                    src="${videoSources[0]}" 
-                    data-filename="${fileName}"
-                    controls
-                    preload="metadata"
-                    style="max-width: 100%; max-height: 400px;"
-                >
-                    Your browser does not support the video tag.
-                    <source src="${videoSources[0]}" type="video/mp4">
-                    <source src="${videoSources[1]}" type="video/mp4">
-                </video>
-                <span class="media-caption">${fileName}</span>
+                <div class="video-wrapper">
+                    <video 
+                        src="${videoSources[0]}" 
+                        data-filename="${fileName}"
+                        controls
+                        preload="metadata"
+                        playsinline
+                        poster="../assets/video-placeholder.png"
+                    >
+                        <source src="${videoSources[0]}" type="video/mp4">
+                        ${videoSources[1] ? `<source src="${videoSources[1]}" type="video/mp4">` : ''}
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="video-overlay">
+                        <span class="media-caption">${fileName}</span>
+                    </div>
+                </div>
             </div>
         `;
         
-        // Log video source details for debugging
-        console.log('Video source details:', {
-            localStorageVideo: !!localStorageVideo,
-            serverVideo: `/uploads/videos/${fileName}`,
-            sources: videoSources
-        });
-
-        mediaElements.push(filePreview.outerHTML);
+        mediaElements.push(videoPreview.outerHTML);
         text = text.replace(match[0], '');
     });
 
-    // Parse links
-    const linkMatches = [...text.matchAll(linkRegex)];
-    linkMatches.forEach(match => {
-        const url = match[1];
-        const linkPreview = document.createElement('div');
-        linkPreview.className = 'post-media-preview';
-        linkPreview.innerHTML = `
-            <div class="media-item link-item">
-                <a href="${url}" target="_blank" rel="noopener noreferrer">
-                    <img src="../assets/link.png" alt="Link">
-                    <span class="media-caption">${url}</span>
-                </a>
-            </div>
-        `;
-        mediaElements.push(linkPreview.outerHTML);
-        text = text.replace(match[0], '');
-    });
-
-    // Parse emojis
-    const emojiMatches = [...text.matchAll(emojiRegex)];
-    const emojiContainer = document.createElement('div');
-    emojiContainer.className = 'post-media-preview emoji-preview';
-    const emojiElements = emojiMatches.map(match => {
-        const emoji = match[1];
-        text = text.replace(match[0], '');
-        return `<span class="emoji-item">${emoji}</span>`;
-    });
+    // Wrap multiple media items in a scrollable container
+    const mediaContainer = document.createElement('div');
+    mediaContainer.className = 'post-media-container';
     
-    if (emojiElements.length > 0) {
-        emojiContainer.innerHTML = `
-            <div class="media-item emoji-item">
-                <div class="emoji-container">
-                    ${emojiElements.join(' ')}
-                </div>
-                <span class="media-caption">Emojis</span>
+    if (mediaElements.length > 1) {
+        // Create a horizontally scrollable container for multiple media
+        mediaContainer.innerHTML = `
+            <div class="media-scroll-container">
+                ${mediaElements.join('')}
             </div>
         `;
-        mediaElements.push(emojiContainer.outerHTML);
+    } else if (mediaElements.length === 1) {
+        mediaContainer.innerHTML = mediaElements[0];
     }
 
     return {
         text: escapeHTML(text.trim()),
-        media: mediaElements.length > 0 ? `
-            <div class="post-media-container">
-                ${mediaElements.join('')}
-            </div>
-        ` : ''
+        media: mediaElements.length > 0 ? mediaContainer.outerHTML : ''
     };
 }
 
@@ -378,7 +417,7 @@ function debugLocalStorage() {
 
 // Function to delete a post
 function deletePost(postId) {
-    // Retrieve existing posts from local storage
+    // Retrieve posts from local storage
     let posts = JSON.parse(localStorage.getItem('devhive_posts') || '[]');
     
     // Find the index of the post to delete
@@ -487,26 +526,62 @@ document.head.appendChild(styleElement);
 // Add CSS for better video styling
 const videoStyleElement = document.createElement('style');
 videoStyleElement.textContent = `
-    .post-media-preview .video-item {
-        max-width: 100%;
-        width: 100%;
+    .post-media-preview.video-preview {
         position: relative;
     }
-    
-    .post-media-preview video {
+
+    .post-media-preview .video-wrapper {
+        position: relative;
         max-width: 100%;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .post-media-preview video {
+        width: 100%;
+        height: auto;
         max-height: 400px;
         object-fit: contain;
         background-color: #000;
-        border-radius: 8px;
     }
-    
-    .post-media-preview .media-caption {
-        display: block;
-        text-align: center;
-        margin-top: 8px;
-        color: #666;
-        font-size: 0.9em;
+
+    .post-media-preview .video-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0,0,0,0.5);
+        padding: 8px;
+        display: flex;
+        align-items: center;
+    }
+
+    .post-media-preview .video-overlay .media-caption {
+        color: white;
+        font-size: 0.7em;
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
+    }
+
+    /* Video controls styling */
+    .post-media-preview video:focus {
+        outline: none;
+    }
+
+    .post-media-preview video::-webkit-media-controls {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+    @media (max-width: 600px) {
+        .post-media-preview video {
+            max-height: 250px;
+        }
     }
 `;
 document.head.appendChild(videoStyleElement);
@@ -557,4 +632,496 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+});
+
+// Function to toggle like
+function toggleLike(post, likeBtn) {
+    // Retrieve posts from local storage
+    let posts = JSON.parse(localStorage.getItem('devhive_posts') || '[]');
+    
+    // Find the specific post
+    const postIndex = posts.findIndex(p => p.id === post.id);
+    
+    if (postIndex !== -1) {
+        // Ensure likes object exists
+        if (!posts[postIndex].likes) {
+            posts[postIndex].likes = 0;
+        }
+
+        // Toggle like
+        if (!posts[postIndex].liked) {
+            // Like the post
+            posts[postIndex].likes += 1;
+            posts[postIndex].liked = true;
+            
+            // Update like button style
+            likeBtn.classList.add('liked');
+        } else {
+            // Unlike the post
+            posts[postIndex].likes = Math.max(posts[postIndex].likes - 1, 0);
+            posts[postIndex].liked = false;
+            
+            // Remove liked style
+            likeBtn.classList.remove('liked');
+        }
+        
+        // Update local storage
+        localStorage.setItem('devhive_posts', JSON.stringify(posts));
+        
+        // Update like count in UI
+        const likeCountElement = document.querySelector(
+            `.social-post[data-post-id="${post.id}"] .likes-count`
+        );
+        
+        if (likeCountElement) {
+            likeCountElement.innerHTML = `
+                <i class="icon-heart">❤️</i> ${posts[postIndex].likes}
+            `;
+        }
+    }
+}
+
+// Function to add a comment
+function addComment(post, commentText, commentsList) {
+    // Retrieve posts from local storage
+    let posts = JSON.parse(localStorage.getItem('devhive_posts') || '[]');
+    
+    // Find the specific post
+    const postIndex = posts.findIndex(p => p.id === post.id);
+    
+    if (postIndex !== -1) {
+        // Ensure comments array exists
+        if (!posts[postIndex].comments) {
+            posts[postIndex].comments = [];
+        }
+
+        // Create new comment object
+        const newComment = {
+            id: Date.now(), // Unique identifier
+            text: commentText,
+            timestamp: new Date().toISOString()
+        };
+        
+        // Add comment to post's comments array
+        posts[postIndex].comments.push(newComment);
+        
+        // Update local storage
+        localStorage.setItem('devhive_posts', JSON.stringify(posts));
+        
+        // Create and append comment element
+        const commentElement = document.createElement('div');
+        commentElement.className = 'comment';
+        commentElement.innerHTML = `
+            <img src="../assets/human.png" alt="Profile" class="comment-profile-pic">
+            <div class="comment-content">
+                <span class="comment-author">Anonymous User</span>
+                <p class="comment-text">${escapeHTML(commentText)}</p>
+            </div>
+        `;
+        
+        // Append to comments list
+        commentsList.appendChild(commentElement);
+        
+        // Update comments count in UI
+        const commentsCountElement = document.querySelector(
+            `.social-post[data-post-id="${post.id}"] .comments-count`
+        );
+        
+        if (commentsCountElement) {
+            commentsCountElement.innerHTML = `
+                <i class="icon-comment">💬</i> ${posts[postIndex].comments.length}
+            `;
+        }
+    }
+}
+
+// Function to share post
+function sharePost(post, shareBtn) {
+    // Retrieve posts from local storage
+    let posts = JSON.parse(localStorage.getItem('devhive_posts') || '[]');
+    
+    // Find the specific post
+    const postIndex = posts.findIndex(p => p.id === post.id);
+    
+    if (postIndex !== -1) {
+        // Ensure shares count exists
+        if (!posts[postIndex].shares) {
+            posts[postIndex].shares = 0;
+        }
+
+        // Increment share count
+        posts[postIndex].shares += 1;
+        
+        // Update local storage
+        localStorage.setItem('devhive_posts', JSON.stringify(posts));
+        
+        // Update share count in UI
+        const shareCountElement = document.querySelector(
+            `.social-post[data-post-id="${post.id}"] .shares-count`
+        );
+        
+        if (shareCountElement) {
+            shareCountElement.innerHTML = `
+                <i class="icon-share">🔗</i> ${posts[postIndex].shares}
+            `;
+        }
+        
+        // Optional: Add share functionality (e.g., copy link, social media share)
+        copyPostLink(post);
+    }
+}
+
+// Function to copy post link
+function copyPostLink(post) {
+    // Create a temporary link based on post ID
+    const postLink = `${window.location.origin}/post/${post.id}`;
+    
+    // Create a temporary textarea to copy the link
+    const tempInput = document.createElement('textarea');
+    tempInput.value = postLink;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand('copy');
+    document.body.removeChild(tempInput);
+    
+    // Show notification
+    showNotification('Post link copied to clipboard');
+}
+
+// Social Media-like Post Styling
+const socialPostStyleElement = document.createElement('style');
+socialPostStyleElement.textContent = `
+    .social-post {
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-bottom: 15px;
+        overflow: hidden;
+    }
+
+    .post-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .post-user-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .profile-pic {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .user-details {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .post-author {
+        margin: 0;
+        font-weight: bold;
+        font-size: 0.9em;
+    }
+
+    .post-timestamp {
+        color: #888;
+        font-size: 0.8em;
+    }
+
+    .post-options .post-more-btn {
+        background: none;
+        border: none;
+        font-size: 1.2em;
+        cursor: pointer;
+    }
+
+    .post-content {
+        padding: 12px;
+    }
+
+    .post-text {
+        margin: 0 0 10px 0;
+    }
+
+    .post-media-container {
+        width: 100%;
+        max-height: 400px;
+        overflow: hidden;
+    }
+
+    .post-media-container img,
+    .post-media-container video {
+        width: 100%;
+        max-height: 400px;
+        object-fit: cover;
+    }
+
+    .post-interactions {
+        border-top: 1px solid #f0f0f0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .interaction-stats {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 12px;
+        color: #888;
+        font-size: 0.9em;
+    }
+
+    .interaction-stats span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .interaction-buttons {
+        display: flex;
+        justify-content: space-around;
+        padding: 10px 0;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .interaction-buttons button {
+        background: none;
+        border: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+        color: #666;
+        font-size: 0.9em;
+    }
+
+    .interaction-buttons button:hover {
+        color: #333;
+    }
+
+    .comments-section {
+        padding: 12px;
+        background-color: #f9f9f9;
+    }
+
+    .comments-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .comment {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .comment-profile-pic {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .comment-content {
+        background-color: #f0f0f0;
+        border-radius: 12px;
+        padding: 8px 12px;
+        flex-grow: 1;
+    }
+
+    .comment-author {
+        display: block;
+        font-size: 0.8em;
+        color: #666;
+        margin-bottom: 4px;
+        font-weight: bold;
+    }
+
+    .comment-text {
+        margin: 0;
+        font-size: 0.9em;
+    }
+
+    .comments-input-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .input-profile-pic {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .comment-input {
+        flex-grow: 1;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        background-color: white;
+    }
+
+    .comment-send-btn {
+        background: none;
+        border: none;
+        color: #4CAF50;
+        font-weight: bold;
+        cursor: pointer;
+    }
+`;
+document.head.appendChild(socialPostStyleElement);
+
+// Add CSS for post options dropdown
+const dropdownStyleElement = document.createElement('style');
+dropdownStyleElement.textContent = `
+    .post-options {
+        position: relative;
+    }
+    
+    .post-more-btn {
+        background: none;
+        border: none;
+        font-size: 1.2em;
+        cursor: pointer;
+        padding: 5px;
+    }
+    
+    .post-dropdown-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background-color: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        z-index: 10;
+        min-width: 150px;
+    }
+    
+    .post-dropdown-menu.show {
+        display: block;
+    }
+    
+    .delete-post-btn {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        background: none;
+        border: none;
+        padding: 10px;
+        text-align: left;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    
+    .delete-post-btn:hover {
+        background-color: #f0f0f0;
+    }
+`;
+document.head.appendChild(dropdownStyleElement);
+
+// Add CSS for media handling
+const mediaStyleElement = document.createElement('style');
+mediaStyleElement.textContent = `
+    .post-media-container {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+        background-color: white;
+        border-radius: 8px;
+    }
+
+    .media-scroll-container {
+        display: flex;
+        overflow-x: auto;
+        gap: 10px;
+        padding: 10px;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .media-scroll-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .post-media-preview {
+        flex: 0 0 auto;
+        scroll-snap-align: center;
+        max-width: 100%;
+        position: relative;
+    }
+
+    .post-media-preview .media-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        max-width: 100%;
+    }
+
+    .post-media-preview .image-wrapper {
+        position: relative;
+        max-width: 100%;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .post-media-preview img {
+        width: 100%;
+        height: auto;
+        max-height: 400px;
+        object-fit: contain;
+        border-radius: 8px;
+    }
+
+    .post-media-preview .image-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0,0,0,0.5);
+        padding: 8px;
+        display: flex;
+        align-items: center;
+    }
+
+    .post-media-preview .media-caption {
+        color: white;
+        font-size: 0.7em;
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
+    }
+
+    @media (max-width: 600px) {
+        .media-scroll-container {
+            padding: 8px;
+            gap: 8px;
+        }
+
+        .post-media-preview img {
+            max-height: 250px;
+        }
+    }
+`;
+document.head.appendChild(mediaStyleElement);
+
+// Attach video event listeners on initial page load
+document.addEventListener('DOMContentLoaded', () => {
+    attachVideoEventListeners();
 });
