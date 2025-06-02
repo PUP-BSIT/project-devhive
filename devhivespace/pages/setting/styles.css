@@ -283,6 +283,7 @@ body::before {
     background: white;
     transition: all 0.3s ease;
     width: 300px;
+    color: #666;
 }
 
 .form-input:focus {
