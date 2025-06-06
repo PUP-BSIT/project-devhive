@@ -1,0 +1,555 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Inter", sans-serif;
+    background: url("../assets/background.png") repeat;
+    min-height: 100vh;
+    padding: 20px;
+    position: relative;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 20% 20%, 
+                    rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+        radial-gradient(circle at 80% 80%, 
+                    rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+        radial-gradient(circle at 40% 60%, 
+                    rgba(255, 255, 255, 0.05) 3px, transparent 3px);
+    background-size: 60px 60px, 80px 80px, 100px 100px;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.accounts-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: calc(100vh - 40px);
+}
+
+.top-nav {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 50px;
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.top-nav:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.logo img {
+    height: 24px;
+    transition: transform 0.3s ease;
+}
+
+.logo img:hover {
+    transform: scale(1.1);
+}
+
+.nav-icons {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.nav-icons img {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 50%;
+    padding: 4px;
+}
+
+.nav-icons img:hover {
+    background: rgba(37, 99, 235, 0.1);
+    transform: scale(1.2);
+}
+
+.main-content {
+    display: flex;
+    gap: 24px;
+    flex: 1;
+}
+
+.sidebar {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(37, 99, 235, 0.3);
+    transition: all 0.3s ease;
+}
+
+.sidebar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 50px rgba(37, 99, 235, 0.4);
+}
+
+.nav-menu {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.nav-menu li a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #1e1e1e;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    gap: 12px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-menu li a::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, 
+                            rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+}
+
+.nav-menu li a:hover::before {
+    left: 100%;
+}
+
+.nav-menu li a:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: translateX(8px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.nav-menu li a img {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+}
+
+.nav-menu li a:hover img {
+    transform: scale(1.1);
+}
+
+.nav-menu li.active a {
+    background: #e9b949;
+    color: #1e1e1e;
+    box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
+    transform: translateX(8px);
+}
+
+.nav-menu li.active a:hover {
+    background: #e3963a;
+}
+
+.connected-accounts-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.connected-accounts-header h1 {
+    font-family: "Coda Caption", sans-serif;
+    font-size: 48px;
+    color: rgba(255, 255, 255, 0.95);
+    margin-bottom: 24px;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.connected-accounts-header h1:hover {
+    transform: translateY(-2px);
+    text-shadow: 4px 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.connected-accounts-header p {
+    font-family: sans-serif;
+    color: #ffffff;
+    font-size: 20px;
+}
+
+.platforms-section {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.section-header h2 {
+    font-size: 24px;
+    color: #1e1e1e;
+}
+
+.view-all {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.view-all:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+.platforms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.platform-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.platform-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+
+.platform-info {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.platform-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+}
+
+.platform-details h3 {
+    font-size: 18px;
+    color: #1e1e1e;
+    margin-bottom: 8px;
+}
+
+.platform-details p {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.connection-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.connection-status.connected {
+    background: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+}
+
+.connection-status.not-connected {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+.account-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.account-info p {
+    font-weight: 600;
+    color: #1e1e1e;
+}
+
+.account-info span {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.manage-btn, .connect-btn {
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    border: none;
+}
+
+.manage-btn {
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+}
+
+.manage-btn:hover {
+    background: rgba(37, 99, 235, 0.2);
+    transform: translateY(-2px);
+}
+
+.connect-btn {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: white;
+}
+
+.connect-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+}
+
+.switch-account {
+    color: #2563eb;
+    text-decoration: none;
+    font-size: 14px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.switch-account:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+.connection-overview {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.connection-overview h2 {
+    font-size: 24px;
+    color: #1e1e1e;
+    margin-bottom: 24px;
+}
+
+.overview-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card h3 {
+    font-size: 32px;
+    color: #1e1e1e;
+    margin-bottom: 8px;
+}
+
+.stat-card p {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.help-section {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.help-section p {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: center;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .main-content {
+        flex-direction: column;
+    }
+
+    .left-section {
+        width: 100%;
+    }
+
+    .sidebar {
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 16px;
+    }
+
+    .nav-menu {
+        flex-direction: row;
+        gap: 12px;
+    }
+
+    .nav-menu li {
+        flex-shrink: 0;
+    }
+
+    .connected-accounts-header h1 {
+        font-size: 36px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    body {
+        padding: 12px;
+    }
+
+    .container {
+        gap: 16px;
+    }
+
+    .top-nav {
+        padding: 8px 16px;
+        border-radius: 20px;
+    }
+
+    .connected-accounts-header,
+    .platforms-section,
+    .connection-overview,
+    .help-section {
+        padding: 24px;
+    }
+
+    .connected-accounts-header h1 {
+        font-size: 28px;
+    }
+
+    .platforms-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .overview-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .top-nav {
+        padding: 8px 16px;
+    }
+
+    .logo img {
+        height: 20px;
+    }
+
+    .nav-icons img {
+        width: 20px;
+        height: 20px;
+    }
+
+    .connected-accounts-header h1 {
+        font-size: 24px;
+    }
+
+    .platform-card {
+        padding: 20px;
+    }
+
+    .platform-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .platform-details h3 {
+        font-size: 16px;
+    }
+
+    .stat-card h3 {
+        font-size: 28px;
+    }
+}
+
+.platform-card,
+.stat-card,
+.connected-accounts-header,
+.platforms-section,
+.connection-overview,
+.help-section {
+    will-change: transform;
+}
+
+.nav-menu li a:focus,
+.manage-btn:focus,
+.connect-btn:focus,
+.switch-account:focus,
+.view-all:focus {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+html {
+    scroll-behavior: smooth;
+}
