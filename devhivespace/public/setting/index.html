@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Coda+Caption:wght@800&family=Inter:wght@400;500;600&display=swap" 
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="top-nav">
+            <div class="logo">
+                Dashboard
+            </div>
+            <div class="nav-icons">
+                <div class="nav-icon">🔔</div>
+                <div class="nav-icon">👤</div>
+            </div>
+        </nav>
+
+        <div class="main-content">
+            <aside class="sidebar">
+                <ul class="nav-menu">
+                    <li>
+                        <a href="../dashboard/index.html">
+                            <div class="nav-icon-menu"></div>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="../global_wall/index.html">
+                            <div class="nav-icon-menu"></div>
+                            Global Wall
+                        </a>
+                    </li>
+                    <li>
+                        <a href="../user_profile/index.html">
+                            <div class="nav-icon-menu"></div>
+                            Profile
+                        </a>
+                    </li>
+                    <li>
+                        <a href="../create_post/index.html">
+                            <div class="nav-icon-menu"></div>
+                            Create Post
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/connected_accounts">
+                            <div class="nav-icon-menu"></div>
+                            Connected Accounts
+                        </a>
+                    </li>
+                    <li class="active">
+                        <a href="../setting/index.html">
+                            <div class="nav-icon-menu"></div>
+                            Settings
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+
+            <main class="settings-content">
+                    <h1 class="page-title">Settings</h1>
+
+                <div class="settings-container">
+                    <div class="settings-section">
+                        <h2>Account Settings</h2>
+                        
+                        <div class="profile-section">
+                            <div class="profile-avatar">
+                                👤
+                            </div>
+                            <button class="change-photo-btn">Change photo</button>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">Display Name</label>
+                            <input type="text" class="form-input" value="Username" placeholder="User Name">
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">Email</label>
+                            <input type="email" class="form-input" value="example@gmail.com" placeholder="user.example@gmail.com">
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">Change Password</label>
+                            <button class="update-btn">Update Password</button>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">Two-Factor Authentication</label>
+                            <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h2>Privacy Settings</h2>
+                        
+                        <div class="setting-item">
+                            <label class="setting-label">Profile Visibility</label>
+                            <div class="dropdown">
+                                <button class="dropdown-btn">
+                                    Public
+                                    <div class="dropdown-arrow"></div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">Data Sharing with Platforms</label>
+                            <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label"></label>
+                            <button class="action-btn">Manage Permissions</button>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h2>Advanced Settings</h2>
+                        
+                        <div class="setting-item">
+                            <label class="setting-label">Time Zone</label>
+                            <div class="dropdown">
+                                <button class="dropdown-btn">
+                                    (UTC-08:00) Pacific Time
+                                    <div class="dropdown-arrow"></div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">Language</label>
+                            <div class="dropdown">
+                                <button class="dropdown-btn">
+                                    English (US)
+                                    <div class="dropdown-arrow"></div>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">Export Data</label>
+                            <button class="action-btn">Export</button>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">Delete Account</label>
+                            <button class="action-btn danger">Delete My Account</button>
+                        </div>
+                    </div>
+
+                    <button class="save-btn">Save Changes</button>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
