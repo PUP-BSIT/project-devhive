@@ -125,7 +125,6 @@ class PostCreator {
   }
 
   insertImage() {
-    // Diagnostic method to log all details about file upload
     const diagnosticFileUpload = (file) => {
       console.group('File Upload Diagnostic');
       console.log('File Name:', file.name);
@@ -141,20 +140,17 @@ class PostCreator {
     input.multiple = true;
     
     input.onchange = (e) => {
-      // Immediate diagnostic logging
       console.group('Image Upload Process');
       console.log('Files selected:', e.target.files.length);
 
       const files = Array.from(e.target.files);
       
       files.forEach(file => {
-        // Run diagnostic check
         diagnosticFileUpload(file);
 
         if (file.type.startsWith('image/')) {
           const reader = new FileReader();
-          
-          // Add error handling to reader
+
           reader.onerror = (error) => {
             console.error('FileReader error:', error);
             this.showNotification(`Error reading file: ${file.name}`);
@@ -177,10 +173,8 @@ class PostCreator {
             previewContainer.appendChild(img);
             textarea.parentElement.appendChild(previewContainer);
 
-            // Improved image storage with extensive logging
             const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
             
-            // Use a unique key to prevent overwriting
             const uniqueKey = `${Date.now()}_${file.name}`;
             storedImages[uniqueKey] = event.target.result;
             
@@ -191,7 +185,6 @@ class PostCreator {
             } catch (storageError) {
               console.error('localStorage storage error:', storageError);
               
-              // Fallback storage method
               if (storageError instanceof DOMException && 
                   (storageError.name === 'QuotaExceededError' || storageError.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
                 this.showNotification('Storage limit exceeded. Some images may not be saved.');
@@ -199,7 +192,6 @@ class PostCreator {
             }
           };
 
-          // Explicitly read as Data URL
           reader.readAsDataURL(file);
         } else {
           this.showNotification(`${file.name} is not an image file`);
@@ -209,7 +201,6 @@ class PostCreator {
       console.groupEnd();
     };
 
-    // Trigger file selection
     input.click();
   }
 
@@ -236,16 +227,13 @@ class PostCreator {
             previewContainer.appendChild(video);
             textarea.parentElement.appendChild(previewContainer);
 
-            // Improved video storage with detailed logging
             const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
-            
-            // Use a unique key to prevent overwriting
+      
             const uniqueKey = `${Date.now()}_${file.name}`;
             storedVideos[uniqueKey] = event.target.result;
             
             localStorage.setItem('devhive_uploaded_videos', JSON.stringify(storedVideos));
-            
-            // Extensive logging
+
             console.group('Video Upload Debug');
             console.log('Video stored with key:', uniqueKey);
             console.log('Video data length:', event.target.result.length);
@@ -310,21 +298,17 @@ class PostCreator {
 
   previewPost() {
     const content = document.getElementById("post-content").value.trim();
-    const title = document.getElementById("post-title").value.trim();
 
     if (!content) {
       this.showNotification("Please enter post content");
       return;
     }
 
-    // Create preview modal similar to global wall post style
     const previewModal = document.createElement('div');
     previewModal.className = 'preview-modal-container';
     
-    // Prepare post object for preview
     const previewPost = {
-      id: Date.now(), // Temporary ID
-      title: title,
+      id: Date.now(), 
       content: content,
       author: this.getCurrentUser() || 'Anonymous',
       timestamp: new Date().toISOString(),
@@ -334,7 +318,6 @@ class PostCreator {
       shares: 0
     };
 
-    // Use the global wall's parsePostContent function to handle media
     const parsedContent = this.parsePreviewContent(content);
 
     previewModal.innerHTML = `
@@ -356,7 +339,6 @@ class PostCreator {
             </div>
 
             <div class="post-content">
-              <h4 class="post-title">${this.escapeHTML(title || 'Untitled Post')}</h4>
               <p class="post-text">${parsedContent.text}</p>
               
               ${parsedContent.media ? `
@@ -383,15 +365,12 @@ class PostCreator {
       </div>
     `;
 
-    // Add to body
     document.body.appendChild(previewModal);
 
-    // Close modal functionality
     const closeBtn = previewModal.querySelector('.preview-modal-close');
     const confirmBtn = previewModal.querySelector('.preview-confirm-btn');
     const cancelBtn = previewModal.querySelector('.preview-cancel-btn');
 
-    // Close modal when clicking close button or outside modal
     closeBtn.addEventListener('click', () => {
       previewModal.remove();
     });
@@ -402,33 +381,27 @@ class PostCreator {
       }
     });
 
-    // Confirm post functionality
     confirmBtn.addEventListener('click', () => {
       this.sharePost();
       previewModal.remove();
     });
 
-    // Cancel/Edit post functionality
     cancelBtn.addEventListener('click', () => {
       previewModal.remove();
     });
   }
 
   parsePreviewContent(content) {
-    // Regular expressions for different media types
     const imageRegex = /\[Image: (.+?)\]/g;
     const videoRegex = /\[Video: (.+?)\]/g;
     const attachmentRegex = /\[Attachment: (.+?)\]/g;
     
-    // Containers for parsed content
     let text = content;
     const mediaElements = [];
 
-    // Retrieve stored images and videos
     const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
     const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
 
-    // Handle image parsing
     const imageMatches = [...text.matchAll(imageRegex)];
     if (imageMatches.length > 0) {
       imageMatches.forEach(match => {
@@ -451,7 +424,6 @@ class PostCreator {
       });
     }
 
-    // If no regex matches, add all stored images
     if (mediaElements.length === 0) {
       Object.entries(storedImages).forEach(([key, imageData]) => {
         const filePreview = document.createElement('div');
@@ -466,7 +438,6 @@ class PostCreator {
       });
     }
 
-    // Handle video parsing
     const videoMatches = [...text.matchAll(videoRegex)];
     if (videoMatches.length > 0) {
       videoMatches.forEach(match => {
@@ -492,7 +463,6 @@ class PostCreator {
       });
     }
 
-    // If no regex matches, add all stored videos
     if (mediaElements.length === 0) {
       Object.entries(storedVideos).forEach(([key, videoData]) => {
         const videoPreview = document.createElement('div');
@@ -509,7 +479,6 @@ class PostCreator {
       });
     }
 
-    // Wrap media elements
     const mediaContainer = document.createElement('div');
     mediaContainer.className = 'post-media-container';
     
@@ -529,7 +498,6 @@ class PostCreator {
     };
   }
 
-  // Utility method to get time difference (similar to global wall)
   getTimeDifference(date) {
     const now = new Date();
     const diff = Math.floor((now - date) / 1000);
@@ -547,7 +515,6 @@ class PostCreator {
     }
   }
 
-  // Utility function to escape HTML to prevent XSS
   escapeHTML(str) {
     return str.replace(/&/g, '&amp;')
               .replace(/</g, '&lt;')
@@ -557,37 +524,19 @@ class PostCreator {
   }
 
   sharePost() {
-    const title = document.getElementById("post-title").value;
     const content = document.getElementById("post-content").value;
     const platforms = this.selectedPlatforms;
 
-    // Extensive logging of localStorage state
-    console.group('Share Post - Storage Diagnostic');
-    try {
-      const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
-      const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
-      
-      console.log('Stored Images:', Object.keys(storedImages));
-      console.log('Images Count:', Object.keys(storedImages).length);
-      console.log('Stored Videos:', Object.keys(storedVideos));
-      console.log('Videos Count:', Object.keys(storedVideos).length);
-    } catch (parseError) {
-      console.error('Error parsing stored media:', parseError);
-    }
-    console.groupEnd();
-
-    if (!title.trim() || !content.trim()) {
-      this.showNotification("Please enter both title and content");
+    if (!content.trim()) {
+      this.showNotification("Please enter content");
       return;
     }
 
-    // Create a post object with unique image references
     const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
     const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
     
     const post = {
-      id: Date.now(), // Unique identifier
-      title: title,
+      id: Date.now(), 
       content: content,
       platforms: platforms,
       timestamp: new Date().toISOString(),
@@ -604,27 +553,15 @@ class PostCreator {
       }
     };
 
-    // Log post media data
-    console.group('Post Media Data');
-    console.log('Images in post:', post.mediaData.images.length);
-    console.log('Videos in post:', post.mediaData.videos.length);
-    console.groupEnd();
-
-    // Save to local storage
     this.savePostToLocalStorage(post);
 
-    // Update global wall
     this.updateGlobalWall(post);
 
-    // Clear form
-    document.getElementById("post-title").value = "";
     document.getElementById("post-content").value = "";
 
-    // Remove file previews
     const previews = document.querySelectorAll('.file-preview');
     previews.forEach(preview => preview.remove());
 
-    // Clear stored media
     localStorage.removeItem('devhive_uploaded_images');
     localStorage.removeItem('devhive_uploaded_videos');
 
@@ -632,8 +569,6 @@ class PostCreator {
   }
 
   getCurrentUser() {
-    // Implement user authentication logic
-    // For now, return a placeholder
     return "Current User";
   }
 
@@ -644,18 +579,14 @@ class PostCreator {
   }
 
   updateGlobalWall(post) {
-    // Extensive logging
     console.group('Update Global Wall Debug');
     console.log('Post received:', post);
     
-    // Create a new post element
     const postElement = document.createElement('div');
     postElement.className = 'global-post';
     
-    // Prepare media HTML
     let mediaHTML = '';
 
-    // Add images
     if (post.mediaData && post.mediaData.images && post.mediaData.images.length > 0) {
       console.log('Images to display:', post.mediaData.images.length);
       
@@ -676,7 +607,6 @@ class PostCreator {
       console.log('No images found in mediaData');
     }
 
-    // Add videos
     if (post.mediaData && post.mediaData.videos && post.mediaData.videos.length > 0) {
       console.log('Videos to display:', post.mediaData.videos.length);
       
@@ -702,7 +632,7 @@ class PostCreator {
 
     postElement.innerHTML = `
       <div class="post-header">
-        <h3>${this.escapeHTML(post.title)}</h3>
+        <h3>${this.escapeHTML(post.title || 'Untitled Post')}</h3>
         <span class="post-author">${this.escapeHTML(post.author)}</span>
         <span class="post-timestamp">${new Date(post.timestamp).toLocaleString()}</span>
       </div>
@@ -715,7 +645,6 @@ class PostCreator {
       </div>
     `;
 
-    // Add to global wall (assuming there's a container for posts)
     const globalWallContainer = document.querySelector('.global-wall-posts');
     if (globalWallContainer) {
       globalWallContainer.insertBefore(postElement, globalWallContainer.firstChild);
