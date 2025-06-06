@@ -2,7 +2,6 @@ class PostCreator {
   constructor() {
     this.selectedPlatforms = ["all"];
     this.initializeEventListeners();
-    this.initializeDraftsManagement();
   }
 
   initializeEventListeners() {
@@ -24,13 +23,9 @@ class PostCreator {
         btn.addEventListener("click", (e) => this.handleFormatting(e));
       });
 
-    document
+    document 
       .getElementById("preview-btn")
       .addEventListener("click", () => this.previewPost());
-    
-    document
-      .getElementById("save-draft-btn")
-      .addEventListener("click", () => this.saveDraft());
     
     document
       .getElementById("share-post-btn")
@@ -130,20 +125,42 @@ class PostCreator {
   }
 
   insertImage() {
+    const diagnosticFileUpload = (file) => {
+      console.group('File Upload Diagnostic');
+      console.log('File Name:', file.name);
+      console.log('File Type:', file.type);
+      console.log('File Size:', file.size, 'bytes');
+      console.log('Is Image:', file.type.startsWith('image/'));
+      console.groupEnd();
+    };
+
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
     input.multiple = true;
     
     input.onchange = (e) => {
+      console.group('Image Upload Process');
+      console.log('Files selected:', e.target.files.length);
+
       const files = Array.from(e.target.files);
+      
       files.forEach(file => {
+        diagnosticFileUpload(file);
+
         if (file.type.startsWith('image/')) {
           const reader = new FileReader();
+
+          reader.onerror = (error) => {
+            console.error('FileReader error:', error);
+            this.showNotification(`Error reading file: ${file.name}`);
+          };
+
           reader.onload = (event) => {
+            console.log('File read successfully:', file.name);
+            console.log('Data URL length:', event.target.result.length);
+
             const textarea = document.getElementById("post-content");
-            const imagePreview = `\n[Image: ${file.name}]\n`;
-            this.insertAtCursor(textarea, imagePreview);
             
             const previewContainer = document.createElement('div');
             previewContainer.className = 'file-preview';
@@ -156,28 +173,34 @@ class PostCreator {
             previewContainer.appendChild(img);
             textarea.parentElement.appendChild(previewContainer);
 
-            // Improved image storage
             const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
             
-            // Use a unique key to prevent overwriting
             const uniqueKey = `${Date.now()}_${file.name}`;
             storedImages[uniqueKey] = event.target.result;
             
-            localStorage.setItem('devhive_uploaded_images', JSON.stringify(storedImages));
-            
-            // Log for debugging
-            console.log('Image stored:', {
-              uniqueKey,
-              fileSize: event.target.result.length,
-              type: file.type
-            });
+            try {
+              localStorage.setItem('devhive_uploaded_images', JSON.stringify(storedImages));
+              console.log('Images stored successfully');
+              console.log('Stored images count:', Object.keys(storedImages).length);
+            } catch (storageError) {
+              console.error('localStorage storage error:', storageError);
+              
+              if (storageError instanceof DOMException && 
+                  (storageError.name === 'QuotaExceededError' || storageError.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
+                this.showNotification('Storage limit exceeded. Some images may not be saved.');
+              }
+            }
           };
+
           reader.readAsDataURL(file);
         } else {
           this.showNotification(`${file.name} is not an image file`);
         }
       });
+
+      console.groupEnd();
     };
+
     input.click();
   }
 
@@ -194,8 +217,6 @@ class PostCreator {
           const reader = new FileReader();
           reader.onload = (event) => {
             const textarea = document.getElementById("post-content");
-            const videoPreview = `\n[Video: ${file.name}]\n`;
-            this.insertAtCursor(textarea, videoPreview);
             
             const previewContainer = document.createElement('div');
             previewContainer.className = 'file-preview';
@@ -206,10 +227,19 @@ class PostCreator {
             previewContainer.appendChild(video);
             textarea.parentElement.appendChild(previewContainer);
 
-            // Store the video in local storage
             const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
-            storedVideos[file.name] = event.target.result;
+      
+            const uniqueKey = `${Date.now()}_${file.name}`;
+            storedVideos[uniqueKey] = event.target.result;
+            
             localStorage.setItem('devhive_uploaded_videos', JSON.stringify(storedVideos));
+
+            console.group('Video Upload Debug');
+            console.log('Video stored with key:', uniqueKey);
+            console.log('Video data length:', event.target.result.length);
+            console.log('File type:', file.type);
+            console.log('All stored videos:', Object.keys(storedVideos));
+            console.groupEnd();
           };
           reader.readAsDataURL(file);
         } else {
@@ -268,21 +298,17 @@ class PostCreator {
 
   previewPost() {
     const content = document.getElementById("post-content").value.trim();
-    const title = document.getElementById("post-title").value.trim();
 
     if (!content) {
       this.showNotification("Please enter post content");
       return;
     }
 
-    // Create preview modal similar to global wall post style
     const previewModal = document.createElement('div');
     previewModal.className = 'preview-modal-container';
     
-    // Prepare post object for preview
     const previewPost = {
-      id: Date.now(), // Temporary ID
-      title: title,
+      id: Date.now(), 
       content: content,
       author: this.getCurrentUser() || 'Anonymous',
       timestamp: new Date().toISOString(),
@@ -292,7 +318,6 @@ class PostCreator {
       shares: 0
     };
 
-    // Use the global wall's parsePostContent function to handle media
     const parsedContent = this.parsePreviewContent(content);
 
     previewModal.innerHTML = `
@@ -314,7 +339,6 @@ class PostCreator {
             </div>
 
             <div class="post-content">
-              <h4 class="post-title">${this.escapeHTML(title || 'Untitled Post')}</h4>
               <p class="post-text">${parsedContent.text}</p>
               
               ${parsedContent.media ? `
@@ -341,15 +365,12 @@ class PostCreator {
       </div>
     `;
 
-    // Add to body
     document.body.appendChild(previewModal);
 
-    // Close modal functionality
     const closeBtn = previewModal.querySelector('.preview-modal-close');
     const confirmBtn = previewModal.querySelector('.preview-confirm-btn');
     const cancelBtn = previewModal.querySelector('.preview-cancel-btn');
 
-    // Close modal when clicking close button or outside modal
     closeBtn.addEventListener('click', () => {
       previewModal.remove();
     });
@@ -360,78 +381,104 @@ class PostCreator {
       }
     });
 
-    // Confirm post functionality
     confirmBtn.addEventListener('click', () => {
       this.sharePost();
       previewModal.remove();
     });
 
-    // Cancel/Edit post functionality
     cancelBtn.addEventListener('click', () => {
       previewModal.remove();
     });
   }
 
   parsePreviewContent(content) {
-    // Regular expressions for different media types
     const imageRegex = /\[Image: (.+?)\]/g;
     const videoRegex = /\[Video: (.+?)\]/g;
     const attachmentRegex = /\[Attachment: (.+?)\]/g;
     
-    // Containers for parsed content
     let text = content;
     const mediaElements = [];
 
-    // Handle image parsing
+    const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
+    const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
+
     const imageMatches = [...text.matchAll(imageRegex)];
-    imageMatches.forEach(match => {
-      const fileName = match[1];
-      
-      // Retrieve stored images
-      const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
-      const imageData = 
-        storedImages[Object.keys(storedImages).find(key => key.endsWith(fileName))] ||
-        '../assets/image-placeholder.png';
-      
-      const filePreview = document.createElement('div');
-      filePreview.innerHTML = `
-        <img 
-          src="${imageData}" 
-          alt="${fileName}" 
-          class="preview-media-image"
-        >
-      `;
-      mediaElements.push(filePreview.outerHTML);
-      text = text.replace(match[0], '');
-    });
+    if (imageMatches.length > 0) {
+      imageMatches.forEach(match => {
+        const fileName = match[1];
+        
+        const imageData = 
+          Object.entries(storedImages).find(([key, value]) => key.endsWith(fileName))?.[1] ||
+          '../assets/image-placeholder.png';
+        
+        const filePreview = document.createElement('div');
+        filePreview.innerHTML = `
+          <img 
+            src="${imageData}" 
+            alt="${fileName}" 
+            class="preview-media-image"
+          >
+        `;
+        mediaElements.push(filePreview.outerHTML);
+        text = text.replace(match[0], '');
+      });
+    }
 
-    // Handle video parsing
+    if (mediaElements.length === 0) {
+      Object.entries(storedImages).forEach(([key, imageData]) => {
+        const filePreview = document.createElement('div');
+        filePreview.innerHTML = `
+          <img 
+            src="${imageData}" 
+            alt="Uploaded Image" 
+            class="preview-media-image"
+          >
+        `;
+        mediaElements.push(filePreview.outerHTML);
+      });
+    }
+
     const videoMatches = [...text.matchAll(videoRegex)];
-    videoMatches.forEach(match => {
-      const fileName = match[1];
-      
-      // Retrieve stored videos
-      const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
-      const videoData = 
-        storedVideos[fileName] ||
-        '../assets/video-placeholder.png';
+    if (videoMatches.length > 0) {
+      videoMatches.forEach(match => {
+        const fileName = match[1];
+        
+        const videoData = 
+          Object.entries(storedVideos).find(([key, value]) => key.endsWith(fileName))?.[1] ||
+          '../assets/video-placeholder.png';
 
-      const videoPreview = document.createElement('div');
-      videoPreview.innerHTML = `
-        <video 
-          src="${videoData}" 
-          controls
-          class="preview-media-video"
-        >
-          Your browser does not support the video tag.
-        </video>
-      `;
-      
-      mediaElements.push(videoPreview.outerHTML);
-      text = text.replace(match[0], '');
-    });
+        const videoPreview = document.createElement('div');
+        videoPreview.innerHTML = `
+          <video 
+            src="${videoData}" 
+            controls
+            class="preview-media-video"
+          >
+            Your browser does not support the video tag.
+          </video>
+        `;
+        
+        mediaElements.push(videoPreview.outerHTML);
+        text = text.replace(match[0], '');
+      });
+    }
 
-    // Wrap media elements
+    if (mediaElements.length === 0) {
+      Object.entries(storedVideos).forEach(([key, videoData]) => {
+        const videoPreview = document.createElement('div');
+        videoPreview.innerHTML = `
+          <video 
+            src="${videoData}" 
+            controls
+            class="preview-media-video"
+          >
+            Your browser does not support the video tag.
+          </video>
+        `;
+        mediaElements.push(videoPreview.outerHTML);
+      });
+    }
+
     const mediaContainer = document.createElement('div');
     mediaContainer.className = 'post-media-container';
     
@@ -451,7 +498,6 @@ class PostCreator {
     };
   }
 
-  // Utility method to get time difference (similar to global wall)
   getTimeDifference(date) {
     const now = new Date();
     const diff = Math.floor((now - date) / 1000);
@@ -469,51 +515,6 @@ class PostCreator {
     }
   }
 
-  saveDraft() {
-    const title = document.getElementById("post-title").value;
-    const content = document.getElementById("post-content").value;
-
-    // Validate input
-    if (!title.trim() && !content.trim()) {
-      this.showNotification("Nothing to save as draft");
-      return;
-    }
-
-    // Retrieve existing drafts
-    const drafts = JSON.parse(localStorage.getItem('devhive_drafts') || '[]');
-
-    // Create draft object
-    const draft = {
-      id: Date.now(), // Unique identifier
-      title: title,
-      content: content,
-      platforms: this.selectedPlatforms,
-      timestamp: new Date().toISOString(),
-      // Preserve uploaded media references
-      images: JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}'),
-      videos: JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}')
-    };
-
-    // Add or update draft
-    const existingDraftIndex = drafts.findIndex(d => d.title === title);
-    if (existingDraftIndex !== -1) {
-      drafts[existingDraftIndex] = draft;
-      this.showNotification("Draft updated");
-    } else {
-      drafts.push(draft);
-      this.showNotification("Draft saved");
-    }
-
-    // Save drafts
-    localStorage.setItem('devhive_drafts', JSON.stringify(drafts));
-
-    // Optional: Clear form or keep content
-    // Uncomment if you want to clear form after saving draft
-    // document.getElementById("post-title").value = "";
-    // document.getElementById("post-content").value = "";
-  }
-
-  // Utility function to escape HTML to prevent XSS
   escapeHTML(str) {
     return str.replace(/&/g, '&amp;')
               .replace(/</g, '&lt;')
@@ -523,54 +524,51 @@ class PostCreator {
   }
 
   sharePost() {
-    const title = document.getElementById("post-title").value;
     const content = document.getElementById("post-content").value;
     const platforms = this.selectedPlatforms;
 
-    if (!title.trim() || !content.trim()) {
-      this.showNotification("Please enter both title and content");
+    if (!content.trim()) {
+      this.showNotification("Please enter content");
       return;
     }
 
-    // Create a post object with unique image references
     const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
-    const imageKeys = Object.keys(storedImages);
+    const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
     
-    // Modify content to use unique image keys
-    const modifiedContent = content.replace(/\[Image: (.+?)\]/g, (match, fileName) => {
-      const matchingKey = imageKeys.find(key => key.endsWith(fileName));
-      return matchingKey ? `[Image: ${matchingKey}]` : match;
-    });
-
     const post = {
-      id: Date.now(), // Unique identifier
-      title: title,
-      content: modifiedContent,
+      id: Date.now(), 
+      content: content,
       platforms: platforms,
       timestamp: new Date().toISOString(),
-      author: this.getCurrentUser()
+      author: this.getCurrentUser(),
+      mediaData: {
+        images: Object.entries(storedImages).map(([key, value]) => ({
+          key: key,
+          data: value
+        })),
+        videos: Object.entries(storedVideos).map(([key, value]) => ({
+          key: key,
+          data: value
+        }))
+      }
     };
 
-    // Save to local storage
     this.savePostToLocalStorage(post);
 
-    // Update global wall
     this.updateGlobalWall(post);
 
-    // Clear form
-    document.getElementById("post-title").value = "";
     document.getElementById("post-content").value = "";
 
-    // Remove file previews
     const previews = document.querySelectorAll('.file-preview');
     previews.forEach(preview => preview.remove());
+
+    localStorage.removeItem('devhive_uploaded_images');
+    localStorage.removeItem('devhive_uploaded_videos');
 
     this.showNotification("Post shared successfully!");
   }
 
   getCurrentUser() {
-    // Implement user authentication logic
-    // For now, return a placeholder
     return "Current User";
   }
 
@@ -581,27 +579,77 @@ class PostCreator {
   }
 
   updateGlobalWall(post) {
-    // Create a new post element
+    console.group('Update Global Wall Debug');
+    console.log('Post received:', post);
+    
     const postElement = document.createElement('div');
     postElement.className = 'global-post';
+    
+    let mediaHTML = '';
+
+    if (post.mediaData && post.mediaData.images && post.mediaData.images.length > 0) {
+      console.log('Images to display:', post.mediaData.images.length);
+      
+      const imageContainer = document.createElement('div');
+      imageContainer.className = 'global-post-media-container';
+      
+      post.mediaData.images.forEach((image, index) => {
+        console.log(`Image ${index + 1} data length:`, image.data.length);
+        
+        const imgElement = document.createElement('img');
+        imgElement.src = image.data;
+        imgElement.className = 'global-post-media-image';
+        imageContainer.appendChild(imgElement);
+      });
+      
+      mediaHTML += imageContainer.outerHTML;
+    } else {
+      console.log('No images found in mediaData');
+    }
+
+    if (post.mediaData && post.mediaData.videos && post.mediaData.videos.length > 0) {
+      console.log('Videos to display:', post.mediaData.videos.length);
+      
+      const videoContainer = document.createElement('div');
+      videoContainer.className = 'global-post-media-container';
+      
+      post.mediaData.videos.forEach((video, index) => {
+        console.log(`Video ${index + 1} data length:`, video.data.length);
+        
+        const videoElement = document.createElement('video');
+        videoElement.src = video.data;
+        videoElement.className = 'global-post-media-video';
+        videoElement.controls = true;
+        videoContainer.appendChild(videoElement);
+      });
+      
+      mediaHTML += videoContainer.outerHTML;
+    } else {
+      console.log('No videos found in mediaData');
+    }
+
+    console.groupEnd();
+
     postElement.innerHTML = `
       <div class="post-header">
-        <h3>${post.title}</h3>
-        <span class="post-author">${post.author}</span>
+        <h3>${this.escapeHTML(post.title || 'Untitled Post')}</h3>
+        <span class="post-author">${this.escapeHTML(post.author)}</span>
         <span class="post-timestamp">${new Date(post.timestamp).toLocaleString()}</span>
       </div>
       <div class="post-content">
-        ${post.content}
+        ${this.escapeHTML(post.content)}
+        ${mediaHTML}
       </div>
       <div class="post-platforms">
         Platforms: ${post.platforms.join(', ')}
       </div>
     `;
 
-    // Add to global wall (assuming there's a container for posts)
     const globalWallContainer = document.querySelector('.global-wall-posts');
     if (globalWallContainer) {
       globalWallContainer.insertBefore(postElement, globalWallContainer.firstChild);
+    } else {
+      console.error('Global wall container not found');
     }
   }
 
@@ -626,335 +674,6 @@ class PostCreator {
         setTimeout(() => notification.remove(), 300);
       }, 3000);
     }, 100);
-  }
-
-  // Method to show and manage drafts
-  manageDrafts() {
-    const drafts = JSON.parse(localStorage.getItem('devhive_drafts') || '[]');
-
-    // Create drafts modal with more detailed view
-    const draftsModal = document.createElement('div');
-    draftsModal.className = 'drafts-modal';
-    draftsModal.innerHTML = `
-      <div class="drafts-content">
-        <div class="drafts-header">
-          <h2>Saved Drafts</h2>
-          <button class="close-drafts">×</button>
-        </div>
-        <div class="drafts-body">
-          ${drafts.length > 0 ? `
-            <div class="drafts-container">
-              ${drafts.map(draft => `
-                <div class="draft-item" data-draft-id="${draft.id}">
-                  <div class="draft-item-preview">
-                    <div class="draft-item-header">
-                      <h3>${this.escapeHTML(draft.title || 'Untitled Draft')}</h3>
-                      <span class="draft-timestamp">
-                        ${new Date(draft.timestamp).toLocaleString()}
-                      </span>
-                    </div>
-                    <div class="draft-item-content">
-                      <p>${this.truncateText(draft.content, 100)}</p>
-                    </div>
-                    <div class="draft-item-meta">
-                      <span class="draft-platforms">
-                        Platforms: ${draft.platforms.join(', ')}
-                      </span>
-                      <div class="draft-item-media">
-                        ${this.renderDraftMediaPreview(draft)}
-                      </div>
-                    </div>
-                  </div>
-                  <div class="draft-item-actions">
-                    <button class="view-draft">View Details</button>
-                    <button class="load-draft">Load Draft</button>
-                    <button class="delete-draft">Delete</button>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          ` : `
-            <div class="no-drafts">
-              <p>No saved drafts</p>
-              <img src="../assets/empty-drafts.png" alt="No Drafts" class="empty-drafts-image">
-            </div>
-          `}
-        </div>
-        <div class="drafts-footer">
-          <span class="draft-count">${drafts.length} Draft(s)</span>
-        </div>
-      </div>
-    `;
-
-    // Add to body
-    document.body.appendChild(draftsModal);
-
-    // Close drafts modal
-    draftsModal.querySelector('.close-drafts').addEventListener('click', () => {
-      document.body.removeChild(draftsModal);
-    });
-
-    // View draft details functionality
-    draftsModal.querySelectorAll('.view-draft').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const draftId = e.target.closest('.draft-item').dataset.draftId;
-        const draft = drafts.find(d => d.id === parseInt(draftId));
-        
-        if (draft) {
-          this.showDraftDetailsModal(draft);
-        }
-      });
-    });
-
-    // Load draft functionality
-    draftsModal.querySelectorAll('.load-draft').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const draftId = e.target.closest('.draft-item').dataset.draftId;
-        const draft = drafts.find(d => d.id === parseInt(draftId));
-        
-        if (draft) {
-          // Load draft content
-          document.getElementById('post-title').value = draft.title;
-          document.getElementById('post-content').value = draft.content;
-
-          // Restore platform selections
-          const platformButtons = document.querySelectorAll('.platform-btn');
-          platformButtons.forEach(btn => btn.classList.remove('active'));
-          
-          draft.platforms.forEach(platform => {
-            const platformBtn = document.querySelector(`.platform-btn[data-platform="${platform}"]`);
-            if (platformBtn) platformBtn.classList.add('active');
-          });
-
-          // Restore media references
-          if (draft.images) {
-            localStorage.setItem('devhive_uploaded_images', JSON.stringify(draft.images));
-          }
-          if (draft.videos) {
-            localStorage.setItem('devhive_uploaded_videos', JSON.stringify(draft.videos));
-          }
-
-          // Close drafts modal
-          document.body.removeChild(draftsModal);
-        }
-      });
-    });
-
-    // Delete draft functionality
-    draftsModal.querySelectorAll('.delete-draft').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const draftItem = e.target.closest('.draft-item');
-        const draftId = draftItem.dataset.draftId;
-        
-        // Remove draft from array
-        const updatedDrafts = drafts.filter(d => d.id !== parseInt(draftId));
-        
-        // Update local storage
-        localStorage.setItem('devhive_drafts', JSON.stringify(updatedDrafts));
-        
-        // Remove draft item from DOM
-        draftItem.remove();
-
-        // Update draft count
-        const draftCountSpan = draftsModal.querySelector('.draft-count');
-        if (draftCountSpan) {
-          draftCountSpan.textContent = `${updatedDrafts.length} Draft(s)`;
-        }
-
-        // Show no drafts message if no drafts left
-        const draftsContainer = draftsModal.querySelector('.drafts-container');
-        if (!draftsContainer || draftsContainer.children.length === 0) {
-          draftsModal.querySelector('.drafts-body').innerHTML = `
-            <div class="no-drafts">
-              <p>No saved drafts</p>
-              <img src="../assets/empty-drafts.png" alt="No Drafts" class="empty-drafts-image">
-            </div>
-          `;
-        }
-      });
-    });
-  }
-
-  // New method to show detailed draft view
-  showDraftDetailsModal(draft) {
-    const detailsModal = document.createElement('div');
-    detailsModal.className = 'draft-details-modal';
-    detailsModal.innerHTML = `
-      <div class="draft-details-content">
-        <div class="draft-details-header">
-          <h2>Draft Details</h2>
-          <button class="close-draft-details">×</button>
-        </div>
-        <div class="draft-details-body">
-          <div class="draft-details-section">
-            <h3>Title</h3>
-            <p>${this.escapeHTML(draft.title || 'Untitled Draft')}</p>
-          </div>
-          <div class="draft-details-section">
-            <h3>Content</h3>
-            <div class="draft-full-content">${this.escapeHTML(draft.content)}</div>
-          </div>
-          <div class="draft-details-section">
-            <h3>Platforms</h3>
-            <div class="draft-platforms-list">
-              ${draft.platforms.map(platform => `
-                <span class="platform-tag">${this.escapeHTML(platform)}</span>
-              `).join('')}
-            </div>
-          </div>
-          <div class="draft-details-section">
-            <h3>Timestamp</h3>
-            <p>${new Date(draft.timestamp).toLocaleString()}</p>
-          </div>
-          <div class="draft-details-section">
-            <h3>Media</h3>
-            <div class="draft-media-preview">
-              ${this.renderFullDraftMediaPreview(draft)}
-            </div>
-          </div>
-        </div>
-        <div class="draft-details-footer">
-          <button class="load-full-draft">Load Draft</button>
-        </div>
-      </div>
-    `;
-
-    // Add to body
-    document.body.appendChild(detailsModal);
-
-    // Close details modal
-    detailsModal.querySelector('.close-draft-details').addEventListener('click', () => {
-      document.body.removeChild(detailsModal);
-    });
-
-    // Load draft functionality
-    detailsModal.querySelector('.load-full-draft').addEventListener('click', () => {
-      // Load draft content
-      document.getElementById('post-title').value = draft.title;
-      document.getElementById('post-content').value = draft.content;
-
-      // Restore platform selections
-      const platformButtons = document.querySelectorAll('.platform-btn');
-      platformButtons.forEach(btn => btn.classList.remove('active'));
-      
-      draft.platforms.forEach(platform => {
-        const platformBtn = document.querySelector(`.platform-btn[data-platform="${platform}"]`);
-        if (platformBtn) platformBtn.classList.add('active');
-      });
-
-      // Restore media references
-      if (draft.images) {
-        localStorage.setItem('devhive_uploaded_images', JSON.stringify(draft.images));
-      }
-      if (draft.videos) {
-        localStorage.setItem('devhive_uploaded_videos', JSON.stringify(draft.videos));
-      }
-
-      // Close both modals
-      document.body.removeChild(detailsModal);
-      const draftsModal = document.querySelector('.drafts-modal');
-      if (draftsModal) {
-        document.body.removeChild(draftsModal);
-      }
-    });
-  }
-
-  // Utility method to truncate text
-  truncateText(text, maxLength) {
-    if (text.length <= maxLength) return text;
-    return text.substr(0, maxLength) + '...';
-  }
-
-  // Utility method to render draft media preview
-  renderDraftMediaPreview(draft) {
-    const images = Object.keys(draft.images || {});
-    const videos = Object.keys(draft.videos || {});
-    
-    const mediaPreview = [];
-    
-    // Add image previews
-    images.slice(0, 2).forEach(imageName => {
-      const imageData = draft.images[imageName];
-      mediaPreview.push(`
-        <img 
-          src="${imageData}" 
-          alt="${imageName}" 
-          class="draft-media-thumbnail"
-        >
-      `);
-    });
-
-    // Add video previews
-    videos.slice(0, 2).forEach(videoName => {
-      const videoData = draft.videos[videoName];
-      mediaPreview.push(`
-        <video 
-          src="${videoData}" 
-          class="draft-media-thumbnail"
-          muted
-        ></video>
-      `);
-    });
-
-    return mediaPreview.length > 0 
-      ? `<div class="draft-media-thumbnails">${mediaPreview.join('')}</div>` 
-      : '<p>No media attached</p>';
-  }
-
-  // Utility method to render full draft media preview
-  renderFullDraftMediaPreview(draft) {
-    const images = Object.keys(draft.images || {});
-    const videos = Object.keys(draft.videos || {});
-    
-    const mediaPreview = [];
-    
-    // Add image previews
-    images.forEach(imageName => {
-      const imageData = draft.images[imageName];
-      mediaPreview.push(`
-        <div class="draft-media-full-preview">
-          <h4>Image: ${imageName}</h4>
-          <img 
-            src="${imageData}" 
-            alt="${imageName}" 
-            class="draft-media-full-image"
-          >
-        </div>
-      `);
-    });
-
-    // Add video previews
-    videos.forEach(videoName => {
-      const videoData = draft.videos[videoName];
-      mediaPreview.push(`
-        <div class="draft-media-full-preview">
-          <h4>Video: ${videoName}</h4>
-          <video 
-            src="${videoData}" 
-            controls
-            class="draft-media-full-video"
-          ></video>
-        </div>
-      `);
-    });
-
-    return mediaPreview.length > 0 
-      ? `<div class="draft-media-full-container">${mediaPreview.join('')}</div>` 
-      : '<p>No media attached</p>';
-  }
-
-  // Add method to initialize drafts management button
-  initializeDraftsManagement() {
-    const draftsButton = document.createElement('button');
-    draftsButton.id = 'manage-drafts-btn';
-    draftsButton.textContent = 'Manage Drafts';
-    draftsButton.addEventListener('click', () => this.manageDrafts());
-
-    // Add to the create post page, perhaps near save draft button
-    const saveButton = document.getElementById('save-draft-btn');
-    if (saveButton && saveButton.parentNode) {
-      saveButton.parentNode.insertBefore(draftsButton, saveButton.nextSibling);
-    }
   }
 }
 
