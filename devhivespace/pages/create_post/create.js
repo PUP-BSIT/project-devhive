@@ -5,22 +5,28 @@ class PostCreator {
   }
 
   initializeEventListeners() {
-    document.querySelectorAll(".platform-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => this.handlePlatformSelection(e));
-    });
-
-    document.querySelectorAll(".nav-item").forEach((item) => {
-      item.addEventListener("click", (e) => this.handleNavigation(e));
-    });
-
-    document.querySelectorAll(".toolbar-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => this.handleFormatting(e));
-    });
+    document
+      .querySelectorAll(".platform-btn")
+      .forEach((btn) => {
+        btn.addEventListener("click", (e) => this.handlePlatformSelection(e));
+      });
 
     document
+      .querySelectorAll(".nav-item")
+      .forEach((item) => {
+        item.addEventListener("click", (e) => this.handleNavigation(e));
+      });
+
+    document
+      .querySelectorAll(".toolbar-btn")
+      .forEach((btn) => {
+        btn.addEventListener("click", (e) => this.handleFormatting(e));
+      });
+
+    document 
       .getElementById("preview-btn")
       .addEventListener("click", () => this.previewPost());
-
+    
     document
       .getElementById("share-post-btn")
       .addEventListener("click", () => this.sharePost());
@@ -28,7 +34,7 @@ class PostCreator {
     document
       .getElementById("notifications")
       .addEventListener("click", () => this.showNotifications());
-
+    
     document
       .getElementById("profile")
       .addEventListener("click", () => this.showProfile());
@@ -62,7 +68,9 @@ class PostCreator {
         );
       }
       if (this.selectedPlatforms.length === 0) {
-        document.querySelector('[data-platform="all"]').classList.add("active");
+        document
+          .querySelector('[data-platform="all"]')
+          .classList.add("active");
         this.selectedPlatforms = ["all"];
       }
     }
@@ -71,9 +79,11 @@ class PostCreator {
   }
 
   handleNavigation(e) {
-    document.querySelectorAll(".nav-item").forEach((item) => {
-      item.classList.remove("active");
-    });
+    document
+      .querySelectorAll(".nav-item")
+      .forEach((item) => {
+        item.classList.remove("active");
+      });
 
     e.target.classList.add("active");
     const navId = e.target.id;
@@ -116,81 +126,68 @@ class PostCreator {
 
   insertImage() {
     const diagnosticFileUpload = (file) => {
-      console.group("File Upload Diagnostic");
-      console.log("File Name:", file.name);
-      console.log("File Type:", file.type);
-      console.log("File Size:", file.size, "bytes");
-      console.log("Is Image:", file.type.startsWith("image/"));
+      console.group('File Upload Diagnostic');
+      console.log('File Name:', file.name);
+      console.log('File Type:', file.type);
+      console.log('File Size:', file.size, 'bytes');
+      console.log('Is Image:', file.type.startsWith('image/'));
       console.groupEnd();
     };
 
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
     input.multiple = true;
-
+    
     input.onchange = (e) => {
-      console.group("Image Upload Process");
-      console.log("Files selected:", e.target.files.length);
+      console.group('Image Upload Process');
+      console.log('Files selected:', e.target.files.length);
 
       const files = Array.from(e.target.files);
-
-      files.forEach((file) => {
+      
+      files.forEach(file => {
         diagnosticFileUpload(file);
 
-        if (file.type.startsWith("image/")) {
+        if (file.type.startsWith('image/')) {
           const reader = new FileReader();
 
           reader.onerror = (error) => {
-            console.error("FileReader error:", error);
+            console.error('FileReader error:', error);
             this.showNotification(`Error reading file: ${file.name}`);
           };
 
           reader.onload = (event) => {
-            console.log("File read successfully:", file.name);
-            console.log("Data URL length:", event.target.result.length);
+            console.log('File read successfully:', file.name);
+            console.log('Data URL length:', event.target.result.length);
 
             const textarea = document.getElementById("post-content");
-
-            const previewContainer = document.createElement("div");
-            previewContainer.className = "file-preview";
-            const img = document.createElement("img");
+            
+            const previewContainer = document.createElement('div');
+            previewContainer.className = 'file-preview';
+            const img = document.createElement('img');
             img.src = event.target.result;
-            img.style.maxWidth = "40px";
-            img.style.height = "40px";
-            img.style.borderRadius = "50%";
-            img.style.objectFit = "cover";
+            img.style.maxWidth = '40px';
+            img.style.height = '40px';
+            img.style.borderRadius = '50%';
+            img.style.objectFit = 'cover';
             previewContainer.appendChild(img);
             textarea.parentElement.appendChild(previewContainer);
 
-            const storedImages = JSON.parse(
-              localStorage.getItem("devhive_uploaded_images") || "{}"
-            );
-
+            const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
+            
             const uniqueKey = `${Date.now()}_${file.name}`;
             storedImages[uniqueKey] = event.target.result;
-
+            
             try {
-              localStorage.setItem(
-                "devhive_uploaded_images",
-                JSON.stringify(storedImages)
-              );
-              console.log("Images stored successfully");
-              console.log(
-                "Stored images count:",
-                Object.keys(storedImages).length
-              );
+              localStorage.setItem('devhive_uploaded_images', JSON.stringify(storedImages));
+              console.log('Images stored successfully');
+              console.log('Stored images count:', Object.keys(storedImages).length);
             } catch (storageError) {
-              console.error("localStorage storage error:", storageError);
-
-              if (
-                storageError instanceof DOMException &&
-                (storageError.name === "QuotaExceededError" ||
-                  storageError.name === "NS_ERROR_DOM_QUOTA_REACHED")
-              ) {
-                this.showNotification(
-                  "Storage limit exceeded. Some images may not be saved."
-                );
+              console.error('localStorage storage error:', storageError);
+              
+              if (storageError instanceof DOMException && 
+                  (storageError.name === 'QuotaExceededError' || storageError.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
+                this.showNotification('Storage limit exceeded. Some images may not be saved.');
               }
             }
           };
@@ -208,45 +205,40 @@ class PostCreator {
   }
 
   insertVideo() {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "video/*";
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'video/*';
     input.multiple = true;
-
+    
     input.onchange = (e) => {
       const files = Array.from(e.target.files);
-      files.forEach((file) => {
-        if (file.type.startsWith("video/")) {
+      files.forEach(file => {
+        if (file.type.startsWith('video/')) {
           const reader = new FileReader();
           reader.onload = (event) => {
             const textarea = document.getElementById("post-content");
-
-            const previewContainer = document.createElement("div");
-            previewContainer.className = "file-preview";
-            const video = document.createElement("video");
+            
+            const previewContainer = document.createElement('div');
+            previewContainer.className = 'file-preview';
+            const video = document.createElement('video');
             video.src = event.target.result;
-            video.style.maxWidth = "200px";
+            video.style.maxWidth = '200px';
             video.controls = true;
             previewContainer.appendChild(video);
             textarea.parentElement.appendChild(previewContainer);
 
-            const storedVideos = JSON.parse(
-              localStorage.getItem("devhive_uploaded_videos") || "{}"
-            );
-
+            const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
+      
             const uniqueKey = `${Date.now()}_${file.name}`;
             storedVideos[uniqueKey] = event.target.result;
+            
+            localStorage.setItem('devhive_uploaded_videos', JSON.stringify(storedVideos));
 
-            localStorage.setItem(
-              "devhive_uploaded_videos",
-              JSON.stringify(storedVideos)
-            );
-
-            console.group("Video Upload Debug");
-            console.log("Video stored with key:", uniqueKey);
-            console.log("Video data length:", event.target.result.length);
-            console.log("File type:", file.type);
-            console.log("All stored videos:", Object.keys(storedVideos));
+            console.group('Video Upload Debug');
+            console.log('Video stored with key:', uniqueKey);
+            console.log('Video data length:', event.target.result.length);
+            console.log('File type:', file.type);
+            console.log('All stored videos:', Object.keys(storedVideos));
             console.groupEnd();
           };
           reader.readAsDataURL(file);
@@ -259,21 +251,21 @@ class PostCreator {
   }
 
   insertAttachment() {
-    const input = document.createElement("input");
-    input.type = "file";
+    const input = document.createElement('input');
+    input.type = 'file';
     input.multiple = true;
-
+    
     input.onchange = (e) => {
       const files = Array.from(e.target.files);
-      files.forEach((file) => {
+      files.forEach(file => {
         const textarea = document.getElementById("post-content");
         const attachmentPreview = `\n[Attachment: ${file.name}]\n`;
         this.insertAtCursor(textarea, attachmentPreview);
-
-        const previewContainer = document.createElement("div");
-        previewContainer.className = "file-preview";
-        const fileInfo = document.createElement("div");
-        fileInfo.className = "file-info";
+        
+        const previewContainer = document.createElement('div');
+        previewContainer.className = 'file-preview';
+        const fileInfo = document.createElement('div');
+        fileInfo.className = 'file-info';
         fileInfo.innerHTML = `
           <img src="../assets/.png" alt="" style="width: 24px; height: 24px;">
           <span>${file.name}</span>
@@ -296,8 +288,10 @@ class PostCreator {
   insertAtCursor(textarea, text) {
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    textarea.value =
-      textarea.value.substring(0, start) + text + textarea.value.substring(end);
+    textarea.value = 
+      textarea.value.substring(0, start) + 
+      text + 
+      textarea.value.substring(end);
     textarea.setSelectionRange(start + text.length, start + text.length);
     textarea.focus();
   }
@@ -310,18 +304,18 @@ class PostCreator {
       return;
     }
 
-    const previewModal = document.createElement("div");
-    previewModal.className = "preview-modal-container";
-
+    const previewModal = document.createElement('div');
+    previewModal.className = 'preview-modal-container';
+    
     const previewPost = {
-      id: Date.now(),
+      id: Date.now(), 
       content: content,
-      author: this.getCurrentUser() || "Anonymous",
+      author: this.getCurrentUser() || 'Anonymous',
       timestamp: new Date().toISOString(),
       platforms: this.selectedPlatforms,
       likes: 0,
       comments: [],
-      shares: 0,
+      shares: 0
     };
 
     const parsedContent = this.parsePreviewContent(content);
@@ -338,12 +332,8 @@ class PostCreator {
               <div class="post-user-info">
                 <img src="../assets/human.png" alt="Profile" class="profile-pic">
                 <div class="user-details">
-                  <h3 class="post-author">${this.escapeHTML(
-                    previewPost.author
-                  )}</h3>
-                  <span class="post-timestamp">${this.getTimeDifference(
-                    new Date()
-                  )}</span>
+                  <h3 class="post-author">${this.escapeHTML(previewPost.author)}</h3>
+                  <span class="post-timestamp">${this.getTimeDifference(new Date())}</span>
                 </div>
               </div>
             </div>
@@ -351,29 +341,19 @@ class PostCreator {
             <div class="post-content">
               <p class="post-text">${parsedContent.text}</p>
               
-              ${
-                parsedContent.media
-                  ? `
+              ${parsedContent.media ? `
                 <div class="post-media-container">
                   ${parsedContent.media}
                 </div>
-              `
-                  : ""
-              }
+              ` : ''}
             </div>
 
             <div class="preview-platforms">
               <h4>Shared Platforms:</h4>
               <div class="platform-list">
-                ${
-                  this.selectedPlatforms
-                    .map(
-                      (platform) => `
+                ${this.selectedPlatforms.map(platform => `
                   <span class="platform-tag">${this.escapeHTML(platform)}</span>
-                `
-                    )
-                    .join("") || "No platforms selected"
-                }
+                `).join('') || 'No platforms selected'}
               </div>
             </div>
           </div>
@@ -387,26 +367,26 @@ class PostCreator {
 
     document.body.appendChild(previewModal);
 
-    const closeBtn = previewModal.querySelector(".preview-modal-close");
-    const confirmBtn = previewModal.querySelector(".preview-confirm-btn");
-    const cancelBtn = previewModal.querySelector(".preview-cancel-btn");
+    const closeBtn = previewModal.querySelector('.preview-modal-close');
+    const confirmBtn = previewModal.querySelector('.preview-confirm-btn');
+    const cancelBtn = previewModal.querySelector('.preview-cancel-btn');
 
-    closeBtn.addEventListener("click", () => {
+    closeBtn.addEventListener('click', () => {
       previewModal.remove();
     });
 
-    previewModal.addEventListener("click", (e) => {
+    previewModal.addEventListener('click', (e) => {
       if (e.target === previewModal) {
         previewModal.remove();
       }
     });
 
-    confirmBtn.addEventListener("click", () => {
+    confirmBtn.addEventListener('click', () => {
       this.sharePost();
       previewModal.remove();
     });
 
-    cancelBtn.addEventListener("click", () => {
+    cancelBtn.addEventListener('click', () => {
       previewModal.remove();
     });
   }
@@ -415,28 +395,23 @@ class PostCreator {
     const imageRegex = /\[Image: (.+?)\]/g;
     const videoRegex = /\[Video: (.+?)\]/g;
     const attachmentRegex = /\[Attachment: (.+?)\]/g;
-
+    
     let text = content;
     const mediaElements = [];
 
-    const storedImages = JSON.parse(
-      localStorage.getItem("devhive_uploaded_images") || "{}"
-    );
-    const storedVideos = JSON.parse(
-      localStorage.getItem("devhive_uploaded_videos") || "{}"
-    );
+    const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
+    const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
 
     const imageMatches = [...text.matchAll(imageRegex)];
     if (imageMatches.length > 0) {
-      imageMatches.forEach((match) => {
+      imageMatches.forEach(match => {
         const fileName = match[1];
-
-        const imageData =
-          Object.entries(storedImages).find(([key, value]) =>
-            key.endsWith(fileName)
-          )?.[1] || "../assets/image-placeholder.png";
-
-        const filePreview = document.createElement("div");
+        
+        const imageData = 
+          Object.entries(storedImages).find(([key, value]) => key.endsWith(fileName))?.[1] ||
+          '../assets/image-placeholder.png';
+        
+        const filePreview = document.createElement('div');
         filePreview.innerHTML = `
           <img 
             src="${imageData}" 
@@ -445,13 +420,13 @@ class PostCreator {
           >
         `;
         mediaElements.push(filePreview.outerHTML);
-        text = text.replace(match[0], "");
+        text = text.replace(match[0], '');
       });
     }
 
     if (mediaElements.length === 0) {
       Object.entries(storedImages).forEach(([key, imageData]) => {
-        const filePreview = document.createElement("div");
+        const filePreview = document.createElement('div');
         filePreview.innerHTML = `
           <img 
             src="${imageData}" 
@@ -465,15 +440,14 @@ class PostCreator {
 
     const videoMatches = [...text.matchAll(videoRegex)];
     if (videoMatches.length > 0) {
-      videoMatches.forEach((match) => {
+      videoMatches.forEach(match => {
         const fileName = match[1];
+        
+        const videoData = 
+          Object.entries(storedVideos).find(([key, value]) => key.endsWith(fileName))?.[1] ||
+          '../assets/video-placeholder.png';
 
-        const videoData =
-          Object.entries(storedVideos).find(([key, value]) =>
-            key.endsWith(fileName)
-          )?.[1] || "../assets/video-placeholder.png";
-
-        const videoPreview = document.createElement("div");
+        const videoPreview = document.createElement('div');
         videoPreview.innerHTML = `
           <video 
             src="${videoData}" 
@@ -483,15 +457,15 @@ class PostCreator {
             Your browser does not support the video tag.
           </video>
         `;
-
+        
         mediaElements.push(videoPreview.outerHTML);
-        text = text.replace(match[0], "");
+        text = text.replace(match[0], '');
       });
     }
 
     if (mediaElements.length === 0) {
       Object.entries(storedVideos).forEach(([key, videoData]) => {
-        const videoPreview = document.createElement("div");
+        const videoPreview = document.createElement('div');
         videoPreview.innerHTML = `
           <video 
             src="${videoData}" 
@@ -505,13 +479,13 @@ class PostCreator {
       });
     }
 
-    const mediaContainer = document.createElement("div");
-    mediaContainer.className = "post-media-container";
-
+    const mediaContainer = document.createElement('div');
+    mediaContainer.className = 'post-media-container';
+    
     if (mediaElements.length > 1) {
       mediaContainer.innerHTML = `
         <div class="media-scroll-container">
-          ${mediaElements.join("")}
+          ${mediaElements.join('')}
         </div>
       `;
     } else if (mediaElements.length === 1) {
@@ -520,7 +494,7 @@ class PostCreator {
 
     return {
       text: this.escapeHTML(text.trim()),
-      media: mediaElements.length > 0 ? mediaContainer.outerHTML : "",
+      media: mediaElements.length > 0 ? mediaContainer.outerHTML : ''
     };
   }
 
@@ -529,25 +503,24 @@ class PostCreator {
     const diff = Math.floor((now - date) / 1000);
 
     if (diff < 60) {
-      return "Just now";
+      return 'Just now';
     } else if (diff < 3600) {
-      return Math.floor(diff / 60) + " minutes ago";
+      return Math.floor(diff / 60) + ' minutes ago';
     } else if (diff < 86400) {
-      return Math.floor(diff / 3600) + " hours ago";
+      return Math.floor(diff / 3600) + ' hours ago';
     } else if (diff < 604800) {
-      return Math.floor(diff / 86400) + " days ago";
+      return Math.floor(diff / 86400) + ' days ago';
     } else {
-      return Math.floor(diff / 604800) + " weeks ago";
+      return Math.floor(diff / 604800) + ' weeks ago';
     }
   }
 
   escapeHTML(str) {
-    return str
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+    return str.replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#39;');
   }
 
   sharePost() {
@@ -559,15 +532,11 @@ class PostCreator {
       return;
     }
 
-    const storedImages = JSON.parse(
-      localStorage.getItem("devhive_uploaded_images") || "{}"
-    );
-    const storedVideos = JSON.parse(
-      localStorage.getItem("devhive_uploaded_videos") || "{}"
-    );
-
+    const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
+    const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
+    
     const post = {
-      id: Date.now(),
+      id: Date.now(), 
       content: content,
       platforms: platforms,
       timestamp: new Date().toISOString(),
@@ -575,13 +544,13 @@ class PostCreator {
       mediaData: {
         images: Object.entries(storedImages).map(([key, value]) => ({
           key: key,
-          data: value,
+          data: value
         })),
         videos: Object.entries(storedVideos).map(([key, value]) => ({
           key: key,
-          data: value,
-        })),
-      },
+          data: value
+        }))
+      }
     };
 
     this.savePostToLocalStorage(post);
@@ -590,11 +559,11 @@ class PostCreator {
 
     document.getElementById("post-content").value = "";
 
-    const previews = document.querySelectorAll(".file-preview");
-    previews.forEach((preview) => preview.remove());
+    const previews = document.querySelectorAll('.file-preview');
+    previews.forEach(preview => preview.remove());
 
-    localStorage.removeItem("devhive_uploaded_images");
-    localStorage.removeItem("devhive_uploaded_videos");
+    localStorage.removeItem('devhive_uploaded_images');
+    localStorage.removeItem('devhive_uploaded_videos');
 
     this.showNotification("Post shared successfully!");
   }
@@ -604,96 +573,83 @@ class PostCreator {
   }
 
   savePostToLocalStorage(post) {
-    let posts = JSON.parse(localStorage.getItem("devhive_posts") || "[]");
+    let posts = JSON.parse(localStorage.getItem('devhive_posts') || '[]');
     posts.push(post);
-    localStorage.setItem("devhive_posts", JSON.stringify(posts));
+    localStorage.setItem('devhive_posts', JSON.stringify(posts));
   }
 
   updateGlobalWall(post) {
-    console.group("Update Global Wall Debug");
-    console.log("Post received:", post);
+    console.group('Update Global Wall Debug');
+    console.log('Post received:', post);
+    
+    const postElement = document.createElement('div');
+    postElement.className = 'global-post';
+    
+    let mediaHTML = '';
 
-    const postElement = document.createElement("div");
-    postElement.className = "global-post";
-
-    let mediaHTML = "";
-
-    if (
-      post.mediaData &&
-      post.mediaData.images &&
-      post.mediaData.images.length > 0
-    ) {
-      console.log("Images to display:", post.mediaData.images.length);
-
-      const imageContainer = document.createElement("div");
-      imageContainer.className = "global-post-media-container";
-
+    if (post.mediaData && post.mediaData.images && post.mediaData.images.length > 0) {
+      console.log('Images to display:', post.mediaData.images.length);
+      
+      const imageContainer = document.createElement('div');
+      imageContainer.className = 'global-post-media-container';
+      
       post.mediaData.images.forEach((image, index) => {
         console.log(`Image ${index + 1} data length:`, image.data.length);
-
-        const imgElement = document.createElement("img");
+        
+        const imgElement = document.createElement('img');
         imgElement.src = image.data;
-        imgElement.className = "global-post-media-image";
+        imgElement.className = 'global-post-media-image';
         imageContainer.appendChild(imgElement);
       });
-
+      
       mediaHTML += imageContainer.outerHTML;
     } else {
-      console.log("No images found in mediaData");
+      console.log('No images found in mediaData');
     }
 
-    if (
-      post.mediaData &&
-      post.mediaData.videos &&
-      post.mediaData.videos.length > 0
-    ) {
-      console.log("Videos to display:", post.mediaData.videos.length);
-
-      const videoContainer = document.createElement("div");
-      videoContainer.className = "global-post-media-container";
-
+    if (post.mediaData && post.mediaData.videos && post.mediaData.videos.length > 0) {
+      console.log('Videos to display:', post.mediaData.videos.length);
+      
+      const videoContainer = document.createElement('div');
+      videoContainer.className = 'global-post-media-container';
+      
       post.mediaData.videos.forEach((video, index) => {
         console.log(`Video ${index + 1} data length:`, video.data.length);
-
-        const videoElement = document.createElement("video");
+        
+        const videoElement = document.createElement('video');
         videoElement.src = video.data;
-        videoElement.className = "global-post-media-video";
+        videoElement.className = 'global-post-media-video';
         videoElement.controls = true;
         videoContainer.appendChild(videoElement);
       });
-
+      
       mediaHTML += videoContainer.outerHTML;
     } else {
-      console.log("No videos found in mediaData");
+      console.log('No videos found in mediaData');
     }
 
     console.groupEnd();
 
     postElement.innerHTML = `
       <div class="post-header">
-        <h3>${this.escapeHTML(post.title || "Untitled Post")}</h3>
+        <h3>${this.escapeHTML(post.title || 'Untitled Post')}</h3>
         <span class="post-author">${this.escapeHTML(post.author)}</span>
-        <span class="post-timestamp">${new Date(
-          post.timestamp
-        ).toLocaleString()}</span>
+        <span class="post-timestamp">${new Date(post.timestamp).toLocaleString()}</span>
       </div>
       <div class="post-content">
         ${this.escapeHTML(post.content)}
         ${mediaHTML}
       </div>
       <div class="post-platforms">
-        Platforms: ${post.platforms.join(", ")}
+        Platforms: ${post.platforms.join(', ')}
       </div>
     `;
 
-    const globalWallContainer = document.querySelector(".global-wall-posts");
+    const globalWallContainer = document.querySelector('.global-wall-posts');
     if (globalWallContainer) {
-      globalWallContainer.insertBefore(
-        postElement,
-        globalWallContainer.firstChild
-      );
+      globalWallContainer.insertBefore(postElement, globalWallContainer.firstChild);
     } else {
-      console.error("Global wall container not found");
+      console.error('Global wall container not found');
     }
   }
 
@@ -706,15 +662,15 @@ class PostCreator {
   }
 
   showNotification(message) {
-    const notification = document.createElement("div");
-    notification.className = "notification";
+    const notification = document.createElement('div');
+    notification.className = 'notification';
     notification.textContent = message;
     document.body.appendChild(notification);
-
+    
     setTimeout(() => {
-      notification.classList.add("show");
+      notification.classList.add('show');
       setTimeout(() => {
-        notification.classList.remove("show");
+        notification.classList.remove('show');
         setTimeout(() => notification.remove(), 300);
       }, 3000);
     }, 100);
