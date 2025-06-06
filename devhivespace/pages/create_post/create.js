@@ -125,20 +125,46 @@ class PostCreator {
   }
 
   insertImage() {
+    // Diagnostic method to log all details about file upload
+    const diagnosticFileUpload = (file) => {
+      console.group('File Upload Diagnostic');
+      console.log('File Name:', file.name);
+      console.log('File Type:', file.type);
+      console.log('File Size:', file.size, 'bytes');
+      console.log('Is Image:', file.type.startsWith('image/'));
+      console.groupEnd();
+    };
+
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
     input.multiple = true;
     
     input.onchange = (e) => {
+      // Immediate diagnostic logging
+      console.group('Image Upload Process');
+      console.log('Files selected:', e.target.files.length);
+
       const files = Array.from(e.target.files);
+      
       files.forEach(file => {
+        // Run diagnostic check
+        diagnosticFileUpload(file);
+
         if (file.type.startsWith('image/')) {
           const reader = new FileReader();
+          
+          // Add error handling to reader
+          reader.onerror = (error) => {
+            console.error('FileReader error:', error);
+            this.showNotification(`Error reading file: ${file.name}`);
+          };
+
           reader.onload = (event) => {
+            console.log('File read successfully:', file.name);
+            console.log('Data URL length:', event.target.result.length);
+
             const textarea = document.getElementById("post-content");
-            const imagePreview = `\n[Image: ${file.name}]\n`;
-            this.insertAtCursor(textarea, imagePreview);
             
             const previewContainer = document.createElement('div');
             previewContainer.className = 'file-preview';
@@ -151,28 +177,39 @@ class PostCreator {
             previewContainer.appendChild(img);
             textarea.parentElement.appendChild(previewContainer);
 
-            // Improved image storage
+            // Improved image storage with extensive logging
             const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
             
             // Use a unique key to prevent overwriting
             const uniqueKey = `${Date.now()}_${file.name}`;
             storedImages[uniqueKey] = event.target.result;
             
-            localStorage.setItem('devhive_uploaded_images', JSON.stringify(storedImages));
-            
-            // Log for debugging
-            console.log('Image stored:', {
-              uniqueKey,
-              fileSize: event.target.result.length,
-              type: file.type
-            });
+            try {
+              localStorage.setItem('devhive_uploaded_images', JSON.stringify(storedImages));
+              console.log('Images stored successfully');
+              console.log('Stored images count:', Object.keys(storedImages).length);
+            } catch (storageError) {
+              console.error('localStorage storage error:', storageError);
+              
+              // Fallback storage method
+              if (storageError instanceof DOMException && 
+                  (storageError.name === 'QuotaExceededError' || storageError.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
+                this.showNotification('Storage limit exceeded. Some images may not be saved.');
+              }
+            }
           };
+
+          // Explicitly read as Data URL
           reader.readAsDataURL(file);
         } else {
           this.showNotification(`${file.name} is not an image file`);
         }
       });
+
+      console.groupEnd();
     };
+
+    // Trigger file selection
     input.click();
   }
 
@@ -189,8 +226,6 @@ class PostCreator {
           const reader = new FileReader();
           reader.onload = (event) => {
             const textarea = document.getElementById("post-content");
-            const videoPreview = `\n[Video: ${file.name}]\n`;
-            this.insertAtCursor(textarea, videoPreview);
             
             const previewContainer = document.createElement('div');
             previewContainer.className = 'file-preview';
@@ -201,10 +236,22 @@ class PostCreator {
             previewContainer.appendChild(video);
             textarea.parentElement.appendChild(previewContainer);
 
-            // Store the video in local storage
+            // Improved video storage with detailed logging
             const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
-            storedVideos[file.name] = event.target.result;
+            
+            // Use a unique key to prevent overwriting
+            const uniqueKey = `${Date.now()}_${file.name}`;
+            storedVideos[uniqueKey] = event.target.result;
+            
             localStorage.setItem('devhive_uploaded_videos', JSON.stringify(storedVideos));
+            
+            // Extensive logging
+            console.group('Video Upload Debug');
+            console.log('Video stored with key:', uniqueKey);
+            console.log('Video data length:', event.target.result.length);
+            console.log('File type:', file.type);
+            console.log('All stored videos:', Object.keys(storedVideos));
+            console.groupEnd();
           };
           reader.readAsDataURL(file);
         } else {
@@ -377,54 +424,90 @@ class PostCreator {
     let text = content;
     const mediaElements = [];
 
+    // Retrieve stored images and videos
+    const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
+    const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
+
     // Handle image parsing
     const imageMatches = [...text.matchAll(imageRegex)];
-    imageMatches.forEach(match => {
-      const fileName = match[1];
-      
-      // Retrieve stored images
-      const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
-      const imageData = 
-        storedImages[Object.keys(storedImages).find(key => key.endsWith(fileName))] ||
-        '../assets/image-placeholder.png';
-      
-      const filePreview = document.createElement('div');
-      filePreview.innerHTML = `
-        <img 
-          src="${imageData}" 
-          alt="${fileName}" 
-          class="preview-media-image"
-        >
-      `;
-      mediaElements.push(filePreview.outerHTML);
-      text = text.replace(match[0], '');
-    });
+    if (imageMatches.length > 0) {
+      imageMatches.forEach(match => {
+        const fileName = match[1];
+        
+        const imageData = 
+          Object.entries(storedImages).find(([key, value]) => key.endsWith(fileName))?.[1] ||
+          '../assets/image-placeholder.png';
+        
+        const filePreview = document.createElement('div');
+        filePreview.innerHTML = `
+          <img 
+            src="${imageData}" 
+            alt="${fileName}" 
+            class="preview-media-image"
+          >
+        `;
+        mediaElements.push(filePreview.outerHTML);
+        text = text.replace(match[0], '');
+      });
+    }
+
+    // If no regex matches, add all stored images
+    if (mediaElements.length === 0) {
+      Object.entries(storedImages).forEach(([key, imageData]) => {
+        const filePreview = document.createElement('div');
+        filePreview.innerHTML = `
+          <img 
+            src="${imageData}" 
+            alt="Uploaded Image" 
+            class="preview-media-image"
+          >
+        `;
+        mediaElements.push(filePreview.outerHTML);
+      });
+    }
 
     // Handle video parsing
     const videoMatches = [...text.matchAll(videoRegex)];
-    videoMatches.forEach(match => {
-      const fileName = match[1];
-      
-      // Retrieve stored videos
-      const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
-      const videoData = 
-        storedVideos[fileName] ||
-        '../assets/video-placeholder.png';
+    if (videoMatches.length > 0) {
+      videoMatches.forEach(match => {
+        const fileName = match[1];
+        
+        const videoData = 
+          Object.entries(storedVideos).find(([key, value]) => key.endsWith(fileName))?.[1] ||
+          '../assets/video-placeholder.png';
 
-      const videoPreview = document.createElement('div');
-      videoPreview.innerHTML = `
-        <video 
-          src="${videoData}" 
-          controls
-          class="preview-media-video"
-        >
-          Your browser does not support the video tag.
-        </video>
-      `;
-      
-      mediaElements.push(videoPreview.outerHTML);
-      text = text.replace(match[0], '');
-    });
+        const videoPreview = document.createElement('div');
+        videoPreview.innerHTML = `
+          <video 
+            src="${videoData}" 
+            controls
+            class="preview-media-video"
+          >
+            Your browser does not support the video tag.
+          </video>
+        `;
+        
+        mediaElements.push(videoPreview.outerHTML);
+        text = text.replace(match[0], '');
+      });
+    }
+
+    // If no regex matches, add all stored videos
+    if (mediaElements.length === 0) {
+      Object.entries(storedVideos).forEach(([key, videoData]) => {
+        const videoPreview = document.createElement('div');
+        videoPreview.innerHTML = `
+          <video 
+            src="${videoData}" 
+            controls
+            class="preview-media-video"
+          >
+            Your browser does not support the video tag.
+          </video>
+        `;
+        mediaElements.push(videoPreview.outerHTML);
+      });
+    }
 
     // Wrap media elements
     const mediaContainer = document.createElement('div');
@@ -478,6 +561,21 @@ class PostCreator {
     const content = document.getElementById("post-content").value;
     const platforms = this.selectedPlatforms;
 
+    // Extensive logging of localStorage state
+    console.group('Share Post - Storage Diagnostic');
+    try {
+      const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
+      const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
+      
+      console.log('Stored Images:', Object.keys(storedImages));
+      console.log('Images Count:', Object.keys(storedImages).length);
+      console.log('Stored Videos:', Object.keys(storedVideos));
+      console.log('Videos Count:', Object.keys(storedVideos).length);
+    } catch (parseError) {
+      console.error('Error parsing stored media:', parseError);
+    }
+    console.groupEnd();
+
     if (!title.trim() || !content.trim()) {
       this.showNotification("Please enter both title and content");
       return;
@@ -485,22 +583,32 @@ class PostCreator {
 
     // Create a post object with unique image references
     const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
-    const imageKeys = Object.keys(storedImages);
+    const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
     
-    // Modify content to use unique image keys
-    const modifiedContent = content.replace(/\[Image: (.+?)\]/g, (match, fileName) => {
-      const matchingKey = imageKeys.find(key => key.endsWith(fileName));
-      return matchingKey ? `[Image: ${matchingKey}]` : match;
-    });
-
     const post = {
       id: Date.now(), // Unique identifier
       title: title,
-      content: modifiedContent,
+      content: content,
       platforms: platforms,
       timestamp: new Date().toISOString(),
-      author: this.getCurrentUser()
+      author: this.getCurrentUser(),
+      mediaData: {
+        images: Object.entries(storedImages).map(([key, value]) => ({
+          key: key,
+          data: value
+        })),
+        videos: Object.entries(storedVideos).map(([key, value]) => ({
+          key: key,
+          data: value
+        }))
+      }
     };
+
+    // Log post media data
+    console.group('Post Media Data');
+    console.log('Images in post:', post.mediaData.images.length);
+    console.log('Videos in post:', post.mediaData.videos.length);
+    console.groupEnd();
 
     // Save to local storage
     this.savePostToLocalStorage(post);
@@ -515,6 +623,10 @@ class PostCreator {
     // Remove file previews
     const previews = document.querySelectorAll('.file-preview');
     previews.forEach(preview => preview.remove());
+
+    // Clear stored media
+    localStorage.removeItem('devhive_uploaded_images');
+    localStorage.removeItem('devhive_uploaded_videos');
 
     this.showNotification("Post shared successfully!");
   }
@@ -532,17 +644,71 @@ class PostCreator {
   }
 
   updateGlobalWall(post) {
+    // Extensive logging
+    console.group('Update Global Wall Debug');
+    console.log('Post received:', post);
+    
     // Create a new post element
     const postElement = document.createElement('div');
     postElement.className = 'global-post';
+    
+    // Prepare media HTML
+    let mediaHTML = '';
+
+    // Add images
+    if (post.mediaData && post.mediaData.images && post.mediaData.images.length > 0) {
+      console.log('Images to display:', post.mediaData.images.length);
+      
+      const imageContainer = document.createElement('div');
+      imageContainer.className = 'global-post-media-container';
+      
+      post.mediaData.images.forEach((image, index) => {
+        console.log(`Image ${index + 1} data length:`, image.data.length);
+        
+        const imgElement = document.createElement('img');
+        imgElement.src = image.data;
+        imgElement.className = 'global-post-media-image';
+        imageContainer.appendChild(imgElement);
+      });
+      
+      mediaHTML += imageContainer.outerHTML;
+    } else {
+      console.log('No images found in mediaData');
+    }
+
+    // Add videos
+    if (post.mediaData && post.mediaData.videos && post.mediaData.videos.length > 0) {
+      console.log('Videos to display:', post.mediaData.videos.length);
+      
+      const videoContainer = document.createElement('div');
+      videoContainer.className = 'global-post-media-container';
+      
+      post.mediaData.videos.forEach((video, index) => {
+        console.log(`Video ${index + 1} data length:`, video.data.length);
+        
+        const videoElement = document.createElement('video');
+        videoElement.src = video.data;
+        videoElement.className = 'global-post-media-video';
+        videoElement.controls = true;
+        videoContainer.appendChild(videoElement);
+      });
+      
+      mediaHTML += videoContainer.outerHTML;
+    } else {
+      console.log('No videos found in mediaData');
+    }
+
+    console.groupEnd();
+
     postElement.innerHTML = `
       <div class="post-header">
-        <h3>${post.title}</h3>
-        <span class="post-author">${post.author}</span>
+        <h3>${this.escapeHTML(post.title)}</h3>
+        <span class="post-author">${this.escapeHTML(post.author)}</span>
         <span class="post-timestamp">${new Date(post.timestamp).toLocaleString()}</span>
       </div>
       <div class="post-content">
-        ${post.content}
+        ${this.escapeHTML(post.content)}
+        ${mediaHTML}
       </div>
       <div class="post-platforms">
         Platforms: ${post.platforms.join(', ')}
@@ -553,6 +719,8 @@ class PostCreator {
     const globalWallContainer = document.querySelector('.global-wall-posts');
     if (globalWallContainer) {
       globalWallContainer.insertBefore(postElement, globalWallContainer.firstChild);
+    } else {
+      console.error('Global wall container not found');
     }
   }
 
