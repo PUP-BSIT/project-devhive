@@ -6,7 +6,7 @@
 
 body {
   font-family: "Coda Caption", sans-serif;
-  background-image: url("/devhivespace/pages/assets/background.png");
+  background: url("assets/background.png") repeat;
   background-repeat: no-repeat, repeat;
   background-size: cover;
   min-height: 100vh;
@@ -274,7 +274,7 @@ body::before {
 }
 
 .image-placeholder img {
-  width: 600px;
+  width: 700px
   height: 710px;
   background: linear-gradient(
     135deg,
