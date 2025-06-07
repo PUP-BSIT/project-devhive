@@ -7,13 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    const viewButtons = document.querySelectorAll('.view-btn');
-    viewButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            alert('View post functionality to be implemented');
-        });
-    });
-
     const sidebarLinks = document.querySelectorAll('.sidebar nav ul li a');
     sidebarLinks.forEach(link => {
         link.addEventListener('click', (e) => {
@@ -161,9 +154,6 @@ function createPostElement(post) {
                 <button class="btn-share" data-post-id="${post.id}">
                     <i class="icon-share">🔗</i> Share
                 </button>
-                <button class="btn-view" data-post-id="${post.id}">
-                    <i class="icon-view">👁️</i> View
-                </button>
             </div>
         </div>
 
@@ -210,7 +200,7 @@ function createPostElement(post) {
     // Share button functionality
     if (shareBtn) {
         shareBtn.addEventListener('click', () => {
-            sharePost(post, shareBtn);
+            openShareModal(post);
         });
     }
 
@@ -252,14 +242,6 @@ function createPostElement(post) {
             deletePost(parseInt(postId));
         });
     }
-
-    // Add view button event listener
-    const viewButtons = postElement.querySelectorAll('.view-btn');
-    viewButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            createPreviewModal(post);
-        });
-    });
 
     return postElement;
 }
@@ -657,27 +639,20 @@ function addComment(post, commentText, commentsList) {
     }
 }
 
-// Function to share post
 function sharePost(post, shareBtn) {
-    // Retrieve posts from local storage
     let posts = JSON.parse(localStorage.getItem('devhive_posts') || '[]');
     
-    // Find the specific post
     const postIndex = posts.findIndex(p => p.id === post.id);
     
     if (postIndex !== -1) {
-        // Ensure shares count exists
         if (!posts[postIndex].shares) {
             posts[postIndex].shares = 0;
         }
 
-        // Increment share count
         posts[postIndex].shares += 1;
         
-        // Update local storage
         localStorage.setItem('devhive_posts', JSON.stringify(posts));
         
-        // Update share count in UI
         const shareCountElement = document.querySelector(
             `.social-post[data-post-id="${post.id}"] .shares-count`
         );
@@ -688,17 +663,13 @@ function sharePost(post, shareBtn) {
             `;
         }
         
-        // Optional: Add share functionality (e.g., copy link, social media share)
         copyPostLink(post);
     }
 }
 
-// Function to copy post link
 function copyPostLink(post) {
-    // Create a temporary link based on post ID
     const postLink = `${window.location.origin}/post/${post.id}`;
     
-    // Create a temporary textarea to copy the link
     const tempInput = document.createElement('textarea');
     tempInput.value = postLink;
     document.body.appendChild(tempInput);
@@ -706,6 +677,127 @@ function copyPostLink(post) {
     document.execCommand('copy');
     document.body.removeChild(tempInput);
     
-    // Show notification
     showNotification('Post link copied to clipboard');
+}
+
+function openShareModal(post) {
+    const modalContainer = document.createElement('div');
+    modalContainer.className = 'share-modal-container';
+    modalContainer.innerHTML = `
+        <div class="share-modal">
+            <div class="share-modal-header">
+                <h2>Share Post</h2>
+                <button class="close-share-modal">×</button>
+            </div>
+            <div class="share-modal-body">
+                <div class="share-platforms">
+                    <button class="share-platform" data-platform="hershive">
+                        <img src="../assets/hershive.png" alt="Hershive">
+                        <span>Hershive</span>
+                    </button>
+                    <button class="share-platform" data-platform="heybleepi">
+                        <img src="../assets/heybleepi.png" alt="Heybleepi">
+                        <span>Heybleepi</span>
+                    </button>
+                </div>
+                <div class="share-preview">
+                    <p class="share-preview-text">${escapeHTML(post.content)}</p>
+                    ${post.media ? `
+                        <div class="share-preview-media">
+                            ${parsePostContent(post.content).media || ''}
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+            <div class="share-modal-footer">
+                <button class="btn-cancel">Cancel</button>
+                <button class="btn-share-confirm">Share</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modalContainer);
+
+    const closeModal = () => {
+        document.body.removeChild(modalContainer);
+    };
+
+    const closeBtn = modalContainer.querySelector('.close-share-modal');
+    const cancelBtn = modalContainer.querySelector('.btn-cancel');
+    
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    const platformButtons = modalContainer.querySelectorAll('.share-platform');
+    let selectedPlatform = null;
+
+    platformButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            platformButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedPlatform = btn.dataset.platform;
+        });
+    });
+
+    const shareConfirmBtn = modalContainer.querySelector('.btn-share-confirm');
+    shareConfirmBtn.addEventListener('click', () => {
+        if (selectedPlatform) {
+            switch(selectedPlatform) {
+                case 'hershive':
+                    shareToHershive(post);
+                    break;
+                case 'heybleepi':
+                    shareToHeybleepi(post);
+                    break;
+            }
+            closeModal();
+        } else {
+            showNotification('Please select a platform to share');
+        }
+    });
+}
+
+function shareToHershive(post) {
+    const postLink = generatePostLink(post);
+    const shareText = `Check out this post on DevHive: ${post.content.substring(0, 100)}...`;
+    
+    const hershiveShareUrl = `https://hershive.com/share?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(postLink)}`;
+    
+    window.open(hershiveShareUrl, '_blank');
+    
+    incrementShareCount(post);
+    showNotification('Shared to Hershive');
+}
+
+function shareToHeybleepi(post) {
+    const postLink = generatePostLink(post);
+    const shareText = `Shared from DevHive: ${post.content.substring(0, 100)}...`;
+    
+    const heybleep = `https://heybleepi.com/share?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(postLink)}`;
+    
+    window.open(heybleep, '_blank');
+    
+    incrementShareCount(post);
+    showNotification('Shared to Heybleepi');
+}
+
+function generatePostLink(post) {
+    return `https://devhive.com/post/${post.id}`;
+}
+
+function incrementShareCount(post) {
+    post.shares = (post.shares || 0) + 1;
+    
+    const posts = JSON.parse(localStorage.getItem('devhive_posts') || '[]');
+    const postIndex = posts.findIndex(p => p.id === post.id);
+    
+    if (postIndex !== -1) {
+        posts[postIndex] = post;
+        localStorage.setItem('devhive_posts', JSON.stringify(posts));
+    }
+    
+    const shareCountElement = document.querySelector(`.social-post[data-post-id="${post.id}"] .shares-count`);
+    if (shareCountElement) {
+        shareCountElement.textContent = `🔗 ${post.shares}`;
+    }
 }
