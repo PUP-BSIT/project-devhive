@@ -257,34 +257,69 @@ function parsePostContent(content) {
     let text = content;
     const mediaElements = [];
 
-    // Debugging function for image issues
-    function debugImageIssue(fileName, imageData) {
-        console.group(`🖼️ Image Upload Debugging: ${fileName}`);
-        console.log('Filename:', fileName);
-        console.log('Image Data Type:', typeof imageData);
-        console.log('Image Data Length:', imageData ? imageData.length : 'N/A');
-        console.log('Data Starts With:', imageData ? imageData.substring(0, 50) + '...' : 'No Data');
-        
-        // Check if it's a valid base64 image
-        if (imageData && imageData.startsWith('data:image')) {
-            console.log('✅ Looks like a valid base64 image');
-        } else {
-            console.warn('❌ Potential image data issue');
-        }
-        
-        // Check local storage
-        const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
-        console.log('Total Stored Images:', Object.keys(storedImages).length);
-        console.log('Matching Image Keys:', 
-            Object.keys(storedImages).filter(key => 
-                key === fileName || key.endsWith(fileName)
-            )
-        );
-        
-        console.groupEnd();
+    // Check if the post has mediaData
+    const storedPosts = JSON.parse(localStorage.getItem('devhive_posts') || '[]');
+    const currentPost = storedPosts.find(post => post.content === content);
+
+    console.group('Parse Post Content Debug');
+    console.log('Current Content:', content);
+    console.log('Current Post:', currentPost);
+
+    // Handles image parsing from mediaData
+    if (currentPost && currentPost.mediaData && currentPost.mediaData.images) {
+        console.log('Images found:', currentPost.mediaData.images.length);
+        currentPost.mediaData.images.forEach((image, index) => {
+            const filePreview = document.createElement('div');
+            filePreview.innerHTML = `
+                <img 
+                    src="${image.data}" 
+                    alt="Uploaded Image ${index + 1}" 
+                    title="${image.key}"
+                    onerror="this.src='../assets/image-placeholder.png'; 
+                             console.error('Image failed to load:', this.src)"
+                    loading="lazy"
+                    style="width: 100%; height: auto; max-height: 400px; object-fit: contain; border-radius: 8px;"
+                >
+            `;
+            mediaElements.push(filePreview.outerHTML);
+        });
     }
 
-    // Handles image parsing
+    // Handles video parsing from mediaData
+    if (currentPost && currentPost.mediaData && currentPost.mediaData.videos) {
+        console.log('Videos found:', currentPost.mediaData.videos.length);
+        currentPost.mediaData.videos.forEach((video, index) => {
+            console.log(`Video ${index + 1} details:`, {
+                key: video.key,
+                dataLength: video.data ? video.data.length : 'No data',
+                dataStartsWith: video.data ? video.data.substring(0, 50) + '...' : 'No data'
+            });
+
+            const videoPreview = document.createElement('div');
+            videoPreview.innerHTML = `
+                <video 
+                    src="${video.data}" 
+                    data-filename="${video.key}"
+                    controls
+                    preload="metadata"
+                    playsinline
+                    poster="../assets/video-placeholder.png"
+                    style="width: 100%; height: auto; max-height: 400px; object-fit: contain; border-radius: 8px;"
+                >
+                    <source src="${video.data}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            `;
+            
+            mediaElements.push(videoPreview.outerHTML);
+        });
+    } else {
+        console.log('No videos found in mediaData');
+    }
+
+    console.groupEnd();
+
+    // Fallback to original image parsing for legacy posts
     const imageMatches = [...text.matchAll(imageRegex)];
     imageMatches.forEach(match => {
         const fileName = match[1];
@@ -296,9 +331,6 @@ function parsePostContent(content) {
             storedImages[Object.keys(storedImages).find(key => key.endsWith(fileName))] ||  // Partial match
             `/uploads/images/${fileName}` ||  // Server path
             '../assets/image-placeholder.png';  // Fallback placeholder
-        
-        // Debug image data
-        debugImageIssue(fileName, imageData);
         
         // Creates an image element with multiple error handling strategies
         const filePreview = document.createElement('div');
@@ -314,41 +346,6 @@ function parsePostContent(content) {
             >
         `;
         mediaElements.push(filePreview.outerHTML);
-        text = text.replace(match[0], '');
-    });
-
-    // Similar robust handling for videos
-    const videoMatches = [...text.matchAll(videoRegex)];
-    videoMatches.forEach(match => {
-        const fileName = match[1];
-        
-        // Check multiple storage locations for video
-        const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
-        const videoData = storedVideos[fileName] || 
-            storedVideos[Object.keys(storedVideos).find(key => key.endsWith(fileName))];
-        
-        const videoSources = [
-            videoData,  // Local storage video data
-            `/uploads/videos/${fileName}`,  // Server-uploaded video
-        ].filter(Boolean);  // Remove any undefined sources
-
-        const videoPreview = document.createElement('div');
-        videoPreview.innerHTML = `
-            <video 
-                src="${videoSources[0]}" 
-                data-filename="${fileName}"
-                controls
-                preload="metadata"
-                playsinline
-                poster="../assets/video-placeholder.png"
-            >
-                <source src="${videoSources[0]}" type="video/mp4">
-                ${videoSources[1] ? `<source src="${videoSources[1]}" type="video/mp4">` : ''}
-                Your browser does not support the video tag.
-            </video>
-        `;
-        
-        mediaElements.push(videoPreview.outerHTML);
         text = text.replace(match[0], '');
     });
 
@@ -463,6 +460,60 @@ function createPreviewModal(post) {
     // Create modal container
     const modalContainer = document.createElement('div');
     modalContainer.className = 'preview-modal-container';
+
+    // Prepare media HTML
+    let mediaHTML = '';
+    
+    // Handle images from mediaData
+    if (post.mediaData && post.mediaData.images && post.mediaData.images.length > 0) {
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'preview-media-container';
+        
+        post.mediaData.images.forEach((image, index) => {
+            const imgElement = document.createElement('img');
+            imgElement.src = image.data;
+            imgElement.alt = `Uploaded Image ${index + 1}`;
+            imgElement.title = image.key;
+            imgElement.style.maxWidth = '100%';
+            imgElement.style.maxHeight = '400px';
+            imgElement.style.objectFit = 'contain';
+            imageContainer.appendChild(imgElement);
+        });
+        
+        mediaHTML += imageContainer.outerHTML;
+    }
+
+    // Handle videos from mediaData
+    if (post.mediaData && post.mediaData.videos && post.mediaData.videos.length > 0) {
+        const videoContainer = document.createElement('div');
+        videoContainer.className = 'preview-media-container';
+        
+        post.mediaData.videos.forEach((video, index) => {
+            const videoElement = document.createElement('video');
+            videoElement.src = video.data;
+            videoElement.controls = true;
+            videoElement.style.maxWidth = '100%';
+            videoElement.style.maxHeight = '400px';
+            videoElement.style.objectFit = 'contain';
+            videoElement.poster = '../assets/video-placeholder.png';
+            
+            const sourceElement = document.createElement('source');
+            sourceElement.src = video.data;
+            sourceElement.type = 'video/mp4';
+            
+            videoElement.appendChild(sourceElement);
+            videoContainer.appendChild(videoElement);
+        });
+        
+        mediaHTML += videoContainer.outerHTML;
+    }
+
+    // Fallback to parsing content if no mediaData
+    if (!mediaHTML) {
+        const parsedContent = parsePostContent(post.content);
+        mediaHTML = parsedContent.media || '';
+    }
+
     modalContainer.innerHTML = `
         <div class="preview-modal">
             <div class="preview-modal-header">
@@ -481,9 +532,9 @@ function createPreviewModal(post) {
                 <div class="preview-post-content">
                     <p class="preview-text">${escapeHTML(post.content)}</p>
                     
-                    ${post.media ? `
+                    ${mediaHTML ? `
                         <div class="preview-media-container">
-                            ${parsePostContent(post.content).media || ''}
+                            ${mediaHTML}
                         </div>
                     ` : ''}
                 </div>
