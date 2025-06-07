@@ -378,40 +378,30 @@ body::before {
 .toolbar {
     display: flex;
     gap: 8px;
-    flex-wrap: wrap;
-    margin-top: 12px;
-    padding: 12px;
-    background: rgba(248, 250, 252, 0.8);
-    border-radius: 8px;
-    backdrop-filter: blur(5px);
+    align-items: center;
+    background: rgba(241, 245, 249, 0.5);
+    padding: 8px 12px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
 }
 
 .toolbar-btn {
-    padding: 8px 12px;
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(226, 232, 240, 0.6);
-    border-radius: 6px;
-    font-size: 14px;
+    background: none;
+    border: none;
+    font-size: 20px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 36px;
-    height: 36px;
+    transition: transform 0.3s ease;
+    padding: 4px;
+    border-radius: 8px;
 }
 
 .toolbar-btn:hover {
     background: rgba(37, 99, 235, 0.1);
-    border-color: #2563eb;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: scale(1.1);
 }
 
 .toolbar-btn:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    outline: 2px solid rgba(37, 99, 235, 0.3);
 }
 
 .action-buttons {
