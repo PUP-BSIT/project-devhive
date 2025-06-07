@@ -1200,3 +1200,192 @@ html {
         max-height: 90%;
     }
 }
+
+.share-modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease;
+}
+
+.share-modal {
+    background: white;
+    border-radius: 16px;
+    width: 500px;
+    max-width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+}
+
+.share-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background: rgba(37, 99, 235, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.share-modal-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.close-share-modal {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #64748b;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close-share-modal:hover {
+    color: #2563eb;
+}
+
+.share-modal-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.share-platforms {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+}
+
+.share-platform {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(241, 245, 249, 0.5);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 120px;
+}
+
+.share-platform img {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 12px;
+    transition: transform 0.3s ease;
+}
+
+.share-platform span {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.share-platform:hover {
+    background: rgba(37, 99, 235, 0.05);
+    border-color: rgba(37, 99, 235, 0.3);
+}
+
+.share-platform:hover img {
+    transform: scale(1.1);
+}
+
+.share-platform.active {
+    background: rgba(37, 99, 235, 0.1);
+    border-color: #2563eb;
+}
+
+.share-preview {
+    background: rgba(241, 245, 249, 0.5);
+    border-radius: 12px;
+    padding: 16px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.share-preview-text {
+    font-size: 14px;
+    color: #1e293b;
+    margin-bottom: 12px;
+}
+
+.share-preview-media {
+    max-width: 100%;
+    max-height: 150px;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.share-preview-media img,
+.share-preview-media video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.share-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px;
+    background: rgba(241, 245, 249, 0.5);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.btn-cancel,
+.btn-share-confirm {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-cancel {
+    background: none;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    color: #1e293b;
+}
+
+.btn-cancel:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.btn-share-confirm {
+    background: #2563eb;
+    color: white;
+    border: none;
+}
+
+.btn-share-confirm:hover {
+    background: #1d4ed8;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0; 
+        transform: translateY(20px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
