@@ -97,30 +97,15 @@ class PostCreator {
     console.log("Apply formatting:", format);
 
     switch (format) {
-      case "link":
-        this.insertLink();
-        break;
       case "image":
         this.insertImage();
         break;
       case "video":
         this.insertVideo();
         break;
-      case "attachment":
-        this.insertAttachment();
-        break;
       case "emoji":
         this.insertEmoji();
         break;
-    }
-  }
-
-  insertLink() {
-    const url = prompt("Enter URL:");
-    if (url) {
-      const textarea = document.getElementById("post-content");
-      const linkText = `[Link](${url})`;
-      this.insertAtCursor(textarea, linkText);
     }
   }
 
@@ -245,34 +230,6 @@ class PostCreator {
         } else {
           this.showNotification(`${file.name} is not a video file`);
         }
-      });
-    };
-    input.click();
-  }
-
-  insertAttachment() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.multiple = true;
-    
-    input.onchange = (e) => {
-      const files = Array.from(e.target.files);
-      files.forEach(file => {
-        const textarea = document.getElementById("post-content");
-        const attachmentPreview = `\n[Attachment: ${file.name}]\n`;
-        this.insertAtCursor(textarea, attachmentPreview);
-        
-        const previewContainer = document.createElement('div');
-        previewContainer.className = 'file-preview';
-        const fileInfo = document.createElement('div');
-        fileInfo.className = 'file-info';
-        fileInfo.innerHTML = `
-          <img src="../assets/.png" alt="" style="width: 24px; height: 24px;">
-          <span>${file.name}</span>
-          <span>(${(file.size / 1024).toFixed(2)} KB)</span>
-        `;
-        previewContainer.appendChild(fileInfo);
-        textarea.parentElement.appendChild(previewContainer);
       });
     };
     input.click();
