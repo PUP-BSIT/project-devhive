@@ -1,5 +1,3 @@
-// Styles have been moved to styles.css
-
 document.addEventListener('DOMContentLoaded', () => {
     const filterButtons = document.querySelectorAll('.post-filters button');
     filterButtons.forEach(button => {
@@ -24,10 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Load and display posts from local storage
     loadPosts();
 
-    // Add event listener to improve video playback
     const globalWallContainer = document.querySelector('.global-wall-posts');
     
     if (globalWallContainer) {
@@ -35,7 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const videoElement = e.target.closest('video');
             
             if (videoElement) {
-                // Pause other videos when one starts playing
                 const allVideos = document.querySelectorAll('video');
                 allVideos.forEach(video => {
                     if (video !== videoElement) {
@@ -43,11 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
 
-                // Ensure video can play
                 if (videoElement.paused) {
                     videoElement.play().catch(error => {
                         console.error('Video playback error:', error);
-                        // Fallback for browsers or scenarios with playback restrictions
                         videoElement.load();
                     });
                 } else {
@@ -62,7 +55,6 @@ function attachVideoEventListeners() {
     const videos = document.querySelectorAll('video');
     
     videos.forEach(video => {
-        // Remove existing listeners to prevent multiple attachments
         video.removeEventListener('click', videoClickHandler);
         
         // Add new click handler
@@ -71,7 +63,6 @@ function attachVideoEventListeners() {
 }
 
 function videoClickHandler(e) {
-    // Pause all other videos
     const allVideos = document.querySelectorAll('video');
     allVideos.forEach(v => {
         if (v !== e.currentTarget) {
@@ -79,7 +70,6 @@ function videoClickHandler(e) {
         }
     });
 
-    // Toggle current video
     const video = e.currentTarget;
     if (video.paused) {
         video.play().catch(error => {
@@ -95,32 +85,25 @@ function loadPosts() {
     const globalWallContainer = document.querySelector('.global-wall-posts');
     if (!globalWallContainer) return;
 
-    // Clear existing posts
     globalWallContainer.innerHTML = '';
 
-    // Fetch posts from local storage
     const posts = JSON.parse(localStorage.getItem('devhive_posts') || '[]');
 
-    // Sort posts by timestamp (most recent first)
     posts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-    // Create and append post elements
     posts.forEach(post => {
         const postElement = createPostElement(post);
         globalWallContainer.appendChild(postElement);
     });
 
-    // Attach video event listeners after posts are loaded
     attachVideoEventListeners();
 }
 
 function createPostElement(post) {
-    // Initialize counts
     post.likes = post.likes || 0;
     post.comments = post.comments || [];
     post.shares = post.shares || 0;
 
-    // Parse media content
     const parsedContent = parsePostContent(post.content);
 
     const postElement = document.createElement('div');
@@ -148,7 +131,6 @@ function createPostElement(post) {
 
         <div class="post-content">
             <p class="post-text">${parsedContent.text}</p>
-            
             ${parsedContent.media ? `
                 <div class="post-media-container">
                     ${parsedContent.media}
@@ -205,7 +187,6 @@ function createPostElement(post) {
         </div>
     `;
 
-    // Add event listeners for interactions
     const likeBtn = postElement.querySelector('.btn-like');
     const commentBtn = postElement.querySelector('.btn-comment');
     const shareBtn = postElement.querySelector('.btn-share');
@@ -213,7 +194,6 @@ function createPostElement(post) {
     const commentSendBtn = postElement.querySelector('.comment-send-btn');
     const commentsList = postElement.querySelector('.comments-list');
 
-    // Like button functionality
     if (likeBtn) {
         likeBtn.addEventListener('click', () => {
             toggleLike(post, likeBtn);
