@@ -167,42 +167,46 @@ class PostCreator {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'video/*';
-    input.multiple = true;
     
-    input.onchange = (e) => {
-      const files = Array.from(e.target.files);
-      files.forEach(file => {
-        if (file.type.startsWith('video/')) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            const uniqueKey = `${Date.now()}_${file.name}`;
-            
-            const storageResult = this.storageManager.storeItem('videos', uniqueKey, event.target.result);
-            
-            if (storageResult) {
-              const textarea = document.getElementById("post-content");
-              
-              const previewContainer = document.createElement('div');
-              previewContainer.className = 'file-preview';
-              const video = document.createElement('video');
-              video.src = event.target.result;
-              video.style.maxWidth = '200px';
-              video.controls = true;
-              previewContainer.appendChild(video);
-              textarea.parentElement.appendChild(previewContainer);
-
-              this.showNotification(`Video ${file.name} stored successfully`);
-            } else {
-              this.showNotification(`Could not store video: ${file.name}. Storage may be full.`);
-            }
-          };
-          reader.readAsDataURL(file);
-        } else {
-          this.showNotification(`${file.name} is not a video file`);
-        }
-      });
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      
+      // Local preview
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        // Show local preview
+        this.showLocalVideoPreview(event.target.result);
+      };
+      reader.readAsDataURL(file);
+      
+      // Upload to server
+      try {
+        const uploadedFileUrl = await this.uploadVideoToServer(file);
+        // Store file URL instead of base64
+        this.saveVideoMetadata(uploadedFileUrl);
+      } catch (error) {
+        this.showNotification('Video upload failed');
+      }
     };
+    
     input.click();
+  }
+
+  async uploadVideoToServer(file) {
+    const formData = new FormData();
+    formData.append('video', file);
+    
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (!response.ok) {
+      throw new Error('Upload failed');
+    }
+    
+    const result = await response.json();
+    return result.fileUrl;
   }
 
   insertEmoji() {
@@ -603,72 +607,102 @@ class PostCreator {
 }
 
 class StorageManager {
-  constructor(maxSizeBytes = 50 * 1024 * 1024) { // 50MB default
+  constructor(maxSizeBytes = 64 * 1024 * 1024) { // Explicitly set to 64MB
     this.maxSizeBytes = maxSizeBytes;
     this.storageKeys = {
       images: 'devhive_uploaded_images',
       videos: 'devhive_uploaded_videos'
     };
+    this.MAX_FILE_SIZE = 64 * 1024 * 1024; // 64MB max file size
+  }
+
+  getBase64Size(base64String) {
+    if (!base64String) return 0;
+    
+    // Remove data URL prefix if present
+    const base64Content = base64String.split(',')[1] || base64String;
+    
+    const binarySize = atob(base64Content).length;
+    return Math.ceil(binarySize * 1.33);
   }
 
   getCurrentStorageUsage(storageType) {
     try {
       const storedData = JSON.parse(localStorage.getItem(this.storageKeys[storageType]) || '{}');
-      return Object.values(storedData).reduce((total, item) => total + this.getBase64Size(item), 0);
+      const usage = Object.values(storedData).reduce((total, item) => {
+        const itemSize = this.getBase64Size(item);
+        return total + itemSize;
+      }, 0);
+      
+      console.log(`Current ${storageType} storage usage:`, usage / (1024 * 1024), 'MB');
+      return usage;
     } catch (error) {
       console.error('Error calculating storage usage:', error);
       return 0;
     }
   }
 
-  getBase64Size(base64String) {
-    return base64String ? base64String.length * 1.37 : 0;
-  }
-
   canStoreItem(storageType, newItemSize) {
     const currentUsage = this.getCurrentStorageUsage(storageType);
-    return (currentUsage + newItemSize) <= this.maxSizeBytes;
-  }
-
-  makeSpaceIfNeeded(storageType, newItemSize) {
-    let storedData = JSON.parse(localStorage.getItem(this.storageKeys[storageType]) || '{}');
+    const canStore = (currentUsage + newItemSize) <= this.maxSizeBytes && 
+                     newItemSize <= this.MAX_FILE_SIZE;
     
-    const sortedItems = Object.entries(storedData)
-      .sort(([key1], [key2]) => key1.localeCompare(key2));
-
-    while (this.getCurrentStorageUsage(storageType) + newItemSize > this.maxSizeBytes && sortedItems.length > 0) {
-      const [oldestKey] = sortedItems.shift();
-      delete storedData[oldestKey];
-    }
-
-    return storedData;
+    console.log('Storage check:', {
+      currentUsage: currentUsage / (1024 * 1024),
+      newItemSize: newItemSize / (1024 * 1024),
+      maxSizeBytes: this.maxSizeBytes / (1024 * 1024),
+      canStore
+    });
+    
+    return canStore;
   }
 
   storeItem(storageType, key, item) {
+    console.group('Storage Item Attempt');
+    console.log('Storage Type:', storageType);
+    console.log('Key:', key);
+    console.log('Item length:', item ? item.length : 'No item');
+
     const itemSize = this.getBase64Size(item);
-    
+    console.log('Calculated Item Size:', itemSize / (1024 * 1024), 'MB');
+
     try {
-      if (!this.canStoreItem(storageType, itemSize)) {
-        const updatedStorage = this.makeSpaceIfNeeded(storageType, itemSize);
-        
-        if (!this.canStoreItem(storageType, itemSize)) {
-          throw new Error('Not enough storage space');
-        }
-        
-        localStorage.setItem(this.storageKeys[storageType], JSON.stringify(updatedStorage));
+      if (itemSize > this.MAX_FILE_SIZE) {
+        console.error(`File too large. Maximum file size is ${this.MAX_FILE_SIZE / (1024 * 1024)}MB`);
+        console.groupEnd();
+        return false;
       }
 
+      // Get current stored data
       const storedData = JSON.parse(localStorage.getItem(this.storageKeys[storageType]) || '{}');
       
+      // Add new item
       storedData[key] = item;
       
+      // Store updated data
       localStorage.setItem(this.storageKeys[storageType], JSON.stringify(storedData));
       
+      console.log('Item stored successfully');
+      console.groupEnd();
       return true;
     } catch (error) {
       console.error(`Storage error for ${storageType}:`, error);
+      console.groupEnd();
       return false;
     }
+  }
+
+  getStorageInfo(storageType) {
+    const storedData = JSON.parse(localStorage.getItem(this.storageKeys[storageType]) || '{}');
+    const currentUsage = this.getCurrentStorageUsage(storageType);
+    
+    return {
+      totalItems: Object.keys(storedData).length,
+      currentUsageBytes: currentUsage,
+      currentUsageMB: (currentUsage / (1024 * 1024)).toFixed(2),
+      maxSizeMB: (this.maxSizeBytes / (1024 * 1024)).toFixed(2),
+      remainingSpaceMB: ((this.maxSizeBytes - currentUsage) / (1024 * 1024)).toFixed(2)
+    };
   }
 }
 
