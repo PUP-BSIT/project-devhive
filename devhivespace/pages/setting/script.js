@@ -1,10 +1,8 @@
-// DOM Elements
 document.addEventListener('DOMContentLoaded', () => {
     initializeSettingsPage();
 });
 
 function initializeSettingsPage() {
-    // Initialize all event listeners
     initializeProfileSection();
     initializeAccountSettings();
     initializeNotificationSettings();
@@ -65,7 +63,6 @@ function validateAndUpdateDisplayName(e) {
         e.target.value = e.target.defaultValue;
         return;
     }
-    // Here you would typically make an API call to update the display name
     e.target.defaultValue = displayName;
 }
 
@@ -77,12 +74,10 @@ function validateAndUpdateEmail(e) {
         e.target.value = e.target.defaultValue;
         return;
     }
-    // Here you would typically make an API call to update the email
     e.target.defaultValue = email;
 }
 
 function handlePasswordUpdate() {
-    // Create and show password update modal
     const modal = createPasswordUpdateModal();
     document.body.appendChild(modal);
     modal.style.display = 'block';
@@ -292,4 +287,86 @@ function saveAllSettings() {
 
     console.log('Saving settings:', settings);
     alert('Settings saved successfully!');
-} 
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const photoUploadBtn = document.getElementById('change-photo-btn');
+    const photoUploadInput = document.getElementById('photo-upload');
+    const profileImage = document.getElementById('profile-image');
+
+    photoUploadBtn.addEventListener('click', () => {
+        photoUploadInput.click();
+    });
+
+    photoUploadInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                profileImage.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    const changePasswordBtn = document.getElementById('change-password-btn');
+    const currentPasswordInput = document.getElementById('current-password');
+    const newPasswordInput = document.getElementById('new-password');
+    const confirmPasswordInput = document.getElementById('confirm-password');
+
+    changePasswordBtn.addEventListener('click', () => {
+        const currentPassword = currentPasswordInput.value;
+        const newPassword = newPasswordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            alert('Please fill in all password fields');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            alert('New passwords do not match');
+            return;
+        }
+
+        alert('Password changed successfully');
+
+        currentPasswordInput.value = '';
+        newPasswordInput.value = '';
+        confirmPasswordInput.value = '';
+    });
+
+    const saveChangesBtn = document.getElementById('save-changes-btn');
+    const displayNameInput = document.getElementById('display-name');
+    const emailInput = document.getElementById('email');
+
+    saveChangesBtn.addEventListener('click', () => {
+        const displayName = displayNameInput.value;
+        const email = emailInput.value;
+
+        if (!displayName || !email) {
+            alert('Please fill in display name and email');
+            return;
+        }
+
+        alert('Changes saved successfully');
+    });
+
+    const deleteAccountBtn = document.getElementById('delete-account-btn');
+
+    deleteAccountBtn.addEventListener('click', () => {
+        const confirmDelete = confirm('Are you sure you want to delete your account? This action cannot be undone.');
+        
+        if (confirmDelete) {
+            alert('Account deleted successfully');
+            window.location.href = '../login/index.html';
+        }
+    });
+
+    const logoutBtn = document.getElementById('logout-btn');
+
+    logoutBtn.addEventListener('click', () => {
+        alert('Logged out successfully');
+        window.location.href = '../login/index.html';
+    });
+}); 
