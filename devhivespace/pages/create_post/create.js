@@ -1,6 +1,7 @@
 class PostCreator {
   constructor() {
     this.selectedPlatforms = ["all"];
+    this.storageManager = new StorageManager();
     this.initializeEventListeners();
   }
 
@@ -110,29 +111,15 @@ class PostCreator {
   }
 
   insertImage() {
-    const diagnosticFileUpload = (file) => {
-      console.group('File Upload Diagnostic');
-      console.log('File Name:', file.name);
-      console.log('File Type:', file.type);
-      console.log('File Size:', file.size, 'bytes');
-      console.log('Is Image:', file.type.startsWith('image/'));
-      console.groupEnd();
-    };
-
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
     input.multiple = true;
     
     input.onchange = (e) => {
-      console.group('Image Upload Process');
-      console.log('Files selected:', e.target.files.length);
-
       const files = Array.from(e.target.files);
       
       files.forEach(file => {
-        diagnosticFileUpload(file);
-
         if (file.type.startsWith('image/')) {
           const reader = new FileReader();
 
@@ -142,38 +129,27 @@ class PostCreator {
           };
 
           reader.onload = (event) => {
-            console.log('File read successfully:', file.name);
-            console.log('Data URL length:', event.target.result.length);
-
-            const textarea = document.getElementById("post-content");
-            
-            const previewContainer = document.createElement('div');
-            previewContainer.className = 'file-preview';
-            const img = document.createElement('img');
-            img.src = event.target.result;
-            img.style.maxWidth = '40px';
-            img.style.height = '40px';
-            img.style.borderRadius = '50%';
-            img.style.objectFit = 'cover';
-            previewContainer.appendChild(img);
-            textarea.parentElement.appendChild(previewContainer);
-
-            const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
-            
             const uniqueKey = `${Date.now()}_${file.name}`;
-            storedImages[uniqueKey] = event.target.result;
             
-            try {
-              localStorage.setItem('devhive_uploaded_images', JSON.stringify(storedImages));
-              console.log('Images stored successfully');
-              console.log('Stored images count:', Object.keys(storedImages).length);
-            } catch (storageError) {
-              console.error('localStorage storage error:', storageError);
+            const storageResult = this.storageManager.storeItem('images', uniqueKey, event.target.result);
+            
+            if (storageResult) {
+              const textarea = document.getElementById("post-content");
               
-              if (storageError instanceof DOMException && 
-                  (storageError.name === 'QuotaExceededError' || storageError.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
-                this.showNotification('Storage limit exceeded. Some images may not be saved.');
-              }
+              const previewContainer = document.createElement('div');
+              previewContainer.className = 'file-preview';
+              const img = document.createElement('img');
+              img.src = event.target.result;
+              img.style.maxWidth = '40px';
+              img.style.height = '40px';
+              img.style.borderRadius = '50%';
+              img.style.objectFit = 'cover';
+              previewContainer.appendChild(img);
+              textarea.parentElement.appendChild(previewContainer);
+
+              this.showNotification(`Image ${file.name} stored successfully`);
+            } else {
+              this.showNotification(`Could not store image: ${file.name}. Storage may be full.`);
             }
           };
 
@@ -182,8 +158,6 @@ class PostCreator {
           this.showNotification(`${file.name} is not an image file`);
         }
       });
-
-      console.groupEnd();
     };
 
     input.click();
@@ -201,30 +175,26 @@ class PostCreator {
         if (file.type.startsWith('video/')) {
           const reader = new FileReader();
           reader.onload = (event) => {
-            const textarea = document.getElementById("post-content");
-            
-            const previewContainer = document.createElement('div');
-            previewContainer.className = 'file-preview';
-            const video = document.createElement('video');
-            video.src = event.target.result;
-            video.style.maxWidth = '200px';
-            video.controls = true;
-            previewContainer.appendChild(video);
-            textarea.parentElement.appendChild(previewContainer);
-
-            const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
-      
             const uniqueKey = `${Date.now()}_${file.name}`;
-            storedVideos[uniqueKey] = event.target.result;
             
-            localStorage.setItem('devhive_uploaded_videos', JSON.stringify(storedVideos));
+            const storageResult = this.storageManager.storeItem('videos', uniqueKey, event.target.result);
+            
+            if (storageResult) {
+              const textarea = document.getElementById("post-content");
+              
+              const previewContainer = document.createElement('div');
+              previewContainer.className = 'file-preview';
+              const video = document.createElement('video');
+              video.src = event.target.result;
+              video.style.maxWidth = '200px';
+              video.controls = true;
+              previewContainer.appendChild(video);
+              textarea.parentElement.appendChild(previewContainer);
 
-            console.group('Video Upload Debug');
-            console.log('Video stored with key:', uniqueKey);
-            console.log('Video data length:', event.target.result.length);
-            console.log('File type:', file.type);
-            console.log('All stored videos:', Object.keys(storedVideos));
-            console.groupEnd();
+              this.showNotification(`Video ${file.name} stored successfully`);
+            } else {
+              this.showNotification(`Could not store video: ${file.name}. Storage may be full.`);
+            }
           };
           reader.readAsDataURL(file);
         } else {
@@ -489,8 +459,8 @@ class PostCreator {
       return;
     }
 
-    const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
-    const storedVideos = JSON.parse(localStorage.getItem('devhive_uploaded_videos') || '{}');
+    const storedImages = JSON.parse(localStorage.getItem(this.storageManager.storageKeys.images) || '{}');
+    const storedVideos = JSON.parse(localStorage.getItem(this.storageManager.storageKeys.videos) || '{}');
     
     const post = {
       id: Date.now(), 
@@ -511,16 +481,14 @@ class PostCreator {
     };
 
     this.savePostToLocalStorage(post);
-
     this.updateGlobalWall(post);
 
     document.getElementById("post-content").value = "";
-
     const previews = document.querySelectorAll('.file-preview');
     previews.forEach(preview => preview.remove());
 
-    localStorage.removeItem('devhive_uploaded_images');
-    localStorage.removeItem('devhive_uploaded_videos');
+    localStorage.removeItem(this.storageManager.storageKeys.images);
+    localStorage.removeItem(this.storageManager.storageKeys.videos);
 
     this.showNotification("Post shared successfully!");
   }
@@ -631,6 +599,76 @@ class PostCreator {
         setTimeout(() => notification.remove(), 300);
       }, 3000);
     }, 100);
+  }
+}
+
+class StorageManager {
+  constructor(maxSizeBytes = 50 * 1024 * 1024) { // 50MB default
+    this.maxSizeBytes = maxSizeBytes;
+    this.storageKeys = {
+      images: 'devhive_uploaded_images',
+      videos: 'devhive_uploaded_videos'
+    };
+  }
+
+  getCurrentStorageUsage(storageType) {
+    try {
+      const storedData = JSON.parse(localStorage.getItem(this.storageKeys[storageType]) || '{}');
+      return Object.values(storedData).reduce((total, item) => total + this.getBase64Size(item), 0);
+    } catch (error) {
+      console.error('Error calculating storage usage:', error);
+      return 0;
+    }
+  }
+
+  getBase64Size(base64String) {
+    return base64String ? base64String.length * 1.37 : 0;
+  }
+
+  canStoreItem(storageType, newItemSize) {
+    const currentUsage = this.getCurrentStorageUsage(storageType);
+    return (currentUsage + newItemSize) <= this.maxSizeBytes;
+  }
+
+  makeSpaceIfNeeded(storageType, newItemSize) {
+    let storedData = JSON.parse(localStorage.getItem(this.storageKeys[storageType]) || '{}');
+    
+    const sortedItems = Object.entries(storedData)
+      .sort(([key1], [key2]) => key1.localeCompare(key2));
+
+    while (this.getCurrentStorageUsage(storageType) + newItemSize > this.maxSizeBytes && sortedItems.length > 0) {
+      const [oldestKey] = sortedItems.shift();
+      delete storedData[oldestKey];
+    }
+
+    return storedData;
+  }
+
+  storeItem(storageType, key, item) {
+    const itemSize = this.getBase64Size(item);
+    
+    try {
+      if (!this.canStoreItem(storageType, itemSize)) {
+        const updatedStorage = this.makeSpaceIfNeeded(storageType, itemSize);
+        
+        if (!this.canStoreItem(storageType, itemSize)) {
+          throw new Error('Not enough storage space');
+        }
+        
+        localStorage.setItem(this.storageKeys[storageType], JSON.stringify(updatedStorage));
+      }
+
+      const storedData = JSON.parse(localStorage.getItem(this.storageKeys[storageType]) || '{}');
+      
+      storedData[key] = item;
+      
+      localStorage.setItem(this.storageKeys[storageType], JSON.stringify(storedData));
+      
+      return true;
+    } catch (error) {
+      console.error(`Storage error for ${storageType}:`, error);
+      return false;
+    }
   }
 }
 
