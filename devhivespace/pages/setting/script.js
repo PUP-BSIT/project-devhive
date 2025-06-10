@@ -11,6 +11,31 @@ function initializeSettingsPage() {
     
     const saveButton = document.querySelector('.save-btn');
     saveButton.addEventListener('click', saveAllSettings);
+
+    // Load saved display name
+    loadDisplayName();
+}
+
+function loadDisplayName() {
+    const displayNameInput = document.getElementById('display-name');
+    const savedDisplayName = localStorage.getItem('userDisplayName');
+    if (savedDisplayName) {
+        displayNameInput.value = savedDisplayName;
+        updateDisplayNameInProfile(savedDisplayName);
+    }
+}
+
+function updateDisplayNameInProfile(displayName) {
+    // Update display name in user profile page
+    const profileNameElements = [
+        document.querySelector('.profile-details h2')
+    ];
+
+    profileNameElements.forEach(element => {
+        if (element) {
+            element.textContent = displayName;
+        }
+    });
 }
 
 function initializeProfileSection() {
@@ -29,10 +54,28 @@ function handleProfilePhotoChange() {
             const reader = new FileReader();
             reader.onload = (e) => {
                 const profileAvatar = document.querySelector('.profile-avatar');
-                profileAvatar.innerHTML = '';
-                profileAvatar.style.backgroundImage = `url(${e.target.result})`;
-                profileAvatar.style.backgroundSize = 'cover';
-                profileAvatar.style.backgroundPosition = 'center';
+                const avatarImage = profileAvatar.querySelector('img');
+                
+                // Save avatar to local storage
+                localStorage.setItem('userProfileAvatar', e.target.result);
+                
+                // Update avatar in settings page
+                if (avatarImage) {
+                    avatarImage.src = e.target.result;
+                } else {
+                    const newAvatarImg = document.createElement('img');
+                    newAvatarImg.src = e.target.result;
+                    newAvatarImg.id = 'profile-image';
+                    newAvatarImg.alt = 'Profile Avatar';
+                    profileAvatar.innerHTML = '';
+                    profileAvatar.appendChild(newAvatarImg);
+                }
+                
+                // Update avatar in user profile page if open
+                const userProfileAvatar = document.querySelector('#user-profile-avatar');
+                if (userProfileAvatar) {
+                    userProfileAvatar.src = e.target.result;
+                }
             };
             reader.readAsDataURL(file);
         }
@@ -43,8 +86,17 @@ function handleProfilePhotoChange() {
 
 
 function initializeAccountSettings() {
-    const displayNameInput = document.querySelector('input[placeholder="User Name"]');
-    const emailInput = document.querySelector('input[placeholder="user.example@gmail.com"]');
+    const displayNameInput = document.getElementById('display-name');
+    const emailInput = document.getElementById('email');
+    
+    // Add real-time display name update
+    displayNameInput.addEventListener('input', function() {
+        const newDisplayName = this.value;
+        updateDisplayNameInProfile(newDisplayName);
+        
+        // Optionally, save to local storage immediately
+        localStorage.setItem('userDisplayName', newDisplayName);
+    });
     
     displayNameInput.addEventListener('change', validateAndUpdateDisplayName);
     emailInput.addEventListener('change', validateAndUpdateEmail);
@@ -286,6 +338,21 @@ function saveAllSettings() {
     };
 
     console.log('Saving settings:', settings);
+    alert('Settings saved successfully!');
+
+    // Existing save logic
+    const displayNameInput = document.getElementById('display-name');
+    const displayName = displayNameInput.value.trim();
+
+    if (displayName) {
+        // Save display name to local storage
+        localStorage.setItem('userDisplayName', displayName);
+        
+        // Update display name in profile
+        updateDisplayNameInProfile(displayName);
+    }
+
+    // Rest of the existing save logic
     alert('Settings saved successfully!');
 }
 

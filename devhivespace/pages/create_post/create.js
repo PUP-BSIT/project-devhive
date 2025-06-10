@@ -140,14 +140,13 @@ class PostCreator {
               previewContainer.className = 'file-preview';
               const img = document.createElement('img');
               img.src = event.target.result;
-              img.style.maxWidth = '40px';
-              img.style.height = '40px';
-              img.style.borderRadius = '50%';
+              img.style.maxWidth = '200px';
+              img.style.maxHeight = '200px';
               img.style.objectFit = 'cover';
               previewContainer.appendChild(img);
               textarea.parentElement.appendChild(previewContainer);
 
-              this.showNotification(`Image ${file.name} stored successfully`);
+              this.showNotification(`Image ${file.name} added successfully`);
             } else {
               this.showNotification(`Could not store image: ${file.name}. Storage may be full.`);
             }
@@ -520,125 +519,94 @@ class PostCreator {
     }
   }
 
-  // Modify existing sharePost to use createPostAPI
   async sharePost() {
-    const content = document.getElementById("post-content").value;
-    const platforms = this.selectedPlatforms;
-
-    const storedImages = JSON.parse(localStorage.getItem(this.storageManager.storageKeys.images) || '{}');
-    const storedVideos = JSON.parse(localStorage.getItem(this.storageManager.storageKeys.videos) || '{}');
+    const content = document.getElementById("post-content").value.trim();
+    const imagePreviewContainers = document.querySelectorAll('.file-preview img');
     
-    const postData = {
-      content: content,
-      platforms: platforms,
-      author: this.getCurrentUser(),
-      images: Object.entries(storedImages).map(([key, value]) => ({
-        key: key,
-        data: value
-      })),
-      videos: Object.entries(storedVideos).map(([key, value]) => ({
-        key: key,
-        data: value
-      }))
+    // Collect image data
+    const images = Array.from(imagePreviewContainers).map(img => img.src);
+
+    // Collect video data (if any)
+    const videoPreview = document.querySelector('.video-preview video');
+    const videoSrc = videoPreview ? videoPreview.src : null;
+
+    if (!content && images.length === 0 && !videoSrc) {
+      this.showNotification("Please enter post content or add media");
+      return;
+    }
+
+    // Collect user profile information
+    const userProfileInfo = {
+      displayName: localStorage.getItem('userDisplayName') || 'User',
+      avatar: localStorage.getItem('userProfileAvatar') || '../assets/human.png'
     };
 
-    const result = await this.createPostAPI(postData);
+    const post = {
+      id: Date.now(), 
+      content: content,
+      images: images,
+      video: videoSrc,
+      author: userProfileInfo.displayName,
+      authorAvatar: userProfileInfo.avatar,
+      timestamp: new Date().toISOString(),
+      platforms: this.selectedPlatforms,
+      likes: 0,
+      comments: [],
+      shares: 0
+    };
 
-    if (result.success) {
-      document.getElementById("post-content").value = "";
-      const previews = document.querySelectorAll('.file-preview');
-      previews.forEach(preview => preview.remove());
+    // Save post to user's local posts
+    this.savePostToLocalStorage(post);
 
-      localStorage.removeItem(this.storageManager.storageKeys.images);
-      localStorage.removeItem(this.storageManager.storageKeys.videos);
+    // Save post to global wall posts
+    this.saveToGlobalWallPosts(post);
 
-      this.showNotification("Post shared successfully!");
+    // Clear post content and previews
+    document.getElementById("post-content").value = '';
+    
+    // Remove image previews
+    const filePreviewContainers = document.querySelectorAll('.file-preview');
+    filePreviewContainers.forEach(container => container.remove());
+
+    // Remove video preview
+    const videoPreviewContainer = document.querySelector('.video-preview');
+    if (videoPreviewContainer) {
+      videoPreviewContainer.remove();
     }
+
+    this.showNotification("Post shared successfully!");
+  }
+
+  savePostToLocalStorage(post) {
+    // Retrieve existing posts or initialize an empty array
+    let userPosts = JSON.parse(localStorage.getItem('userPosts') || '[]');
+    
+    // Add new post to the beginning of the array
+    userPosts.unshift(post);
+    
+    // Limit to last 10 posts to prevent excessive storage
+    userPosts = userPosts.slice(0, 10);
+    
+    // Save back to local storage
+    localStorage.setItem('userPosts', JSON.stringify(userPosts));
+  }
+
+  saveToGlobalWallPosts(post) {
+    // Retrieve existing global wall posts or initialize an empty array
+    let globalWallPosts = JSON.parse(localStorage.getItem('devhive_posts') || '[]');
+    
+    // Add new post to the beginning of the array
+    globalWallPosts.unshift(post);
+    
+    // Limit to last 50 posts to prevent excessive storage
+    globalWallPosts = globalWallPosts.slice(0, 50);
+    
+    // Save back to local storage
+    localStorage.setItem('devhive_posts', JSON.stringify(globalWallPosts));
   }
 
   getCurrentUser() {
     return "Current User";
-  }
-
-  savePostToLocalStorage(post) {
-    let posts = JSON.parse(localStorage.getItem('devhive_posts') || '[]');
-    posts.push(post);
-    localStorage.setItem('devhive_posts', JSON.stringify(posts));
-  }
-
-  updateGlobalWall(post) {
-    console.group('Update Global Wall Debug');
-    console.log('Post received:', post);
-    
-    const postElement = document.createElement('div');
-    postElement.className = 'global-post';
-    
-    let mediaHTML = '';
-
-    if (post.mediaData && post.mediaData.images && post.mediaData.images.length > 0) {
-      console.log('Images to display:', post.mediaData.images.length);
-      
-      const imageContainer = document.createElement('div');
-      imageContainer.className = 'global-post-media-container';
-      
-      post.mediaData.images.forEach((image, index) => {
-        console.log(`Image ${index + 1} data length:`, image.data.length);
-        
-        const imgElement = document.createElement('img');
-        imgElement.src = image.data;
-        imgElement.className = 'global-post-media-image';
-        imageContainer.appendChild(imgElement);
-      });
-      
-      mediaHTML += imageContainer.outerHTML;
-    } else {
-      console.log('No images found in mediaData');
-    }
-
-    if (post.mediaData && post.mediaData.videos && post.mediaData.videos.length > 0) {
-      console.log('Videos to display:', post.mediaData.videos.length);
-      
-      const videoContainer = document.createElement('div');
-      videoContainer.className = 'global-post-media-container';
-      
-      post.mediaData.videos.forEach((video, index) => {
-        console.log(`Video ${index + 1} data length:`, video.data.length);
-        
-        const videoElement = document.createElement('video');
-        videoElement.src = video.data;
-        videoElement.className = 'global-post-media-video';
-        videoElement.controls = true;
-        videoContainer.appendChild(videoElement);
-      });
-      
-      mediaHTML += videoContainer.outerHTML;
-    } else {
-      console.log('No videos found in mediaData');
-    }
-
-    console.groupEnd();
-
-    postElement.innerHTML = `
-      <div class="post-header">
-        <h3>${this.escapeHTML(post.title || 'Untitled Post')}</h3>
-        <span class="post-author">${this.escapeHTML(post.author)}</span>
-        <span class="post-timestamp">${new Date(post.timestamp).toLocaleString()}</span>
-      </div>
-      <div class="post-content">
-        ${this.escapeHTML(post.content)}
-        ${mediaHTML}
-      </div>
-      <div class="post-platforms">
-        Platforms: ${post.platforms.join(', ')}
-      </div>
-    `;
-
-    const globalWallContainer = document.querySelector('.global-wall-posts');
-    if (globalWallContainer) {
-      globalWallContainer.insertBefore(postElement, globalWallContainer.firstChild);
-    } else {
-      console.error('Global wall container not found');
-    }
   }
 
   showNotifications() {
@@ -662,6 +630,32 @@ class PostCreator {
         setTimeout(() => notification.remove(), 300);
       }, 3000);
     }, 100);
+  }
+
+  showLocalVideoPreview(videoSrc) {
+    // Remove any existing video preview
+    const existingVideoPreview = document.querySelector('.video-preview');
+    if (existingVideoPreview) {
+      existingVideoPreview.remove();
+    }
+
+    const textarea = document.getElementById("post-content");
+    
+    const previewContainer = document.createElement('div');
+    previewContainer.className = 'video-preview';
+    const video = document.createElement('video');
+    video.src = videoSrc;
+    video.style.maxWidth = '200px';
+    video.style.maxHeight = '200px';
+    video.controls = true;
+    previewContainer.appendChild(video);
+    
+    textarea.parentElement.appendChild(previewContainer);
+  }
+
+  saveVideoMetadata(uploadedFileUrl) {
+    // Optional: You can implement additional logic here if needed
+    console.log('Video uploaded:', uploadedFileUrl);
   }
 }
 

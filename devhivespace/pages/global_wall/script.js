@@ -81,10 +81,16 @@ function loadPosts() {
     globalWallContainer.innerHTML = '';
 
     const posts = JSON.parse(localStorage.getItem('devhive_posts') || '[]');
+    const userDisplayName = localStorage.getItem('userDisplayName');
 
     posts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
     posts.forEach(post => {
+        // If the post author matches the current user, update the author name
+        if (userDisplayName && post.author === (localStorage.getItem('currentUsername') || post.author)) {
+            post.author = userDisplayName;
+        }
+        
         const postElement = createPostElement(post);
         globalWallContainer.appendChild(postElement);
     });
@@ -97,7 +103,61 @@ function createPostElement(post) {
     post.comments = post.comments || [];
     post.shares = post.shares || 0;
 
-    const parsedContent = parsePostContent(post.content);
+    // Ensure images and video are handled correctly
+    const parsedContent = {
+        text: escapeHTML(post.content || ''),
+        media: null
+    };
+
+    // Check for images with improved display
+    const imageMediaHTML = post.images && post.images.length > 0 
+        ? `
+        <div class="post-media-gallery ${post.images.length > 1 ? 'multi-image' : 'single-image'}">
+            ${post.images.map((imageSrc, index) => `
+                <div class="post-media-item" data-index="${index}">
+                    <img 
+                        src="${imageSrc}" 
+                        alt="Post Image ${index + 1}" 
+                        onclick="openImageModal(this)"
+                        style="
+                            width: 100%; 
+                            height: ${post.images.length === 1 ? '400px' : '200px'}; 
+                            object-fit: ${post.images.length === 1 ? 'contain' : 'cover'}; 
+                            border-radius: 8px; 
+                            cursor: pointer;
+                        "
+                    >
+                </div>
+            `).join('')}
+        </div>
+        `
+        : null;
+
+    // Check for video with improved display
+    const videoMediaHTML = post.video 
+        ? `
+        <div class="post-media-video">
+            <video 
+                src="${post.video}" 
+                controls 
+                style="
+                    width: 100%; 
+                    max-height: 400px; 
+                    object-fit: contain; 
+                    border-radius: 8px;
+                "
+                preload="metadata"
+                playsinline
+            >
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        `
+        : null;
+
+    // Use post's author and avatar if available, otherwise fallback to local storage
+    const displayName = post.author || localStorage.getItem('userDisplayName') || 'Anonymous';
+    const authorAvatar = post.authorAvatar || localStorage.getItem('userProfileAvatar') || '../assets/human.png';
 
     const postElement = document.createElement('div');
     postElement.className = 'social-post';
@@ -106,9 +166,9 @@ function createPostElement(post) {
     postElement.innerHTML = `
         <div class="post-header">
             <div class="post-user-info">
-                <img src="../assets/human.png" alt="Profile" class="profile-pic">
+                <img src="${authorAvatar}" alt="Profile" class="profile-pic">
                 <div class="user-details">
-                    <h3 class="post-author">${escapeHTML(post.author || 'Anonymous')}</h3>
+                    <h3 class="post-author">${escapeHTML(displayName)}</h3>
                     <span class="post-timestamp">${getTimeDifference(new Date(post.timestamp))}</span>
                 </div>
             </div>
@@ -124,9 +184,9 @@ function createPostElement(post) {
 
         <div class="post-content">
             <p class="post-text">${parsedContent.text}</p>
-            ${parsedContent.media ? `
+            ${imageMediaHTML || videoMediaHTML ? `
                 <div class="post-media-container">
-                    ${parsedContent.media}
+                    ${imageMediaHTML || videoMediaHTML}
                 </div>
             ` : ''}
         </div>
@@ -176,6 +236,21 @@ function createPostElement(post) {
             </div>
         </div>
     `;
+
+    // Add image modal functionality
+    if (post.images && post.images.length > 0) {
+        postElement.innerHTML += `
+            <div id="image-modal" class="image-modal" onclick="closeImageModal()">
+                <span class="close-modal">&times;</span>
+                <img class="modal-content" id="modal-image">
+                <div id="image-caption"></div>
+                ${post.images.length > 1 ? `
+                    <a class="prev" onclick="changeImage(-1)">&#10094;</a>
+                    <a class="next" onclick="changeImage(1)">&#10095;</a>
+                ` : ''}
+            </div>
+        `;
+    }
 
     const likeBtn = postElement.querySelector('.btn-like');
     const commentBtn = postElement.querySelector('.btn-comment');
@@ -247,127 +322,28 @@ function createPostElement(post) {
 }
 
 function parsePostContent(content) {
-    // Regular expressions for different media types
-    const imageRegex = /\[Image: (.+?)\]/g;
-    const videoRegex = /\[Video: (.+?)\]/g;
-    const linkRegex = /\[Link\]\((.+?)\)/g;
-    const emojiRegex = /\[Emoji: (.+?)\]/g;
-    
-    // Containers for parsed content
-    let text = content;
-    const mediaElements = [];
-
-    // Check if the post has mediaData
-    const storedPosts = JSON.parse(localStorage.getItem('devhive_posts') || '[]');
-    const currentPost = storedPosts.find(post => post.content === content);
-
-    console.group('Parse Post Content Debug');
-    console.log('Current Content:', content);
-    console.log('Current Post:', currentPost);
-
-    // Handles image parsing from mediaData
-    if (currentPost && currentPost.mediaData && currentPost.mediaData.images) {
-        console.log('Images found:', currentPost.mediaData.images.length);
-        currentPost.mediaData.images.forEach((image, index) => {
-            const filePreview = document.createElement('div');
-            filePreview.innerHTML = `
-                <img 
-                    src="${image.data}" 
-                    alt="Uploaded Image ${index + 1}" 
-                    title="${image.key}"
-                    onerror="this.src='../assets/image-placeholder.png'; 
-                             console.error('Image failed to load:', this.src)"
-                    loading="lazy"
-                    style="width: 100%; height: auto; max-height: 400px; object-fit: contain; border-radius: 8px;"
-                >
-            `;
-            mediaElements.push(filePreview.outerHTML);
-        });
-    }
-
-    // Handles video parsing from mediaData
-    if (currentPost && currentPost.mediaData && currentPost.mediaData.videos) {
-        console.log('Videos found:', currentPost.mediaData.videos.length);
-        currentPost.mediaData.videos.forEach((video, index) => {
-            console.log(`Video ${index + 1} details:`, {
-                key: video.key,
-                dataLength: video.data ? video.data.length : 'No data',
-                dataStartsWith: video.data ? video.data.substring(0, 50) + '...' : 'No data'
-            });
-
-            const videoPreview = document.createElement('div');
-            videoPreview.innerHTML = `
-                <video 
-                    src="${video.data}" 
-                    data-filename="${video.key}"
-                    controls
-                    preload="metadata"
-                    playsinline
-                    poster="../assets/video-placeholder.png"
-                    style="width: 100%; height: auto; max-height: 400px; object-fit: contain; border-radius: 8px;"
-                >
-                    <source src="${video.data}" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-            `;
-            
-            mediaElements.push(videoPreview.outerHTML);
-        });
-    } else {
-        console.log('No videos found in mediaData');
-    }
-
-    console.groupEnd();
-
-    // Fallback to original image parsing for legacy posts
-    const imageMatches = [...text.matchAll(imageRegex)];
-    imageMatches.forEach(match => {
-        const fileName = match[1];
-        
-        // Multiple fallback mechanisms for image retrieval
-        const storedImages = JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}');
-        const imageData = 
-            storedImages[fileName] ||  // Direct match
-            storedImages[Object.keys(storedImages).find(key => key.endsWith(fileName))] ||  // Partial match
-            `/uploads/images/${fileName}` ||  // Server path
-            '../assets/image-placeholder.png';  // Fallback placeholder
-        
-        // Creates an image element with multiple error handling strategies
-        const filePreview = document.createElement('div');
-        filePreview.innerHTML = `
-            <img 
-                src="${imageData}" 
-                alt="${fileName}" 
-                title="${fileName}"
-                onerror="this.src='../assets/image-placeholder.png'; 
-                         console.error('Image failed to load:', this.src)"
-                loading="lazy"
-                style="width: 100%; height: auto; max-height: 400px; object-fit: contain; border-radius: 8px;"
-            >
-        `;
-        mediaElements.push(filePreview.outerHTML);
-        text = text.replace(match[0], '');
-    });
-
-    // Wrap multiple media items in a scrollable container
-    const mediaContainer = document.createElement('div');
-    mediaContainer.className = 'post-media-container';
-    
-    if (mediaElements.length > 1) {
-        // Create a horizontally scrollable container for multiple media
-        mediaContainer.innerHTML = `
-            <div class="media-scroll-container">
-                ${mediaElements.join('')}
-            </div>
-        `;
-    } else if (mediaElements.length === 1) {
-        mediaContainer.innerHTML = mediaElements[0];
-    }
-
-    return {
-        text: escapeHTML(text.trim()),
-        media: mediaElements.length > 0 ? mediaContainer.outerHTML : ''
+    // Initialize result object
+    const result = {
+        text: escapeHTML(content || ''),
+        media: null
     };
+
+    // Check for images
+    const imageMediaHTML = post.images && post.images.length > 0 
+        ? post.images.map(imageSrc => `
+            <img src="${imageSrc}" alt="Post Image" style="max-width: 100%; max-height: 300px; object-fit: cover;">
+        `).join('')
+        : null;
+
+    // Check for video
+    const videoMediaHTML = post.video 
+        ? `<video src="${post.video}" controls style="max-width: 100%; max-height: 300px;"></video>`
+        : null;
+
+    // Combine media
+    result.media = imageMediaHTML || videoMediaHTML;
+
+    return result;
 }
 
 function getTimeDifference(date) {
@@ -852,3 +828,130 @@ function incrementShareCount(post) {
         shareCountElement.textContent = `🔗 ${post.shares}`;
     }
 }
+
+// Add a storage event listener to reload posts when display name changes
+document.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('storage', function(event) {
+        if (event.key === 'userDisplayName') {
+            loadPosts(); // Reload posts to update author name
+        }
+    });
+});
+
+// Add global functions for image modal
+window.openImageModal = function(img) {
+    const modal = document.getElementById('image-modal');
+    const modalImg = document.getElementById('modal-image');
+    const captionText = document.getElementById('image-caption');
+    
+    modal.style.display = "block";
+    modalImg.src = img.src;
+    captionText.innerHTML = img.alt;
+    
+    // Set current image index
+    const gallery = img.closest('.post-media-gallery');
+    if (gallery) {
+        window.currentImageIndex = parseInt(img.closest('.post-media-item').dataset.index);
+        window.currentImageGallery = gallery;
+    }
+}
+
+window.closeImageModal = function() {
+    const modal = document.getElementById('image-modal');
+    modal.style.display = "none";
+}
+
+window.changeImage = function(direction) {
+    if (!window.currentImageGallery) return;
+    
+    const images = window.currentImageGallery.querySelectorAll('.post-media-item');
+    const totalImages = images.length;
+    
+    window.currentImageIndex = (window.currentImageIndex + direction + totalImages) % totalImages;
+    
+    const newImage = images[window.currentImageIndex].querySelector('img');
+    const modalImg = document.getElementById('modal-image');
+    const captionText = document.getElementById('image-caption');
+    
+    modalImg.src = newImage.src;
+    captionText.innerHTML = newImage.alt;
+}
+
+// Add CSS for image modal
+const modalStyle = document.createElement('style');
+modalStyle.textContent = `
+    .post-media-gallery.multi-image {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+    }
+
+    .image-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        padding-top: 100px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.9);
+    }
+
+    .modal-content {
+        margin: auto;
+        display: block;
+        width: 80%;
+        max-width: 700px;
+        max-height: 80vh;
+        object-fit: contain;
+    }
+
+    .close-modal {
+        position: absolute;
+        top: 15px;
+        right: 35px;
+        color: #f1f1f1;
+        font-size: 40px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .prev, .next {
+        cursor: pointer;
+        position: absolute;
+        top: 50%;
+        width: auto;
+        padding: 16px;
+        margin-top: -50px;
+        color: white;
+        font-weight: bold;
+        font-size: 20px;
+        transition: 0.6s ease;
+        border-radius: 0 3px 3px 0;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    .next {
+        right: 0;
+        border-radius: 3px 0 0 3px;
+    }
+
+    .prev:hover, .next:hover {
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+
+    #image-caption {
+        margin: auto;
+        display: block;
+        width: 80%;
+        max-width: 700px;
+        text-align: center;
+        color: #ccc;
+        padding: 10px 0;
+        height: 150px;
+    }
+`;
+document.head.appendChild(modalStyle);
