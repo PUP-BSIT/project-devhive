@@ -454,47 +454,106 @@ class PostCreator {
               .replace(/'/g, '&#39;');
   }
 
-  sharePost() {
+  async createPostAPI(postData) {
+    try {
+      // Validate post data
+      if (!postData.content || postData.content.trim() === '') {
+        throw new Error('Post content cannot be empty');
+      }
+
+      // Prepare post object
+      const post = {
+        id: Date.now(),
+        content: postData.content,
+        platforms: postData.platforms || ['all'],
+        timestamp: new Date().toISOString(),
+        author: postData.author || this.getCurrentUser(),
+        mediaData: {
+          images: postData.images || [],
+          videos: postData.videos || []
+        }
+      };
+
+      // Save post to local storage (existing method)
+      this.savePostToLocalStorage(post);
+
+      // Update global wall (existing method)
+      this.updateGlobalWall(post);
+
+      // Optional: Send post to backend server
+      const response = await this.sendPostToServer(post);
+
+      return {
+        success: true,
+        post: post,
+        serverResponse: response
+      };
+    } catch (error) {
+      console.error('Post creation error:', error);
+      this.showNotification(error.message || 'Failed to create post');
+      
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  async sendPostToServer(post) {
+    try {
+      const response = await fetch('/api/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(post)
+      });
+
+      if (!response.ok) {
+        throw new Error('Server responded with an error');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Server post error:', error);
+      return null;
+    }
+  }
+
+  // Modify existing sharePost to use createPostAPI
+  async sharePost() {
     const content = document.getElementById("post-content").value;
     const platforms = this.selectedPlatforms;
-
-    if (!content.trim()) {
-      this.showNotification("Please enter content");
-      return;
-    }
 
     const storedImages = JSON.parse(localStorage.getItem(this.storageManager.storageKeys.images) || '{}');
     const storedVideos = JSON.parse(localStorage.getItem(this.storageManager.storageKeys.videos) || '{}');
     
-    const post = {
-      id: Date.now(), 
+    const postData = {
       content: content,
       platforms: platforms,
-      timestamp: new Date().toISOString(),
       author: this.getCurrentUser(),
-      mediaData: {
-        images: Object.entries(storedImages).map(([key, value]) => ({
-          key: key,
-          data: value
-        })),
-        videos: Object.entries(storedVideos).map(([key, value]) => ({
-          key: key,
-          data: value
-        }))
-      }
+      images: Object.entries(storedImages).map(([key, value]) => ({
+        key: key,
+        data: value
+      })),
+      videos: Object.entries(storedVideos).map(([key, value]) => ({
+        key: key,
+        data: value
+      }))
     };
 
-    this.savePostToLocalStorage(post);
-    this.updateGlobalWall(post);
+    const result = await this.createPostAPI(postData);
 
-    document.getElementById("post-content").value = "";
-    const previews = document.querySelectorAll('.file-preview');
-    previews.forEach(preview => preview.remove());
+    if (result.success) {
+      document.getElementById("post-content").value = "";
+      const previews = document.querySelectorAll('.file-preview');
+      previews.forEach(preview => preview.remove());
 
-    localStorage.removeItem(this.storageManager.storageKeys.images);
-    localStorage.removeItem(this.storageManager.storageKeys.videos);
+      localStorage.removeItem(this.storageManager.storageKeys.images);
+      localStorage.removeItem(this.storageManager.storageKeys.videos);
 
-    this.showNotification("Post shared successfully!");
+      this.showNotification("Post shared successfully!");
+    }
   }
 
   getCurrentUser() {
