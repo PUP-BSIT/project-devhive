@@ -3,25 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Create Post - DevHive Space</title>
-    <link rel="stylesheet" href="create.css" />
-    <link rel="stylesheet" href="preview_modal.css" />
+    <title>Create Post - DevHive</title>
+    <link rel="stylesheet" href="styles.css" />
     <link 
       href="https://fonts.googleapis.com/css2?family=Coda+Caption:wght@800&family=Inter:wght@400;500;600;700&display=swap" 
       rel="stylesheet">
   </head>
   <body>
-
-    <nav class="top-nav">
-      <div class="logo">
-        <img src="../assets/devhive_logo.png" alt="DevHive">
-      </div>
-      <div class="nav-icons">
-        <div class="nav-icon">🔔</div>
-        <div class="nav-icon">👤</div>
-      </div>
-    </nav>
-
     <div class="container">
       <div class="left-section">
         <aside class="sidebar">
@@ -37,7 +25,7 @@
               <span>Global Wall</span>
             </a>
           </div>
-          <div class="menu-item" data-page="profile">
+          <div class="menu-item">
             <a href="../user_profile/index.html">
               <img src="../assets/human.png" alt="">
               <span>Profile</span>
@@ -63,85 +51,46 @@
           </div>
         </aside>
       </div>
+      
       <div class="right-section">
         <h1 class="page-title">Create Post</h1>
 
-        <main class="main-content"> 
+        <main class="main-content">
           <form id="post-form">
             <div class="form-group">
               <label class="form-label">Post to:</label>
               <div class="platform-buttons">
-                <button
-                  type="button"
-                  class="platform-btn active"
-                  data-platform="all">
-                  All
-                </button>
-                <button
-                  type="button"
-                  class="platform-btn instagram"
-                  data-platform="Heybleepi">
-                  Heybleepi
-                </button>
-                <button
-                  type="button"
-                  class="platform-btn twitter"
-                  data-platform="Hershive">
-                  Hershive
-                </button>
+                <button type="button" class="platform-btn active" data-platform="all">All</button>
+                <button type="button" class="platform-btn" data-platform="heybeepi">Heybeepi</button>
+                <button type="button" class="platform-btn" data-platform="hershive">Hershive</button>
               </div>
             </div>
 
             <div class="form-group">
               <label class="form-label" for="post-content">Caption:</label>
-              <textarea
-                id="post-content"
-                class="content-textarea"
-                placeholder="What's on your mind?"></textarea>
+              <textarea id="post-content" class="content-textarea" placeholder="What's on your mind?"></textarea>
 
               <div class="toolbar">
-                <button
-                  type="button"
-                  class="toolbar-btn"
-                  data-format="image"
-                  title="Image">
+                <button type="button" id="image-upload-btn" class="toolbar-btn" title="Upload Image">
                   🖼️
                 </button>
-                <button
-                  type="button"
-                  class="toolbar-btn"
-                  data-format="video"
-                  title="Video">
-                  📹
-                </button>
-                <button
-                  type="button"
-                  class="toolbar-btn"
-                  data-format="emoji"
-                  title="Emoji">
-                  😊
+                <button type="button" id="video-upload-btn" class="toolbar-btn" title="Upload Video">
+                  🎥
                 </button>
               </div>
+
+              <div id="image-previews" class="media-previews"></div>
+              <div id="video-previews" class="media-previews"></div>
             </div>
 
             <div class="action-buttons">
-              <button 
-                type="button" 
-                class="btn btn-secondary" 
-                id="preview-btn">
-                Preview
-              </button>
-              <button 
-                type="button" 
-                class="btn btn-primary" 
-                id="share-post-btn">
-                Share Post
-              </button>
+              <button type="button" class="btn btn-secondary" id="preview-btn">Preview</button>
+              <button type="button" class="btn btn-primary" id="share-post-btn">Share Post</button>
             </div>
           </form>
         </main>
       </div>
     </div>
-    <script src="create.js"></script>
+    <script src="script.js"></script>
   </body>
 </html>
