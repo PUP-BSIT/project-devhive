@@ -6,6 +6,7 @@ class PostCreator {
     this.uploadedImages = [];
     this.uploadedVideos = [];
     this.initializeEventListeners();
+    this.addCustomStyles();
   }
 
   initializeEventListeners() {
@@ -128,75 +129,96 @@ class PostCreator {
     
     input.onchange = async (e) => {
       const files = Array.from(e.target.files);
+      const maxFileSize = 5 * 1024 * 1024; // 5MB limit per image
       
       for (const file of files) {
         if (file.type.startsWith('image/')) {
+          if (file.size > maxFileSize) {
+            this.showNotification(`Image ${file.name} is too large. Maximum size is 5MB.`, 'error');
+            continue;
+          }
+
           try {
-            const formData = new FormData();
-            formData.append('image', file);
-
-            // Upload image to server
-            const response = await fetch(`${this.apiBaseUrl}/upload-image.php`, {
-              method: 'POST',
-              body: formData
-            });
-
-            if (!response.ok) {
-              throw new Error(`Failed to upload image: ${file.name}`);
-            }
-
-            const result = await response.json();
-            
-            if (result.status === 'success') {
+            // Read file as Data URL
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const imageData = e.target.result;
+              
               // Add image to uploadedImages array
+              const imageId = `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
               this.uploadedImages.push({
-                url: result.data.url,
-                id: result.data.image_id,
-                filename: result.data.filename
+                url: imageData,
+                id: imageId,
+                filename: file.name
               });
+
+              // Create preview container if it doesn't exist
+              let previewsContainer = document.getElementById("image-previews");
+              if (!previewsContainer) {
+                previewsContainer = document.createElement('div');
+                previewsContainer.id = 'image-previews';
+                previewsContainer.className = 'media-previews';
+                document.querySelector('#post-form').appendChild(previewsContainer);
+              }
 
               // Add image preview
               const previewContainer = document.createElement('div');
               previewContainer.className = 'image-preview';
               
               const img = document.createElement('img');
-              img.src = result.data.url;
+              img.src = imageData;
               img.alt = file.name;
-              img.style.maxWidth = '100px';
-              img.style.height = '100px';
+              img.style.maxWidth = '200px';
+              img.style.height = '150px';
               img.style.objectFit = 'cover';
               img.style.borderRadius = '8px';
+              img.style.margin = '5px';
               
               const removeBtn = document.createElement('button');
               removeBtn.innerHTML = '×';
               removeBtn.className = 'remove-media-btn';
+              removeBtn.style.position = 'absolute';
+              removeBtn.style.top = '5px';
+              removeBtn.style.right = '5px';
+              removeBtn.style.background = 'rgba(0, 0, 0, 0.5)';
+              removeBtn.style.color = 'white';
+              removeBtn.style.border = 'none';
+              removeBtn.style.borderRadius = '50%';
+              removeBtn.style.width = '25px';
+              removeBtn.style.height = '25px';
+              removeBtn.style.cursor = 'pointer';
+              removeBtn.style.display = 'flex';
+              removeBtn.style.alignItems = 'center';
+              removeBtn.style.justifyContent = 'center';
+              
               removeBtn.onclick = () => {
-                this.uploadedImages = this.uploadedImages.filter(img => img.url !== result.data.url);
+                this.uploadedImages = this.uploadedImages.filter(img => img.id !== imageId);
                 previewContainer.remove();
+                this.showNotification('Image removed');
               };
+
+              previewContainer.style.position = 'relative';
+              previewContainer.style.display = 'inline-block';
+              previewContainer.style.margin = '5px';
 
               previewContainer.appendChild(img);
               previewContainer.appendChild(removeBtn);
-              
-              const previewsContainer = document.getElementById("image-previews");
-              if (!previewsContainer) {
-                const container = document.createElement('div');
-                container.id = 'image-previews';
-                container.className = 'media-previews';
-                document.querySelector('.post-form').appendChild(container);
-              }
-              document.getElementById("image-previews").appendChild(previewContainer);
+              previewsContainer.appendChild(previewContainer);
 
-              this.showNotification(`Image ${file.name} uploaded successfully`);
-            } else {
-              throw new Error(result.message || `Failed to upload image: ${file.name}`);
-            }
+              this.showNotification(`Image ${file.name} added successfully`);
+            };
+
+            reader.onerror = () => {
+              this.showNotification(`Error reading file: ${file.name}`, 'error');
+            };
+
+            reader.readAsDataURL(file);
           } catch (error) {
-            console.error('Error uploading image:', error);
-            this.showNotification(`Error: ${error.message}`);
+            console.error('Error handling image:', error);
+            this.showNotification(`Error: ${error.message}`, 'error');
           }
         } else {
-          this.showNotification(`${file.name} is not an image file`);
+          this.showNotification(`${file.name} is not an image file`, 'error');
         }
       }
     };
@@ -490,78 +512,48 @@ class PostCreator {
         return;
       }
 
+      // Create post data
       const postData = {
+        id: Date.now(),
         content: content,
-        user_id: this.getCurrentUserId()
+        author: localStorage.getItem('userDisplayName') || 'Anonymous',
+        authorAvatar: localStorage.getItem('userProfileAvatar') || '../assets/human.png',
+        timestamp: new Date().toISOString(),
+        likes: 0,
+        comments: [],
+        shares: 0,
+        images: this.uploadedImages.map(img => img.url),
+        videos: this.uploadedVideos.map(vid => vid.url)
       };
 
-      console.log("Sending post data: ", postData);
+      // Get existing posts from local storage
+      const existingPosts = JSON.parse(localStorage.getItem('devhive_posts') || '[]');
+      
+      // Add new post to the beginning of the array
+      existingPosts.unshift(postData);
+      
+      // Save updated posts to local storage
+      localStorage.setItem('devhive_posts', JSON.stringify(existingPosts));
 
-      // Create post first
-      const response = await fetch(`${this.apiBaseUrl}/create-post.php`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(postData)
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to create post');
-      }
-
-      const result = await response.json();
-      console.log("Raw response: ", JSON.stringify(result));
-
-      if (result.status === 'success') {
-        // If there are images, associate them with the post
-        if (this.uploadedImages.length > 0) {
-          for (const image of this.uploadedImages) {
-            const formData = new FormData();
-            formData.append('post_id', result.data.post_id);
-            formData.append('image_url', image.url);
-
-            await fetch(`${this.apiBaseUrl}/upload-image.php`, {
-              method: 'POST',
-              body: formData
-            });
-          }
-        }
-
-        // If there are videos, associate them with the post
-        if (this.uploadedVideos.length > 0) {
-          for (const video of this.uploadedVideos) {
-            const formData = new FormData();
-            formData.append('post_id', result.data.post_id);
-            formData.append('video_url', video.url);
-
-            await fetch(`${this.apiBaseUrl}/upload-video.php`, {
-              method: 'POST',
-              body: formData
-            });
-          }
-        }
-
-        // Clear form and media
-        document.getElementById("post-content").value = "";
-        document.getElementById("image-previews").innerHTML = "";
-        document.getElementById("video-previews").innerHTML = "";
+      // Clear the form
+      document.getElementById("post-content").value = '';
         this.uploadedImages = [];
         this.uploadedVideos = [];
 
-        this.showNotification("Post shared successfully!");
-        
-        // Redirect to the global wall page after successful post
-        setTimeout(() => {
-          window.location.href = '/global_wall/';
-        }, 1500); // Wait 1.5 seconds so user can see the success message
-      } else {
-        throw new Error(result.message || 'Failed to create post');
+      // Clear preview area
+      const previewArea = document.querySelector('.post-media-container');
+      if (previewArea) {
+        previewArea.innerHTML = '';
       }
+
+      // Show success notification
+      this.showNotification("Post shared successfully!");
+
+      // Redirect to global wall
+      window.location.href = '../global_wall/index.html';
     } catch (error) {
       console.error('Error sharing post:', error);
-      this.showNotification(`Error: ${error.message}`);
+      this.showNotification("Failed to share post. Please try again.", "error");
     }
   }
 
@@ -579,19 +571,46 @@ class PostCreator {
     this.showNotification("Profile menu would open here");
   }
 
-  showNotification(message) {
+  showNotification(message, type = 'success') {
     const notification = document.createElement('div');
-    notification.className = 'notification';
+    notification.className = `notification ${type}`;
     notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 25px;
+        background-color: ${type === 'success' ? '#4CAF50' : '#f44336'};
+        color: white;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        z-index: 1000;
+        animation: slideIn 0.3s ease-out;
+    `;
+
+    // Add animation keyframes
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+
     document.body.appendChild(notification);
     
+    // Remove notification after 3 seconds
     setTimeout(() => {
-      notification.classList.add('show');
-      setTimeout(() => {
-        notification.classList.remove('show');
+        notification.style.animation = 'slideOut 0.3s ease-in forwards';
         setTimeout(() => notification.remove(), 300);
       }, 3000);
-    }, 100);
   }
 
   formatDuration(seconds) {
@@ -641,6 +660,85 @@ class PostCreator {
         URL.revokeObjectURL(video.localUrl);
       }
     });
+  }
+
+  addCustomStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .media-previews {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 10px 0;
+            min-height: 50px;
+            padding: 10px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+
+        .image-preview, .video-preview {
+            position: relative;
+            display: inline-block;
+            margin: 5px;
+        }
+
+        .remove-media-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: background-color 0.3s;
+        }
+
+        .remove-media-btn:hover {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
   }
 }
 
