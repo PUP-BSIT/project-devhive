@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
         button.addEventListener('click', () => {
             filterButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
+            loadPosts(0, button.textContent.trim().toLowerCase());
         });
     });
 
@@ -15,7 +16,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    loadPosts();
+    // Initial load
+    loadPosts(0, 'all post');
+
+    // Add refresh button to header
+    const globalWallHeader = document.querySelector('.global-wall-header');
+    const refreshButton = document.createElement('button');
+    refreshButton.className = 'refresh-btn';
+    refreshButton.innerHTML = '🔄 Refresh';
+    globalWallHeader.appendChild(refreshButton);
+
+    refreshButton.addEventListener('click', () => {
+        const activeFilter = document.querySelector('.post-filters button.active');
+        loadPosts(0, activeFilter.textContent.trim().toLowerCase());
+    });
 
     const globalWallContainer = document.querySelector('.global-wall-posts');
     
@@ -74,90 +88,239 @@ function videoClickHandler(e) {
     }
 }
 
-function loadPosts() {
+async function loadPosts(offset = 0, filter = 'all post') {
     const globalWallContainer = document.querySelector('.global-wall-posts');
     if (!globalWallContainer) return;
 
-    globalWallContainer.innerHTML = '';
-
-    const posts = JSON.parse(localStorage.getItem('devhive_posts') || '[]');
-    const userDisplayName = localStorage.getItem('userDisplayName');
-
-    posts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-    posts.forEach(post => {
-        // If the post author matches the current user, update the author name
-        if (userDisplayName && post.author === (localStorage.getItem('currentUsername') || post.author)) {
-            post.author = userDisplayName;
+    try {
+        // Show loading state
+        if (offset === 0) {
+            globalWallContainer.innerHTML = '<div class="loading">Loading posts...</div>';
         }
-        
-        const postElement = createPostElement(post);
-        globalWallContainer.appendChild(postElement);
-    });
 
-    attachVideoEventListeners();
+        // Construct API URL with parameters
+        const url = new URL('../api/posts/get-post.php', window.location.href);
+        url.searchParams.append('offset', offset);
+        url.searchParams.append('limit', 10);
+        if (filter !== 'all post') {
+            url.searchParams.append('platform', filter);
+        }
+
+        // Fetch posts from the API
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Failed to fetch posts');
+        }
+
+        const data = await response.json();
+        console.log('API Response:', data); // Debug log
+        
+        if (data.status !== 'success' || !data.data.posts) {
+            throw new Error('Invalid response format');
+        }
+
+        const { posts, pagination } = data.data;
+        
+        // Clear container only on first load
+        if (offset === 0) {
+            globalWallContainer.innerHTML = '';
+        }
+
+        if (posts.length === 0 && offset === 0) {
+            globalWallContainer.innerHTML = '<div class="no-posts">No posts yet. Be the first to post!</div>';
+            return;
+        }
+
+        posts.forEach(post => {
+            console.log('Processing post:', post); // Debug log
+
+            // Parse video data if exists
+            let videoData = null;
+            if (post.videos) {
+                console.log('Video data found:', post.videos); // Debug log
+                const videoInfos = post.videos.split(',').map(videoStr => {
+                    const [url, thumbnail, duration] = videoStr.split(':::');
+                    return { url, thumbnail, duration };
+                });
+                videoData = videoInfos[0]; // Take the first video for now
+                console.log('Parsed video data:', videoData); // Debug log
+            }
+
+            // Parse image data if exists
+            let imageUrls = [];
+            if (post.images) {
+                console.log('Image data found:', post.images); // Debug log
+                imageUrls = post.images.split(',').filter(url => url.trim());
+                console.log('Parsed image URLs:', imageUrls); // Debug log
+            }
+
+            // Convert the database post format to our display format
+            const displayPost = {
+                id: post.post_id,
+                author: post.user_id,
+                content: post.content,
+                timestamp: post.created_at,
+                likes: 0,
+                comments: [],
+                shares: 0,
+                images: imageUrls,
+                video: videoData
+            };
+            
+            console.log('Display post object:', displayPost); // Debug log
+            
+            const postElement = createPostElement(displayPost);
+            globalWallContainer.appendChild(postElement);
+        });
+
+        attachVideoEventListeners();
+
+        // Add load more button if there are more posts
+        if (pagination.total > offset + posts.length) {
+            const loadMoreContainer = document.createElement('div');
+            loadMoreContainer.className = 'load-more-container';
+            loadMoreContainer.innerHTML = `
+                <button class="load-more-btn">
+                    Load More Posts
+                </button>
+            `;
+
+            const loadMoreBtn = loadMoreContainer.querySelector('.load-more-btn');
+            loadMoreBtn.addEventListener('click', () => {
+                loadMoreBtn.disabled = true;
+                loadMoreBtn.textContent = 'Loading...';
+                loadPosts(offset + 10, filter);
+                loadMoreContainer.remove();
+            });
+
+            globalWallContainer.appendChild(loadMoreContainer);
+        }
+
+    } catch (error) {
+        console.error('Error loading posts:', error);
+        if (offset === 0) {
+            globalWallContainer.innerHTML = `
+                <div class="error-message">
+                    Failed to load posts. Please try again later.
+                    <button onclick="loadPosts(0, '${filter}')">Retry</button>
+                </div>
+            `;
+        }
+    }
 }
+
+// Add styles for new elements
+const additionalStyles = `
+    .refresh-btn {
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s ease;
+        margin-left: auto;
+    }
+
+    .refresh-btn:hover {
+        background: #1d4ed8;
+        transform: scale(1.05);
+    }
+
+    .load-more-container {
+        display: flex;
+        justify-content: center;
+        padding: 20px 0;
+    }
+
+    .load-more-btn {
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .load-more-btn:hover {
+        background: #1d4ed8;
+        transform: translateY(-2px);
+    }
+
+    .load-more-btn:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+        transform: none;
+    }
+`;
+
+document.head.appendChild(document.createElement('style')).textContent = additionalStyles;
 
 function createPostElement(post) {
     post.likes = post.likes || 0;
     post.comments = post.comments || [];
     post.shares = post.shares || 0;
 
-    // Ensure images and video are handled correctly
-    const parsedContent = {
-        text: escapeHTML(post.content || ''),
-        media: null
-    };
+    // Prepare media HTML
+    let mediaHTML = '';
+    
+    // Handle images
+    if (post.images && post.images.length > 0) {
+        mediaHTML += `
+            <div class="post-media-gallery ${post.images.length > 1 ? 'multi-image' : 'single-image'}">
+                ${post.images.map((imageSrc, index) => `
+                    <div class="post-media-item" data-index="${index}">
+                        <img 
+                            src="${imageSrc}" 
+                            alt="Post Image ${index + 1}" 
+                            onclick="openImageModal(this)"
+                            style="
+                                width: 100%; 
+                                height: ${post.images.length === 1 ? '400px' : '200px'}; 
+                                object-fit: ${post.images.length === 1 ? 'contain' : 'cover'}; 
+                                border-radius: 8px; 
+                                cursor: pointer;
+                            "
+                        >
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
 
-    // Check for images with improved display
-    const imageMediaHTML = post.images && post.images.length > 0 
-        ? `
-        <div class="post-media-gallery ${post.images.length > 1 ? 'multi-image' : 'single-image'}">
-            ${post.images.map((imageSrc, index) => `
-                <div class="post-media-item" data-index="${index}">
-                    <img 
-                        src="${imageSrc}" 
-                        alt="Post Image ${index + 1}" 
-                        onclick="openImageModal(this)"
-                        style="
-                            width: 100%; 
-                            height: ${post.images.length === 1 ? '400px' : '200px'}; 
-                            object-fit: ${post.images.length === 1 ? 'contain' : 'cover'}; 
-                            border-radius: 8px; 
-                            cursor: pointer;
-                        "
-                    >
-                </div>
-            `).join('')}
-        </div>
-        `
-        : null;
-
-    // Check for video with improved display
-    const videoMediaHTML = post.video 
-        ? `
-        <div class="post-media-video">
-            <video 
-                src="${post.video}" 
-                controls 
-                style="
-                    width: 100%; 
-                    max-height: 400px; 
-                    object-fit: contain; 
-                    border-radius: 8px;
-                "
-                preload="metadata"
-                playsinline
-            >
-                Your browser does not support the video tag.
-            </video>
-        </div>
-        `
-        : null;
-
-    // Use post's author and avatar if available, otherwise fallback to local storage
-    const displayName = post.author || localStorage.getItem('userDisplayName') || 'Anonymous';
-    const authorAvatar = post.authorAvatar || localStorage.getItem('userProfileAvatar') || '../assets/human.png';
+    // Handle video
+    if (post.video) {
+        mediaHTML += `
+            <div class="post-media-video">
+                <video 
+                    src="${post.video.url}" 
+                    ${post.video.thumbnail ? `poster="${post.video.thumbnail}"` : ''}
+                    controls 
+                    style="
+                        width: 100%; 
+                        max-height: 400px; 
+                        object-fit: contain; 
+                        border-radius: 8px;
+                    "
+                    preload="metadata"
+                    playsinline
+                >
+                    Your browser does not support the video tag.
+                </video>
+                ${post.video.duration ? `
+                    <div class="video-duration">${post.video.duration}</div>
+                ` : ''}
+            </div>
+        `;
+    }
 
     const postElement = document.createElement('div');
     postElement.className = 'social-post';
@@ -166,9 +329,9 @@ function createPostElement(post) {
     postElement.innerHTML = `
         <div class="post-header">
             <div class="post-user-info">
-                <img src="${authorAvatar}" alt="Profile" class="profile-pic">
+                <img src="../assets/human.png" alt="Profile" class="profile-pic">
                 <div class="user-details">
-                    <h3 class="post-author">${escapeHTML(displayName)}</h3>
+                    <h3 class="post-author">${post.author || 'Anonymous'}</h3>
                     <span class="post-timestamp">${getTimeDifference(new Date(post.timestamp))}</span>
                 </div>
             </div>
@@ -183,10 +346,10 @@ function createPostElement(post) {
         </div>
 
         <div class="post-content">
-            <p class="post-text">${parsedContent.text}</p>
-            ${imageMediaHTML || videoMediaHTML ? `
+            <p class="post-text">${escapeHTML(post.content)}</p>
+            ${mediaHTML ? `
                 <div class="post-media-container">
-                    ${imageMediaHTML || videoMediaHTML}
+                    ${mediaHTML}
                 </div>
             ` : ''}
         </div>

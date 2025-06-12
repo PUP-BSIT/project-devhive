@@ -25,49 +25,48 @@ try {
                  LEFT JOIN post_video pv ON p.post_id = pv.post_id
                  WHERE p.post_id = ?
                  GROUP BY p.post_id";
-        
-        $stmt = $conn->prepare($query);
-        if (!$stmt) {
-            throw new Exception("Prepare failed: " . $conn->error);
-        }
-
-        $stmt->bind_param("i", $postId);
-        
-        if (!$stmt->execute()) {
-            throw new Exception("Execute failed: " . $stmt->error);
-        }
-
-        $result = $stmt->get_result();
-        $post = $result->fetch_assoc();
-
-        if (!$post) {
-            throw new Exception('Post not found');
-        }
-
-        $response = $post;
-        $stmt->close();
-
     } else {
         // Get multiple posts
-        $query = "SELECT post_id, user_id, content, created_at, updated_at
-                 FROM post
-                 ORDER BY created_at DESC
+        $query = "SELECT p.post_id, p.user_id, p.content, p.created_at, p.updated_at,
+                        GROUP_CONCAT(DISTINCT pi.image_url) as images,
+                        GROUP_CONCAT(DISTINCT CONCAT(pv.video_url, ':::', COALESCE(pv.thumbnail_url, ''), ':::', COALESCE(pv.duration, ''))) as videos
+                 FROM post p
+                 LEFT JOIN post_image pi ON p.post_id = pi.post_id
+                 LEFT JOIN post_video pv ON p.post_id = pv.post_id
+                 GROUP BY p.post_id
+                 ORDER BY p.created_at DESC
                  LIMIT ?, ?";
-                 
-        $stmt = $conn->prepare($query);
-        if (!$stmt) {
-            throw new Exception("Prepare failed: " . $conn->error);
-        }
+    }
 
+    // Add debug logging
+    error_log("SQL Query: " . $query);
+
+    $stmt = $conn->prepare($query);
+    if (!$stmt) {
+        error_log("Prepare failed: " . $conn->error);
+        throw new Exception("Prepare failed: " . $conn->error);
+    }
+
+    if ($postId) {
+        $stmt->bind_param("i", $postId);
+    } else {
         $stmt->bind_param("ii", $offset, $limit);
-        
-        if (!$stmt->execute()) {
-            throw new Exception("Execute failed: " . $stmt->error);
-        }
+    }
 
-        $result = $stmt->get_result();
-        $posts = $result->fetch_all(MYSQLI_ASSOC);
-        
+    if (!$stmt->execute()) {
+        error_log("Execute failed: " . $stmt->error);
+        throw new Exception("Execute failed: " . $stmt->error);
+    }
+
+    $result = $stmt->get_result();
+    $posts = $postId ? $result->fetch_assoc() : $result->fetch_all(MYSQLI_ASSOC);
+
+    // Debug log the results
+    error_log("Query results: " . json_encode($posts));
+
+    if ($postId) {
+        $response = $posts;
+    } else {
         // Get total count for pagination
         $countResult = $conn->query("SELECT COUNT(*) as total FROM post");
         if (!$countResult) {
@@ -84,9 +83,6 @@ try {
                 'limit' => $limit
             ]
         ];
-
-        $stmt->close();
-        $countResult->close();
     }
 
     echo json_encode([
