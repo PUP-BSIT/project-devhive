@@ -332,7 +332,10 @@ function createPostElement(post) {
                 <img src="../assets/human.png" alt="Profile" class="profile-pic">
                 <div class="user-details">
                     <h3 class="post-author">${post.author || 'Anonymous'}</h3>
-                    <span class="post-timestamp">${getTimeDifference(new Date(post.timestamp))}</span>
+                    <span class="post-timestamp">
+                        ${getTimeDifference(post.timestamp)}<br>
+                        <span class="local-time">${convertUTCMySQLToLocal(post.timestamp)}</span>
+                    </span>
                 </div>
             </div>
             <div class="post-options">
@@ -509,20 +512,55 @@ function parsePostContent(content) {
     return result;
 }
 
+function convertUTCMySQLToLocal(dateString) {
+    // Parse the MySQL UTC datetime string
+    const [datePart, timePart] = dateString.split(' ');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hour, minute, second] = timePart.split(':').map(Number);
+
+    // Create a Date object in UTC
+    const utcDate = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+
+    // Convert to local time string (e.g., "Jun 13, 2025, 2:17 AM")
+    return utcDate.toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
+}
+
+function parseMySQLDateToUTC(dateString) {
+    const [datePart, timePart] = dateString.split(' ');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hour, minute, second] = timePart.split(':').map(Number);
+    return new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+}
+
 function getTimeDifference(date) {
     const now = new Date();
-    const diff = Math.floor((now - date) / 1000);
+    const postDate = parseMySQLDateToUTC(date);
+    const diff = Math.floor((now.getTime() - postDate.getTime()) / 1000);
 
     if (diff < 60) {
         return 'Just now';
     } else if (diff < 3600) {
-        return Math.floor(diff / 60) + ' minutes ago';
+        const minutes = Math.floor(diff / 60);
+        return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
     } else if (diff < 86400) {
-        return Math.floor(diff / 3600) + ' hours ago';
+        const hours = Math.floor(diff / 3600);
+        return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
     } else if (diff < 604800) {
-        return Math.floor(diff / 86400) + ' days ago';
+        const days = Math.floor(diff / 86400);
+        return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+    } else if (diff < 2592000) {
+        const weeks = Math.floor(diff / 604800);
+        return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
     } else {
-        return Math.floor(diff / 604800) + ' weeks ago';
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        return postDate.toLocaleDateString(undefined, options);
     }
 }
 
