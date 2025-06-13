@@ -1,0 +1,113 @@
+/* Base styles inspired by email_verify.css */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Coda Caption", sans-serif;
+}
+
+body {
+  background-image: url("../../public/assets/background.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.oauth-container {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.oauth-container {
+  background: #fff;
+  border-radius: 20px;
+  text-align: center;
+  padding: 40px 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  font-size: 22px;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+p {
+  font-size: 14px;
+  margin-bottom: 25px;
+  color: #444;
+}
+
+form {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+button {
+  background-color: #3182ce;
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto 10px auto;
+  display: block;
+}
+
+button.approve-btn {
+  background-color: #22c55e;
+}
+
+button.approve-btn:hover {
+  background-color: #16a34a;
+}
+
+button.deny-btn {
+  background-color: #e53e3e;
+}
+
+button.deny-btn:hover {
+  background-color: #b91c1c;
+}
+
+.oauth-footer {
+  display: block;
+  margin-top: 20px;
+  font-size: 13px;
+  color: #333;
+}
+
+#scopeSection {
+  margin-bottom: 20px;
+}
+
+@media (max-width: 480px) {
+  .oauth-container {
+    padding: 30px 20px;
+  }
+
+  h1 {
+    font-size: 20px;
+  }
+
+  p {
+    font-size: 13px;
+  }
+
+  button {
+    font-size: 13px;
+  }
+}

@@ -1,0 +1,11 @@
+# Set index.php as the default directory index file
+DirectoryIndex index.php index.html
+
+# Optional: Redirect all requests to index.php (for single-page apps or routing)
+# Uncomment the following lines if you want all requests to go through index.php
+# <IfModule mod_rewrite.c>
+#   RewriteEngine On
+#   RewriteCond %{REQUEST_FILENAME} !-f
+#   RewriteCond %{REQUEST_FILENAME} !-d
+#   RewriteRule ^(.*)$ index.php [L]
+# </IfModule>

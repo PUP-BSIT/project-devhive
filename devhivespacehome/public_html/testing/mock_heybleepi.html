@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>HeyBleepi OAuth Mock Client</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f7fafc;
+        margin: 0;
+      }
+      .container {
+        max-width: 480px;
+        margin: 40px auto;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px #0001;
+        padding: 32px;
+      }
+      .header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+      .logo {
+        width: 48px;
+        height: 48px;
+        margin-right: 16px;
+      }
+      .app-name {
+        font-size: 1.5em;
+        color: #4285f4;
+        font-weight: bold;
+      }
+      .btn {
+        background: #4285f4;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 12px 24px;
+        font-size: 1em;
+        cursor: pointer;
+        margin: 8px 0;
+      }
+      .btn:disabled {
+        background: #bcd3f7;
+      }
+      .token,
+      .error,
+      .log {
+        font-family: monospace;
+        font-size: 0.95em;
+        background: #f1f5f9;
+        border-radius: 6px;
+        padding: 8px;
+        margin: 8px 0;
+      }
+      .error {
+        color: #b91c1c;
+        background: #fee2e2;
+      }
+      .success {
+        color: #15803d;
+      }
+      .section {
+        margin-bottom: 18px;
+      }
+      .label {
+        font-weight: bold;
+      }
+      .flow-step {
+        display: inline-block;
+        margin-right: 8px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background: #e0e7ef;
+        font-size: 0.95em;
+      }
+      .active-step {
+        background: #4285f4;
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <img src="heybleepi-logo.png" class="logo" alt="HeyBleepi Logo" />
+        <span class="app-name">HeyBleepi Social</span>
+      </div>
+      <div class="section">
+        <span class="flow-step" id="step-auth">1. Authorize</span>
+        <span class="flow-step" id="step-token">2. Token</span>
+        <span class="flow-step" id="step-api">3. API</span>
+      </div>
+      <div class="section">
+        <button class="btn" id="loginBtn">Login with DevHive</button>
+        <button class="btn" id="logoutBtn" style="display: none">Logout</button>
+      </div>
+      <div class="section" id="tokenSection" style="display: none">
+        <div class="label">Access Token:</div>
+        <div class="token" id="accessToken"></div>
+        <div class="label">Token Expires:</div>
+        <div id="tokenExpiry"></div>
+      </div>
+      <div class="section" id="userSection" style="display: none">
+        <div class="label">User Info:</div>
+        <div class="token" id="userInfo"></div>
+      </div>
+      <div class="section">
+        <button class="btn" id="apiBtn" style="display: none">
+          Call /userinfo API
+        </button>
+      </div>
+      <div class="section error" id="errorSection" style="display: none"></div>
+      <div class="section log" id="logSection"></div>
+    </div>
+    <script>
+      // HeyBleepi config
+      const config = {
+        client_id: "heybleepi_test_2024",
+        client_secret: "heybleepi_secret_key_123",
+        redirect_uri: window.location.origin + window.location.pathname,
+        auth_endpoint: "https://devhivespace.com/api/oauth/authorization.php",
+        token_endpoint: "https://devhivespace.com/api/oauth/token.php",
+        userinfo_endpoint: "https://devhivespace.com/api/oauth/userinfo.php",
+        app_name: "HeyBleepi Social",
+        scopes: ["profile", "email", "posts"],
+        branding: { color: "#4285f4", logo: "heybleepi-logo.png" },
+      };
+
+      // State
+      let state = "";
+      let code = "";
+      let accessToken = "";
+      let tokenExpiry = 0;
+
+      // UI Elements
+      const loginBtn = document.getElementById("loginBtn");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const apiBtn = document.getElementById("apiBtn");
+      const accessTokenDiv = document.getElementById("accessToken");
+      const tokenExpiryDiv = document.getElementById("tokenExpiry");
+      const userInfoDiv = document.getElementById("userInfo");
+      const tokenSection = document.getElementById("tokenSection");
+      const userSection = document.getElementById("userSection");
+      const errorSection = document.getElementById("errorSection");
+      const logSection = document.getElementById("logSection");
+      const stepAuth = document.getElementById("step-auth");
+      const stepToken = document.getElementById("step-token");
+      const stepApi = document.getElementById("step-api");
+
+      function log(msg) {
+        logSection.innerHTML += `<div>${new Date().toLocaleTimeString()} - ${msg}</div>`;
+      }
+
+      function setStep(step) {
+        [stepAuth, stepToken, stepApi].forEach((el) =>
+          el.classList.remove("active-step")
+        );
+        if (step === 1) stepAuth.classList.add("active-step");
+        if (step === 2) stepToken.classList.add("active-step");
+        if (step === 3) stepApi.classList.add("active-step");
+      }
+
+      function showError(msg) {
+        errorSection.style.display = "";
+        errorSection.textContent = msg;
+        log("ERROR: " + msg);
+      }
+
+      function clearError() {
+        errorSection.style.display = "none";
+        errorSection.textContent = "";
+      }
+
+      function saveToken(token, expires_in) {
+        accessToken = token;
+        tokenExpiry = Date.now() + expires_in * 1000;
+        sessionStorage.setItem("heybleepi_access_token", accessToken);
+        sessionStorage.setItem("heybleepi_token_expiry", tokenExpiry);
+        accessTokenDiv.textContent = accessToken;
+        tokenExpiryDiv.textContent = new Date(tokenExpiry).toLocaleString();
+        tokenSection.style.display = "";
+        logoutBtn.style.display = "";
+        apiBtn.style.display = "";
+        setStep(2);
+      }
+
+      function clearToken() {
+        accessToken = "";
+        tokenExpiry = 0;
+        sessionStorage.removeItem("heybleepi_access_token");
+        sessionStorage.removeItem("heybleepi_token_expiry");
+        tokenSection.style.display = "none";
+        userSection.style.display = "none";
+        logoutBtn.style.display = "none";
+        apiBtn.style.display = "none";
+        setStep(1);
+      }
+
+      function saveUserInfo(data) {
+        userInfoDiv.textContent = JSON.stringify(data, null, 2);
+        userSection.style.display = "";
+        setStep(3);
+      }
+
+      // OAuth Step 1: Start Authorization
+      loginBtn.onclick = function () {
+        clearError();
+        state = Math.random().toString(36).substring(2);
+        sessionStorage.setItem("heybleepi_oauth_state", state);
+        const params = new URLSearchParams({
+          client_id: config.client_id,
+          redirect_uri: config.redirect_uri,
+          response_type: "code",
+          scope: config.scopes.join(" "),
+          state: state,
+        });
+        log(
+          "Redirecting to authorize: " +
+            config.auth_endpoint +
+            "?" +
+            params.toString()
+        );
+        window.location.href = config.auth_endpoint + "?" + params.toString();
+      };
+
+      // OAuth Step 2: Handle Redirect Back with Code
+      function handleRedirect() {
+        const url = new URL(window.location.href);
+        const params = url.searchParams;
+        if (params.has("code")) {
+          code = params.get("code");
+          const returnedState = params.get("state");
+          if (
+            returnedState !== sessionStorage.getItem("heybleepi_oauth_state")
+          ) {
+            showError("CSRF/state mismatch. Aborting.");
+            return;
+          }
+          log("Received code: " + code);
+          setStep(2);
+          exchangeToken();
+        } else if (params.has("error")) {
+          showError(
+            "OAuth error: " + params.get("error_description") ||
+              params.get("error")
+          );
+        } else {
+          // Try to restore token from sessionStorage
+          const storedToken = sessionStorage.getItem("heybleepi_access_token");
+          const storedExpiry = parseInt(
+            sessionStorage.getItem("heybleepi_token_expiry") || "0",
+            10
+          );
+          if (storedToken && storedExpiry > Date.now()) {
+            saveToken(
+              storedToken,
+              Math.floor((storedExpiry - Date.now()) / 1000)
+            );
+          }
+        }
+      }
+
+      // OAuth Step 3: Exchange Code for Token
+      function exchangeToken() {
+        log("Exchanging code for token...");
+        fetch(config.token_endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            grant_type: "authorization_code",
+            code: code,
+            client_id: config.client_id,
+            client_secret: config.client_secret,
+            redirect_uri: config.redirect_uri,
+          }),
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.access_token) {
+              saveToken(data.access_token, data.expires_in);
+              clearUrlParams();
+            } else {
+              showError(
+                "Token error: " +
+                  (data.error_description || JSON.stringify(data))
+              );
+            }
+          })
+          .catch((e) => showError("Network error: " + e));
+      }
+
+      // Step 4: Call API
+      apiBtn.onclick = function () {
+        clearError();
+        log("Calling userinfo API...");
+        fetch(config.userinfo_endpoint, {
+          headers: { Authorization: "Bearer " + accessToken },
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.success) {
+              saveUserInfo(data.data);
+            } else {
+              showError(
+                "API error: " + (data.error_description || JSON.stringify(data))
+              );
+            }
+          })
+          .catch((e) => showError("Network error: " + e));
+      };
+
+      logoutBtn.onclick = clearToken;
+
+      function clearUrlParams() {
+        if (window.history.replaceState) {
+          const url = window.location.origin + window.location.pathname;
+          window.history.replaceState({}, document.title, url);
+        }
+      }
+
+      // On load
+      handleRedirect();
+      setStep(1);
+    </script>
+  </body>
+</html>
