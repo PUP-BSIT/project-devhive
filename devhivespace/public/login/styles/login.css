@@ -6,7 +6,7 @@
 
 body {
   font-family: "Coda Caption", sans-serif;
-  background-image: url("/devhivespace/pages/assets/background.png");
+  background-image: url("../../assets/background.png");
   background-repeat: no-repeat, repeat;
   background-size: cover;
   min-height: 100vh;
@@ -238,30 +238,24 @@ body::before {
 }
 
 .google-btn::before {
-  background-image: url("/devhivespace/pages/assets/google.png");
-}
-
-.apple-btn::before {
-  background-image: url("/devhivespace/pages/assets/apple.png");
-  background-repeat: no-repeat;
-  background-size: cover;
-  width: 16px;
-  height: 20px;
+  background-image: url("../../assets/google.png");
 }
 
 .signup-section {
+  margin-top: 40px; /* Increase this value if you want it even lower */
   text-align: center;
-  font-size: 14px;
 }
 
 .signup-link {
-  color: rgba(255, 255, 255, 0.8);
+  color: #fff;
   text-decoration: none;
-  font-weight: 500;
+  font-size: 1.1em;
+  display: inline-block;
+  transition: text-decoration 0.2s;
 }
 
 .signup-link:hover {
-  color: white;
+  text-decoration: underline;
 }
 
 .image-section {
@@ -397,6 +391,65 @@ body::before {
 .form-input.success {
   border: 2px solid #51cf66;
   background: rgba(81, 207, 102, 0.1);
+}
+
+.oauth-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 8px 0;
+  padding: 10px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.oauth-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  background: transparent;
+  border-radius: 6px;
+}
+
+.inline-oauth {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.oauth-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+  padding: 0;
+}
+
+.oauth-circle:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
+}
+
+.hershive-btn {
+  background: #f9d49b;
+}
+
+.heybleepi-btn {
+  background: #2d1e5f;
+}
+
+.google-btn {
+  background: #fff;
+  border: 1px solid #e0e0e0;
 }
 
 @media (max-width: 768px) {
