@@ -1,0 +1,209 @@
+[2025-06-12 15:11:44] Contact Form Submission Attempt Started
+Server Info:
+Array
+(
+    [REQUEST_METHOD] => GET
+    [CONTENT_TYPE] => N/A
+    [PHP_SAPI] => litespeed
+    [SERVER_PROTOCOL] => HTTP/1.1
+    [REMOTE_ADDR] => 222.127.154.216
+    [HTTP_USER_AGENT] => PostmanRuntime/7.43.3
+)
+
+
+[2025-06-12 15:12:11] Contact Form Submission Attempt Started
+Server Info:
+Array
+(
+    [REQUEST_METHOD] => POST
+    [CONTENT_TYPE] => N/A
+    [PHP_SAPI] => litespeed
+    [SERVER_PROTOCOL] => HTTP/1.1
+    [REMOTE_ADDR] => 222.127.154.216
+    [HTTP_USER_AGENT] => PostmanRuntime/7.43.3
+)
+
+
+[2025-06-12 15:12:33] Contact Form Submission Attempt Started
+Server Info:
+Array
+(
+    [REQUEST_METHOD] => POST
+    [CONTENT_TYPE] => N/A
+    [PHP_SAPI] => litespeed
+    [SERVER_PROTOCOL] => HTTP/1.1
+    [REMOTE_ADDR] => 222.127.154.216
+    [HTTP_USER_AGENT] => PostmanRuntime/7.43.3
+)
+
+
+[2025-06-12 15:13:52] Contact Form Submission Attempt Started
+Server Info:
+Array
+(
+    [REQUEST_METHOD] => POST
+    [CONTENT_TYPE] => N/A
+    [PHP_SAPI] => litespeed
+    [SERVER_PROTOCOL] => HTTP/1.1
+    [REMOTE_ADDR] => 222.127.154.216
+    [HTTP_USER_AGENT] => PostmanRuntime/7.43.3
+)
+
+
+[2025-06-12 15:16:13] Contact Form Submission Attempt Started
+Server Info:
+Array
+(
+    [REQUEST_METHOD] => POST
+    [CONTENT_TYPE] => N/A
+    [PHP_SAPI] => litespeed
+    [SERVER_PROTOCOL] => HTTP/1.1
+    [REMOTE_ADDR] => 222.127.154.216
+    [HTTP_USER_AGENT] => PostmanRuntime/7.43.3
+)
+
+
+[2025-06-12 15:16:13] Server Variables for Content-Type Detection
+Server Info:
+Array
+(
+    [REQUEST_METHOD] => POST
+    [CONTENT_TYPE] => N/A
+    [PHP_SAPI] => litespeed
+    [SERVER_PROTOCOL] => HTTP/1.1
+    [REMOTE_ADDR] => 222.127.154.216
+    [HTTP_USER_AGENT] => PostmanRuntime/7.43.3
+)
+
+Context:
+Array
+(
+    [CONTENT_TYPE] => Not Set
+    [HTTP_CONTENT_TYPE] => Not Set
+    [ALL_SERVER_VARS] => Array
+        (
+            [CONTENT_LENGTH] => 0
+            [H_TYPE] => shared
+        )
+
+)
+
+
+[2025-06-12 15:18:35] Contact Form Submission Attempt Started
+Server Info:
+Array
+(
+    [REQUEST_METHOD] => POST
+    [CONTENT_TYPE] => N/A
+    [HTTP_CONTENT_TYPE] => N/A
+    [PHP_SAPI] => litespeed
+    [SERVER_PROTOCOL] => HTTP/1.1
+    [REMOTE_ADDR] => 222.127.154.216
+    [HTTP_USER_AGENT] => PostmanRuntime/7.43.3
+    [ALL_HEADERS] => Array
+        (
+            [User-Agent] => PostmanRuntime/7.43.3
+            [Accept] => */*
+            [Postman-Token] => a2965a9f-7ef1-4723-9a58-c49f3b624767
+            [Host] => devhivespace.com
+            [Accept-Encoding] => gzip, deflate, br
+            [Connection] => keep-alive
+            [Content-Length] => 0
+        )
+
+)
+
+Context:
+Array
+(
+    [all_server_vars] => Array
+        (
+            [LSPHP_ProcessGroup] => on
+            [PATH] => /usr/local/bin:/bin:/usr/bin
+            [HTTP_ACCEPT] => */*
+            [HTTP_ACCEPT_ENCODING] => gzip, deflate, br
+            [HTTP_CONNECTION] => keep-alive
+            [CONTENT_LENGTH] => 0
+            [HTTP_HOST] => devhivespace.com
+            [HTTP_USER_AGENT] => PostmanRuntime/7.43.3
+            [HTTP_POSTMAN_TOKEN] => a2965a9f-7ef1-4723-9a58-c49f3b624767
+            [DOCUMENT_ROOT] => /home/u798703225/domains/devhivespace.com/public_html
+            [REMOTE_ADDR] => 222.127.154.216
+            [REMOTE_PORT] => 52548
+            [SERVER_ADDR] => 147.93.78.35
+            [SERVER_NAME] => devhivespace.com
+            [SERVER_ADMIN] => 
+            [SERVER_PORT] => 443
+            [REQUEST_SCHEME] => https
+            [REQUEST_URI] => /api/contact/submit.php
+            [HTTPS] => on
+            [CRAWLER_USLEEP] => 1000
+            [CRAWLER_LOAD_LIMIT_ENFORCE] => 25
+            [H_PLATFORM] => Hostinger
+            [H_TYPE] => shared
+            [H_CANARY] => false
+            [H_STAGING] => false
+            [SSL_PROTOCOL] => TLSv1.3
+            [SSL_CIPHER] => TLS_AES_128_GCM_SHA256
+            [SSL_CIPHER_USEKEYSIZE] => 128
+            [SSL_CIPHER_ALGKEYSIZE] => 128
+            [SCRIPT_FILENAME] => /home/u798703225/domains/devhivespace.com/public_html/api/contact/submit.php
+            [QUERY_STRING] => 
+            [SCRIPT_URI] => https://devhivespace.com/api/contact/submit.php
+            [SCRIPT_URL] => /api/contact/submit.php
+            [SCRIPT_NAME] => /api/contact/submit.php
+            [SERVER_PROTOCOL] => HTTP/1.1
+            [SERVER_SOFTWARE] => LiteSpeed
+            [REQUEST_METHOD] => POST
+            [X-LSCACHE] => on,crawler,esi,combine
+            [PHP_SELF] => /api/contact/submit.php
+            [REQUEST_TIME_FLOAT] => 1749741515.0357
+            [REQUEST_TIME] => 1749741515
+        )
+
+    [all_headers] => Array
+        (
+            [User-Agent] => PostmanRuntime/7.43.3
+            [Accept] => */*
+            [Postman-Token] => a2965a9f-7ef1-4723-9a58-c49f3b624767
+            [Host] => devhivespace.com
+            [Accept-Encoding] => gzip, deflate, br
+            [Connection] => keep-alive
+            [Content-Length] => 0
+        )
+
+)
+
+
+[2025-06-12 15:18:35] Raw Input Received
+Server Info:
+Array
+(
+    [REQUEST_METHOD] => POST
+    [CONTENT_TYPE] => N/A
+    [HTTP_CONTENT_TYPE] => N/A
+    [PHP_SAPI] => litespeed
+    [SERVER_PROTOCOL] => HTTP/1.1
+    [REMOTE_ADDR] => 222.127.154.216
+    [HTTP_USER_AGENT] => PostmanRuntime/7.43.3
+    [ALL_HEADERS] => Array
+        (
+            [User-Agent] => PostmanRuntime/7.43.3
+            [Accept] => */*
+            [Postman-Token] => a2965a9f-7ef1-4723-9a58-c49f3b624767
+            [Host] => devhivespace.com
+            [Accept-Encoding] => gzip, deflate, br
+            [Connection] => keep-alive
+            [Content-Length] => 0
+        )
+
+)
+
+Context:
+Array
+(
+    [raw_input] => 
+    [input_length] => 0
+)
+
+

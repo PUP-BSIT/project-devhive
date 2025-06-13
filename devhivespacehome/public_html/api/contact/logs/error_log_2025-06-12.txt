@@ -1,0 +1,13 @@
+[2025-06-12 15:09:42] Critical Error
+Context: Array
+(
+    [error_message] => Only POST method is allowed
+    [error_trace] => #0 {main}
+)
+
+Server Info:
+REQUEST_METHOD: GET
+CONTENT_TYPE: N/A
+PHP_SAPI: litespeed
+SERVER_PROTOCOL: HTTP/1.1
+

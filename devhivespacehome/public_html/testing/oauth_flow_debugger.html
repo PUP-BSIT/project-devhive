@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OAuth Flow Debugger</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7fafc; margin: 0; }
+    .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px #0001; padding: 32px; }
+    .step { margin-bottom: 18px; }
+    .label { font-weight: bold; }
+    .log { font-family: monospace; background: #f1f5f9; border-radius: 6px; padding: 8px; margin: 8px 0; }
+    .btn { background: #3182ce; color: #fff; border: none; border-radius: 6px; padding: 10px 20px; font-size: 1em; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>OAuth Flow Debugger</h2>
+    <div class="step">
+      <div class="label">Step 1: Authorization Request</div>
+      <button class="btn" id="startBtn">Start Flow</button>
+      <div class="log" id="log1"></div>
+    </div>
+    <div class="step">
+      <div class="label">Step 2: Token Exchange</div>
+      <div class="log" id="log2"></div>
+    </div>
+    <div class="step">
+      <div class="label">Step 3: API Call</div>
+      <div class="log" id="log3"></div>
+    </div>
+  </div>
+  <script>
+    // This is a stub for step-by-step debugging; you can expand it to simulate each step.
+    document.getElementById('startBtn').onclick = function() {
+      document.getElementById('log1').textContent = 'Redirecting to /api/oauth/authorization.php?...';
+      document.getElementById('log2').textContent = '';
+      document.getElementById('log3').textContent = '';
+      setTimeout(() => {
+        document.getElementById('log2').textContent = 'POST /api/oauth/token.php ...';
+        setTimeout(() => {
+          document.getElementById('log3').textContent = 'GET /api/oauth/userinfo.php ...';
+        }, 1200);
+      }, 1200);
+    };
+  </script>
+</body>
+</html>
