@@ -55,21 +55,31 @@
           </div>
 
           <button type="submit" class="login-btn">Access Your Hive</button>
+
+          <div class="oauth-buttons inline-oauth">
+            <button
+              type="button"
+              class="oauth-circle hershive-btn"
+              onclick="window.location.href='/api/auth/get_token.php?application_name=HersHive&redirect_url=https://hershive.com/oauth/callback'">
+              <img src="../assets/hershive_logo.png" alt="HersHive Logo" class="oauth-logo" />
+            </button>
+            <button
+              type="button"
+              class="oauth-circle heybleepi-btn"
+              onclick="window.location.href='/api/oauth/oauth_login.php?provider=heybleepi'">
+              <img src="../assets/heybleepi_logo.png" alt="HeyBleepi Logo" class="oauth-logo" />
+            </button>
+            <a href="#" class="oauth-circle google-btn">
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo" class="oauth-logo" />
+            </a>
+          </div>
         </form>
 
-        <div class="divider">
-          <p>Or log in with</p>
-        </div>
-
-        <div class="social-buttons">
-          <a href="#" class="social-btn google-btn">Continue with Google</a>
-        </div>
-
         <div class="signup-section">
-          <strong>New content creator?</strong><br />
           <a href="/devhivespace/pages/sign_up/index.html" class="signup-link">
-            Sign up now and save hours on content distribution</a
-          >
+            <strong>New content creator?</strong><br />
+            Sign up now and save hours on content distribution
+          </a>
         </div>
       </div>
 

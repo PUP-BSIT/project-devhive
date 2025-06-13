@@ -1,99 +1,83 @@
-document.getElementById('signup-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const form = e.target;
-    const userData = {
-        email: form.querySelector('input[name="email"]').value,
-        username: form.querySelector('input[name="username"]').value,
-        first_name: form.querySelector('input[name="firstName"]').value,
-        middle_name: form.querySelector('input[name="middleName"]').value || null,
-        last_name: form.querySelector('input[name="lastName"]').value,
-        birthday: form.querySelector('input[name="birthday"]').value,
-        password: form.querySelector('input[name="password"]').value,
-        confirm_password: form.querySelector('input[name="confirmPassword"]').value
-    };
+document.getElementById("signup-form").addEventListener("submit", function (e) {
+  e.preventDefault();
 
-    console.log('Sending user data:', { 
-        ...userData, 
-        password: '***', 
-        confirm_password: '***' 
-    });
+  const form = e.target;
+  const userData = {
+    email: form.querySelector('input[name="email"]').value,
+    username: form.querySelector('input[name="username"]').value,
+    first_name: form.querySelector('input[name="first_name"]').value,
+    middle_name: form.querySelector('input[name="middle_name"]').value || null,
+    last_name: form.querySelector('input[name="last_name"]').value,
+    birthday: form.querySelector('input[name="birthday"]').value,
+    password: form.querySelector('input[name="password"]').value,
+    confirm_password: form.querySelector('input[name="confirm_password"]')
+      .value,
+  };
 
-    fetch('http://localhost/WebDev/devhivespace/api/auth/register.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData)
+  console.log(userData);
+  // Validate password match
+  if (userData.password !== userData.confirm_password) {
+    alert("Passwords do not match!");
+    return;
+  }
+
+  // Validate password length
+  if (userData.password.length < 8) {
+    alert("Password must be at least 8 characters long!");
+    return;
+  }
+
+  fetch("/api/auth/register.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(userData),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        return response.text().then((text) => {
+          try {
+            return JSON.parse(text);
+          } catch (e) {
+            throw new Error("Server returned non-JSON response: " + text);
+          }
+        });
+      }
+      return response.json();
     })
-    .then(response => {
-        if (!response.ok) {
-            return response.text().then(text => {
-                throw new Error('Server response: ' + text);
-            });
-        }
-        return response.json();
+    .then((data) => {
+      if (data.success) {
+        // Optionally store the user's email for the verification page
+        sessionStorage.setItem("user_email", userData.email);
+        window.location.href = "email_verify.html";
+      } else {
+        alert(data.message || "Registration failed. Please try again.");
+      }
     })
-    .then(data => {
-        if (data.success) {
-            sessionStorage.setItem('verification_token', data.verification_token);
-            sessionStorage.setItem('user_id', data.user_id);
-            sessionStorage.setItem('email', userData.email);
-            window.location.href = 'emailVerify.html';
-        } else {
-            console.error('Registration failed:', data);
-            alert(data.message || 'Registration failed. Please try again.');
-        }
-    })
-    .catch(error => {
-        console.error('Error details:', error);
-        alert('An error occurred. Please check the console for details ' +
-            'and try again.');
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("An error occurred during registration. Please try again.");
     });
 });
 
-function handleGoogleCallback(response) {
-    const jwt = response.credential;
-    const parts = jwt.split('.');
-    const payload = JSON.parse(atob(parts[1]));
-
-    const userData = {
-        email: payload.email,
-        first_name: payload.given_name,
-        last_name: payload.family_name,
-        profile_picture: payload.picture,
-        provider: 'google',
-        provider_user_id: payload.sub
-    };
-
-    fetch('/devhivespace/api/auth/google_oauth/callback.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData)
+function handleGoogleSignUp() {
+  fetch("/api/auth/google.php")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
     })
-    .then(response => {
-        if (!response.ok) {
-            return response.text().then(text => {
-                throw new Error('Server response: ' + text);
-            });
-        }
-        return response.json();
+    .then((data) => {
+      if (data.success) {
+        window.location.href = data.auth_url;
+      } else {
+        alert(data.message || "Failed to initialize Google sign up");
+      }
     })
-    .then(data => {
-        if (data.success) {
-            sessionStorage.setItem('user_id', data.user_id);
-            sessionStorage.setItem('email', data.email);
-            window.location.href = '../dashboard/index.html';
-        } else {
-            console.error('Google sign-in failed:', data);
-            alert(data.message || 'Failed to complete Google sign up');
-        }
-    })
-    .catch(error => {
-        console.error('Error details:', error);
-        alert('An error occurred during Google sign up. Please check the ' +
-            'console for details.');
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("An error occurred during Google sign-up. Please try again.");
     });
 }
