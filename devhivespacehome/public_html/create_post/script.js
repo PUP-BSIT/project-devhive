@@ -356,96 +356,70 @@ class PostCreator {
   }
 
   previewPost() {
-    const editor = document.getElementById('post-content');
-    const content = editor.innerHTML;
+    const content = document.getElementById('post-content').innerHTML;
+    const modalContainer = document.querySelector('.preview-modal-container');
+    const modal = document.querySelector('.preview-modal');
+    const closeBtn = document.querySelector('.preview-modal-close');
+    const cancelBtn = document.querySelector('.preview-cancel-btn');
+    const confirmBtn = document.querySelector('.preview-confirm-btn');
+    const postText = document.querySelector('.preview-post .post-text');
+    const platformList = document.querySelector('.platform-list');
+    const postAuthor = document.querySelector('.preview-post .post-author');
+    const postContent = document.querySelector('.preview-post .post-content');
 
-    if (!content.trim()) {
-      this.showNotification("Please enter post content");
-      return;
+    // Get current user info
+    const currentUser = this.getCurrentUser();
+    if (currentUser) {
+      postAuthor.textContent = currentUser.name || 'Your Name';
     }
 
-    const previewModal = document.createElement('div');
-    previewModal.className = 'preview-modal-container';
+    // Parse and update post content
+    const parsedContent = this.parsePreviewContent(content);
+    postText.innerHTML = parsedContent.text;
     
-    const previewPost = {
-      id: Date.now(), 
-      content: content,
-      author: this.getCurrentUser() || 'Anonymous',
-      timestamp: new Date().toISOString(),
-      platforms: this.selectedPlatforms,
-      likes: 0,
-      comments: [],
-      shares: 0
-    };
+    // Add media if any
+    if (parsedContent.media) {
+      postContent.innerHTML = parsedContent.media + postContent.innerHTML;
+    }
 
-    previewModal.innerHTML = `
-      <div class="preview-modal">
-        <div class="preview-modal-header">
-          <h2 class="preview-modal-title">Post Preview</h2>
-          <button class="preview-modal-close">×</button>
-        </div>
-        <div class="preview-modal-body">
-          <div class="social-post preview-post">
-            <div class="post-header">
-              <div class="post-user-info">
-                <img src="../assets/human.png" alt="Profile" class="profile-pic">
-                <div class="user-details">
-                  <h3 class="post-author">${this.escapeHTML(previewPost.author)}</h3>
-                  <span class="post-timestamp">${this.getTimeDifference(new Date())}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="post-content">
-              <div class="post-text">${content}</div>
-              
-              ${this.uploadedImages.length > 0 || this.uploadedVideos.length > 0 ? `
-                <div class="post-media-container">
-                  ${this.getMediaPreviewHTML()}
-                </div>
-              ` : ''}
-            </div>
-
-            <div class="preview-platforms">
-              <h4>Shared Platforms:</h4>
-              <div class="platform-list">
-                ${this.selectedPlatforms.map(platform => `
-                  <span class="platform-tag">${this.escapeHTML(platform)}</span>
-                `).join('') || 'No platforms selected'}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="preview-modal-footer">
-          <button class="preview-confirm-btn">Confirm Post</button>
-          <button class="preview-cancel-btn">Edit Post</button>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(previewModal);
-
-    const closeBtn = previewModal.querySelector('.preview-modal-close');
-    const confirmBtn = previewModal.querySelector('.preview-confirm-btn');
-    const cancelBtn = previewModal.querySelector('.preview-cancel-btn');
-
-    closeBtn.addEventListener('click', () => {
-      previewModal.remove();
-    });
-
-    previewModal.addEventListener('click', (e) => {
-      if (e.target === previewModal) {
-        previewModal.remove();
+    // Update platform list
+    platformList.innerHTML = '';
+    this.selectedPlatforms.forEach(platform => {
+      if (platform !== 'all') {
+        const platformTag = document.createElement('span');
+        platformTag.className = 'platform-tag';
+        platformTag.textContent = platform;
+        platformList.appendChild(platformTag);
       }
     });
 
-    confirmBtn.addEventListener('click', () => {
-      this.sharePost();
-      previewModal.remove();
-    });
+    // Show modal
+    modalContainer.style.display = 'flex';
 
-    cancelBtn.addEventListener('click', () => {
-      previewModal.remove();
+    // Close modal handlers
+    const closeModal = () => {
+      modalContainer.style.display = 'none';
+    };
+
+    closeBtn.onclick = closeModal;
+    cancelBtn.onclick = closeModal;
+    confirmBtn.onclick = () => {
+      closeModal();
+      this.sharePost();
+    };
+
+    // Close on outside click
+    modalContainer.onclick = (e) => {
+      if (e.target === modalContainer) {
+        closeModal();
+      }
+    };
+
+    // Close on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
     });
   }
 
@@ -460,12 +434,15 @@ class PostCreator {
     // Add uploaded images
     this.uploadedImages.forEach(image => {
       const filePreview = document.createElement('div');
+      filePreview.className = 'preview-media-item';
       filePreview.innerHTML = `
-        <img 
-          src="${image.url}" 
-          alt="Uploaded Image" 
-          class="preview-media-image"
-        >
+        <div class="preview-media-wrapper">
+          <img 
+            src="${image.url}" 
+            alt="Uploaded Image" 
+            class="preview-media-image"
+          >
+        </div>
       `;
       mediaElements.push(filePreview.outerHTML);
     });
@@ -473,18 +450,21 @@ class PostCreator {
     // Add uploaded videos
     this.uploadedVideos.forEach(video => {
       const videoPreview = document.createElement('div');
+      videoPreview.className = 'preview-media-item';
       // Use local URL for preview if available, fallback to server URL
       const videoUrl = video.localUrl || video.url;
       videoPreview.innerHTML = `
-        <video 
-          src="${videoUrl}"
-          controls
-          class="preview-media-video"
-          ${video.thumbnail_url ? `poster="${video.thumbnail_url}"` : ''}
-        >
-          Your browser does not support the video tag.
-        </video>
-        ${video.duration ? `<span class="video-duration">${this.formatDuration(video.duration)}</span>` : ''}
+        <div class="preview-media-wrapper">
+          <video 
+            src="${videoUrl}"
+            controls
+            class="preview-media-video"
+            ${video.thumbnail_url ? `poster="${video.thumbnail_url}"` : ''}
+          >
+            Your browser does not support the video tag.
+          </video>
+          ${video.duration ? `<span class="video-duration">${this.formatDuration(video.duration)}</span>` : ''}
+        </div>
       `;
       mediaElements.push(videoPreview.outerHTML);
     });
@@ -503,7 +483,7 @@ class PostCreator {
     }
 
     return {
-      text: this.escapeHTML(text.trim()),
+      text: text.trim(), // Remove escapeHTML to preserve formatting
       media: mediaElements.length > 0 ? mediaContainer.outerHTML : ''
     };
   }
