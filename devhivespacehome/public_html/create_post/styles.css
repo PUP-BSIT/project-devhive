@@ -257,7 +257,7 @@ body::before {
   background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
 }
 
-.content-textarea {
+.content-editor {
   padding: 20px;
   border: 2px solid rgba(226, 232, 240, 0.8);
   border-radius: 12px;
@@ -267,24 +267,41 @@ body::before {
   transition: all 0.3s ease;
   backdrop-filter: blur(5px);
   min-height: 200px;
-  resize: vertical;
+  max-height: 500px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  outline: none;
 }
 
-.content-textarea:focus {
-  outline: none;
+.content-editor:empty:before {
+  content: attr(placeholder);
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.content-editor:focus {
   border-color: #2563eb;
   background: rgba(255, 255, 255, 1);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
   transform: translateY(-2px);
 }
 
-.content-textarea::placeholder {
-  color: #94a3b8;
-  transition: color 0.3s ease;
+.content-editor strong {
+  font-weight: 700;
 }
 
-.content-textarea:focus::placeholder {
-  color: #cbd5e1;
+.content-editor em {
+  font-style: italic;
+}
+
+.content-editor u {
+  text-decoration: underline;
+}
+
+/* Remove the old textarea styles */
+.content-textarea {
+  display: none;
 }
 
 .toolbar {
@@ -303,16 +320,28 @@ body::before {
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(226, 232, 240, 0.6);
   border-radius: 6px;
-  font-size: 20px;
+  font-size: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 48px;
-  height: 48px;
+  min-width: 40px;
+  height: 40px;
   line-height: 1;
+}
+
+.toolbar-btn strong {
+  font-weight: 700;
+}
+
+.toolbar-btn em {
+  font-style: italic;
+}
+
+.toolbar-btn u {
+  text-decoration: underline;
 }
 
 .toolbar-btn:hover {
@@ -322,8 +351,10 @@ body::before {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.toolbar-btn img {
-  display: none;
+.toolbar-btn.active {
+  background: rgba(37, 99, 235, 0.2);
+  border-color: #2563eb;
+  color: #2563eb;
 }
 
 .media-previews {
@@ -570,7 +601,7 @@ body::before {
     font-size: 14px;
   }
 
-  .content-textarea {
+  .content-editor {
     padding: 12px 16px;
     font-size: 14px;
     min-height: 150px;
@@ -596,4 +627,34 @@ body::before {
     flex-direction: column;
     gap: 8px;
   }
+}
+
+/* Emoji picker styles */
+.emoji-picker {
+  position: absolute;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
+  z-index: 1000;
+  max-width: 300px;
+  margin-top: 8px;
+}
+
+.emoji-picker button {
+  background: none;
+  border: none;
+  font-size: 20px;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.emoji-picker button:hover {
+  background: rgba(37, 99, 235, 0.1);
+  transform: scale(1.1);
 } 

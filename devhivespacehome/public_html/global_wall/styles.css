@@ -690,6 +690,21 @@ html {
 
 .post-text {
     margin: 0 0 10px 0;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.post-text strong {
+    font-weight: 700;
+}
+
+.post-text em {
+    font-style: italic;
+}
+
+.post-text u {
+    text-decoration: underline;
 }
 
 .post-media-container {

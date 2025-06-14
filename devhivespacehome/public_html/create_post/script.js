@@ -5,6 +5,7 @@ class PostCreator {
     this.apiBaseUrl = '/api/posts'; // Base URL for API endpoints
     this.uploadedImages = [];
     this.uploadedVideos = [];
+    this.activeFormats = new Set();
     this.initializeEventListeners();
   }
 
@@ -49,6 +50,27 @@ class PostCreator {
     addListener("#profile", "click", this.showProfile);
     addListener("#image-upload-btn", "click", this.insertImage);
     addListener("#video-upload-btn", "click", this.insertVideo);
+
+    // Add formatting button listeners
+    document.querySelectorAll('.toolbar-btn[data-format]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const format = e.target.closest('.toolbar-btn').dataset.format;
+        this.toggleFormat(format);
+      });
+    });
+
+    // Add input event listener for the editor
+    const editor = document.getElementById('post-content');
+    editor.addEventListener('input', () => {
+      this.updateFormatButtons();
+    });
+
+    // Handle paste events to clean up formatting
+    editor.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const text = e.clipboardData.getData('text/plain');
+      document.execCommand('insertText', false, text);
+    });
   }
 
   handlePlatformSelection(e) {
@@ -310,27 +332,34 @@ class PostCreator {
   }
 
   insertEmoji() {
-    const emojis = ["😊", "😂", "❤️", "👍", "🎉", "🔥", "💯", "✨", "💅"];
-    const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-    const textarea = document.getElementById("post-content");
-    this.insertAtCursor(textarea, randomEmoji);
-  }
-
-  insertAtCursor(textarea, text) {
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    textarea.value = 
-      textarea.value.substring(0, start) + 
-      text + 
-      textarea.value.substring(end);
-    textarea.setSelectionRange(start + text.length, start + text.length);
-    textarea.focus();
+    const editor = document.getElementById('post-content');
+    
+    // Create a new text node with the emoji
+    const textNode = document.createTextNode(emoji);
+    
+    // Get the current selection
+    const selection = window.getSelection();
+    const range = selection.getRangeAt(0);
+    
+    // Insert the emoji at the cursor position
+    range.deleteContents();
+    range.insertNode(textNode);
+    
+    // Move cursor after the inserted emoji
+    range.setStartAfter(textNode);
+    range.setEndAfter(textNode);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    
+    // Focus back on the editor
+    editor.focus();
   }
 
   previewPost() {
-    const content = document.getElementById("post-content").value.trim();
+    const editor = document.getElementById('post-content');
+    const content = editor.innerHTML;
 
-    if (!content) {
+    if (!content.trim()) {
       this.showNotification("Please enter post content");
       return;
     }
@@ -348,8 +377,6 @@ class PostCreator {
       comments: [],
       shares: 0
     };
-
-    const parsedContent = this.parsePreviewContent(content);
 
     previewModal.innerHTML = `
       <div class="preview-modal">
@@ -370,11 +397,11 @@ class PostCreator {
             </div>
 
             <div class="post-content">
-              <p class="post-text">${parsedContent.text}</p>
+              <div class="post-text">${content}</div>
               
-              ${parsedContent.media ? `
+              ${this.uploadedImages.length > 0 || this.uploadedVideos.length > 0 ? `
                 <div class="post-media-container">
-                  ${parsedContent.media}
+                  ${this.getMediaPreviewHTML()}
                 </div>
               ` : ''}
             </div>
@@ -483,7 +510,8 @@ class PostCreator {
 
   async sharePost() {
     try {
-      const content = document.getElementById("post-content").value;
+      const editor = document.getElementById('post-content');
+      const content = editor.innerHTML;
 
       if (!content.trim()) {
         this.showNotification("Please enter content");
@@ -544,7 +572,7 @@ class PostCreator {
         }
 
         // Clear form and media
-        document.getElementById("post-content").value = "";
+        editor.innerHTML = "";
         document.getElementById("image-previews").innerHTML = "";
         document.getElementById("video-previews").innerHTML = "";
         this.uploadedImages = [];
@@ -641,6 +669,106 @@ class PostCreator {
         URL.revokeObjectURL(video.localUrl);
       }
     });
+  }
+
+  toggleFormat(format) {
+    const editor = document.getElementById('post-content');
+    
+    // Save current selection
+    const selection = window.getSelection();
+    const range = selection.getRangeAt(0);
+    
+    // Apply formatting
+    switch (format) {
+      case 'bold':
+        document.execCommand('bold', false, null);
+        break;
+      case 'italic':
+        document.execCommand('italic', false, null);
+        break;
+      case 'underline':
+        document.execCommand('underline', false, null);
+        break;
+    }
+    
+    // Restore focus
+    editor.focus();
+    this.updateFormatButtons();
+  }
+
+  updateFormatButtons() {
+    const editor = document.getElementById('post-content');
+    
+    // Update button states based on current formatting
+    document.querySelectorAll('.toolbar-btn[data-format]').forEach(btn => {
+      const format = btn.dataset.format;
+      let isActive = false;
+      
+      switch (format) {
+        case 'bold':
+          isActive = document.queryCommandState('bold');
+          break;
+        case 'italic':
+          isActive = document.queryCommandState('italic');
+          break;
+        case 'underline':
+          isActive = document.queryCommandState('underline');
+          break;
+      }
+      
+      btn.classList.toggle('active', isActive);
+    });
+  }
+
+  getMediaPreviewHTML() {
+    const mediaElements = [];
+
+    // Add uploaded images
+    this.uploadedImages.forEach(image => {
+      const imagePreview = document.createElement('div');
+      imagePreview.innerHTML = `
+        <img 
+          src="${image.url}" 
+          alt="Uploaded Image" 
+          class="preview-media-image"
+        >
+      `;
+      mediaElements.push(imagePreview.outerHTML);
+    });
+
+    // Add uploaded videos
+    this.uploadedVideos.forEach(video => {
+      const videoPreview = document.createElement('div');
+      // Use local URL for preview if available, fallback to server URL
+      const videoUrl = video.localUrl || video.url;
+      videoPreview.innerHTML = `
+        <video 
+          src="${videoUrl}"
+          controls
+          class="preview-media-video"
+          ${video.thumbnail_url ? `poster="${video.thumbnail_url}"` : ''}
+        >
+          Your browser does not support the video tag.
+        </video>
+        ${video.duration ? `<span class="video-duration">${this.formatDuration(video.duration)}</span>` : ''}
+      `;
+      mediaElements.push(videoPreview.outerHTML);
+    });
+
+    const mediaContainer = document.createElement('div');
+    mediaContainer.className = 'post-media-container';
+    
+    if (mediaElements.length > 1) {
+      mediaContainer.innerHTML = `
+        <div class="media-scroll-container">
+          ${mediaElements.join('')}
+        </div>
+      `;
+    } else if (mediaElements.length === 1) {
+      mediaContainer.innerHTML = mediaElements[0];
+    }
+
+    return mediaContainer.outerHTML;
   }
 }
 

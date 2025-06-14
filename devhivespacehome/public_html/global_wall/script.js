@@ -349,7 +349,7 @@ function createPostElement(post) {
         </div>
 
         <div class="post-content">
-            <p class="post-text">${escapeHTML(post.content)}</p>
+            <div class="post-text">${post.content}</div>
             ${mediaHTML ? `
                 <div class="post-media-container">
                     ${mediaHTML}
