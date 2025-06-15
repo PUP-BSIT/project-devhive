@@ -912,22 +912,6 @@ function openShareModal(post) {
     const modalContainer = document.createElement('div');
     modalContainer.className = 'share-modal-container';
     modalContainer.innerHTML = `
-        <div class="share-modal">
-            <div class="share-modal-header">
-                <h2>Share Post</h2>
-                <button class="close-share-modal">×</button>
-            </div>
-            <div class="share-modal-body">
-                <div class="share-platforms">
-                    <button class="share-platform" data-platform="hershive">
-                        <img src="../assets/hershive.png" alt="Hershive">
-                        <span>Hershive</span>
-                    </button>
-                    <button class="share-platform" data-platform="heybleepi">
-                        <img src="../assets/heybleepi.png" alt="Heybleepi">
-                        <span>Heybleepi</span>
-                    </button>
-                </div>
                 <div class="share-preview">
                     <p class="share-preview-text">${escapeHTML(post.content)}</p>
                     ${post.media ? `
