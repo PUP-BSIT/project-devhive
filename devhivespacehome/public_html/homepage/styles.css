@@ -294,11 +294,6 @@ body::before {
   backdrop-filter: blur(10px);
 }
 
-.laptop-mockup:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
-}
-
 .social-section {
   color: white;
   text-align: center;
