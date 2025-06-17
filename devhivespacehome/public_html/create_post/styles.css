@@ -1025,4 +1025,158 @@ height: 6px;
 .post-media-container:not(.media-scroll-container) .preview-media-item {
     max-height: 250px;
 }
+}
+
+@media screen and (max-width: 1024px) {
+    .dashboard-container {
+        padding: 10px;
+    }
+
+    .main-content {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .sidebar {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 12px;
+        gap: 8px;
+    }
+
+    .menu-item {
+        flex-grow: 1;
+    }
+
+    .menu-item a {
+        justify-content: center;
+        padding: 10px;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .menu-item a img {
+        margin-bottom: 4px;
+    }
+
+    .page-title {
+        font-size: 36px;
+    }
+
+    .platform-buttons {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .platform-btn {
+        flex-grow: 1;
+        min-width: auto;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .page-title {
+        font-size: 32px;
+        margin-bottom: 16px;
+    }
+
+    .main-content {
+        padding: 20px;
+    }
+
+    .content-editor {
+        min-height: 150px;
+        font-size: 14px;
+    }
+
+    .toolbar {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .toolbar-btn {
+        min-width: 36px;
+        height: 36px;
+        font-size: 12px;
+    }
+
+    .platform-buttons {
+        gap: 6px;
+    }
+
+    .platform-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .page-title {
+        font-size: 24px;
+    }
+
+    .main-content {
+        padding: 15px;
+    }
+
+    .content-editor {
+        min-height: 120px;
+        font-size: 13px;
+    }
+
+    .toolbar-btn {
+        min-width: 32px;
+        height: 32px;
+        font-size: 11px;
+    }
+
+    .platform-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .menu-item a,
+    .platform-btn,
+    .toolbar-btn,
+    .btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+
+@media screen and (max-width: 768px) and (orientation: landscape) {
+    .dashboard-container {
+        flex-direction: row;
+    }
+
+    .sidebar {
+        width: 200px;
+        flex-direction: column;
+    }
+
+    .menu-item a {
+        flex-direction: row;
+        justify-content: flex-start;
+    }
+
+    .menu-item a img {
+        margin-right: 8px;
+        margin-bottom: 0;
+    }
 } 
