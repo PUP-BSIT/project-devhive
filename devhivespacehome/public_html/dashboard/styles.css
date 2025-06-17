@@ -200,8 +200,8 @@ body::before {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(15px);
   border-radius: 20px;
-  padding: 32px;
-  margin-bottom: 24px;
+  padding: 28px;
+  margin-bottom: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -227,57 +227,6 @@ body::before {
   line-height: 1.6;
 }
 
-.stats-container {
-  display: flex;
-  gap: 20px;
-}
-
-.stat-card {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 24px;
-  flex: 1;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.stat-card:hover {
-  background: rgba(255, 255, 255, 1);
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-}
-
-.stat-card h3 {
-  font-size: 14px;
-  color: #64748b;
-  margin-bottom: 12px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.stat-card p {
-  font-size: 32px;
-  font-weight: 700;
-  color: #1e1e1e;
-  margin: 0;
-  transition: color 0.3s ease;
-}
-
-.stat-card:hover p {
-  color: #2563eb;
-}
-
-.content-grid {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: 24px;
-  margin-top: 24px;
-}
-
-/* Recent Posts */
 .recent-posts {
   background: rgba(248, 249, 250, 0.9);
   backdrop-filter: blur(10px);
