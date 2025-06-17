@@ -43,37 +43,29 @@ body::before {
 }
 
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
+  display: none;
 }
 
 .navbar {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 50px;
-  padding: 12px 24px;
+  background: transparent;
+  border-radius: 0;
+  padding: 10px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-  backdrop-filter: blur(15px);
-  margin: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.navbar:hover {
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
+  margin: 0;
+  border: none;
+  box-shadow: none;
 }
 
 .navbar img {
-  height: 40px;
+  max-height: 150px;
   transition: transform 0.3s ease;
 }
 
 .navbar img:hover {
-  transform: scale(1.1);
+  transform: scale(1.05);
 }
 
 .login-btn {
@@ -116,8 +108,18 @@ body::before {
 
 .navbar-logo {
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 10px;
+  margin: 0 auto;
+}
+
+.navbar-logo img {
+  max-height: 100px;
+  transition: transform 0.3s ease;
+}
+
+.navbar-logo img:hover {
+  transform: scale(1.05);
 }
 
 .navbar-logo span {
@@ -194,7 +196,7 @@ body::before {
 
 .hero {
   text-align: center;
-  padding: 60px 0 40px;
+  padding-top: 0;
   color: white;
   position: relative;
   animation: fadeInUp 0.8s ease forwards;
@@ -203,6 +205,7 @@ body::before {
 .hero h1 {
   font-size: 3.5rem;
   color: white;
+  margin-top: 0;
   margin-bottom: 20px;
   font-family: "Coda Caption", sans-serif;
   font-weight: 800;
@@ -628,28 +631,19 @@ body::before {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  margin-top: 30px;
+  margin-top: -30px;
   color: white;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  padding: 15px 30px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: none;
+  backdrop-filter: none;
+  border: none;
+  padding: 0;
+  margin: 0;
   transition: all 0.3s ease;
-}
-
-.devhive-footer:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
 }
 
 .devhive-footer img {
   height: 30px;
   transition: transform 0.3s ease;
-}
-
-.devhive-footer:hover img {
-  transform: scale(1.1);
 }
 
 .devhive-footer span {
@@ -810,7 +804,6 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Form Status Styles */
 .form-status {
     margin-top: 15px;
     padding: 10px;
@@ -830,4 +823,60 @@ html {
     background-color: #ddffdd;
     color: #008000;
     border: 1px solid #008000;
+}
+
+/* Mobile Responsiveness */
+@media screen and (max-width: 768px) {
+  .navbar {
+    padding: 10px;
+    margin: 5px;
+  }
+
+  .navbar img {
+    max-height: 100px;
+  }
+
+  .hero h1 {
+    font-size: 2.5rem; 
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .btn {
+    width: 80%;
+    text-align: center;
+    padding: 12px 20px;
+  }
+
+  .laptop-mockup img {
+    max-width: 100%; 
+    height: auto;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .navbar img {
+    max-height: 80px; 
+  }
+
+  .hero h1 {
+    font-size: 2rem;
+  }
+
+  .hero-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .btn {
+    width: 90%;
+    padding: 10px 15px;
+  }
 }
