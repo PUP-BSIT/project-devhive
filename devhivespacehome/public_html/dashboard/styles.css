@@ -5,7 +5,7 @@
 }
 
 body {
-  font-family: sans-serif;
+  font-family: "Inter", sans-serif;
   background: url("../assets/background.png") repeat;
   min-height: 100vh;
   padding: 20px;
@@ -34,7 +34,7 @@ body::before {
       rgba(255, 255, 255, 0.05) 3px,
       transparent 3px
     );
-  background-size: 60px 60px, 80px 80px, 100px 100px;
+  background-size: 80px 80px, 120px 120px, 160px 160px;
   z-index: -1;
   pointer-events: none;
 }
@@ -312,7 +312,6 @@ body::before {
   letter-spacing: 0.5px;
 }
 
-/* Quick Actions */
 .quick-actions {
   background: rgba(248, 249, 250, 0.9);
   backdrop-filter: blur(10px);
@@ -399,7 +398,6 @@ body::before {
   box-shadow: 0 8px 25px rgba(37, 99, 235, 0.2);
 }
 
-/* Platform Performance */
 .platform-performance {
   background: rgba(248, 249, 250, 0.9);
   backdrop-filter: blur(10px);
@@ -503,7 +501,6 @@ body::before {
   color: #1e293b;
 }
 
-/* Responsive Design */
 @media screen and (max-width: 1024px) {
   .content-grid {
     grid-template-columns: 1fr;
@@ -614,7 +611,6 @@ body::before {
   }
 }
 
-/* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
   .welcome-card,
   .stat-card,
@@ -635,7 +631,6 @@ body::before {
   }
 }
 
-/* Additional Animations */
 @keyframes fadeInUp {
   from {
     opacity: 0;
