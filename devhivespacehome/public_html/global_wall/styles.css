@@ -463,48 +463,76 @@ body::before {
 }
 
 @media screen and (max-width: 1024px) {
+    .dashboard-container {
+        padding: 10px;
+    }
+
     .main-content {
         flex-direction: column;
+        gap: 16px;
     }
 
     .sidebar {
         width: 100%;
         flex-direction: row;
         overflow-x: auto;
-        padding: 16px;
+        padding: 12px;
+        gap: 8px;
     }
 
     .nav-menu {
         flex-direction: row;
-        gap: 12px;
+        width: 100%;
     }
 
     .nav-menu li {
-        flex-shrink: 0;
+        flex-grow: 1;
     }
 
     .nav-menu li a {
-        white-space: nowrap;
-        margin-bottom: 0;
+        justify-content: center;
+        padding: 10px;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .nav-menu li a img {
+        margin-bottom: 4px;
+    }
+
+    .page-title {
+        font-size: 36px;
     }
 }
 
 @media screen and (max-width: 768px) {
     body {
-        padding: 12px;
+        padding: 10px;
     }
 
-    .dashboard-container {
-        gap: 16px;
+    .top-nav {
+        padding: 10px 15px;
+    }
+
+    .logo img {
+        height: 20px;
+    }
+
+    .nav-icons {
+        gap: 10px;
+    }
+
+    .nav-icons img {
+        width: 20px;
+        height: 20px;
     }
 
     .global-wall-header {
-        padding: 24px;
+        padding: 20px;
     }
 
     .global-wall-header h1 {
-        font-size: 36px;
-        margin-bottom: 16px;
+        font-size: 32px;
     }
 
     .post-filters {
@@ -513,77 +541,197 @@ body::before {
     }
 
     .post-filters button {
-        flex-grow: 1;
-        min-width: 80px;
+        padding: 8px 15px;
+        font-size: 12px;
     }
 
-    .post {
-        padding: 24px;
+    .sidebar {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 10px;
+        gap: 10px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(37, 99, 235, 0.3) transparent;
     }
 
-    .post-header img {
-        width: 50px;
-        height: 50px;
+    .sidebar::-webkit-scrollbar {
+        height: 6px;
     }
 
-    .post-header .post-info h3 {
-        font-size: 16px;
+    .sidebar::-webkit-scrollbar-track {
+        background: transparent;
     }
 
-    .post-content {
-        font-size: 15px;
+    .sidebar::-webkit-scrollbar-thumb {
+        background: rgba(37, 99, 235, 0.3);
+        border-radius: 3px;
     }
 
-    .post-media-preview {
-        flex: 0 1 calc(50% - 10px);
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .top-nav {
-        padding: 8px 16px;
-        border-radius: 20px;
-    }
-
-    .logo img {
-        height: 20px;
+    .nav-menu {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
     }
 
-    .nav-icons img {
+    .nav-menu::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .nav-menu::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .nav-menu::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 3px;
+    }
+
+    .nav-menu li {
+        flex: 0 0 auto;
+        min-width: fit-content;
+    }
+
+    .nav-menu li a {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .nav-menu li a img {
+        margin-bottom: 4px;
         width: 20px;
         height: 20px;
     }
 
-    .global-wall-header h1 {
-        font-size: 28px;
+    .nav-menu li a span {
+        font-size: 12px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .dashboard-container {
+        padding: 5px;
+    }
+
+    .sidebar {
+        padding: 8px;
+        gap: 8px;
+    }
+
+    .nav-menu {
+        gap: 8px;
+        padding-bottom: 8px;
+    }
+
+    .nav-menu li a {
+        padding: 8px;
+    }
+
+    .nav-menu li a img {
+        width: 18px;
+        height: 18px;
+        margin-bottom: 3px;
+    }
+
+    .nav-menu li a span {
+        font-size: 11px;
     }
 
     .global-wall-header {
-        padding: 20px;
+        padding: 15px;
+    }
+
+    .global-wall-header h1 {
+        font-size: 24px;
+    }
+
+    .post-filters {
+        gap: 6px;
+    }
+
+    .post-filters button {
+        padding: 6px 12px;
+        font-size: 11px;
     }
 
     .post {
-        padding: 20px;
+        padding: 12px;
     }
 
-    .post-stats {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
+    .post-header img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .post-header .post-info h3 {
+        font-size: 14px;
+    }
+
+    .post-header .post-info p {
+        font-size: 12px;
+    }
+
+    .post-content {
+        font-size: 13px;
     }
 
     .post-stats .stat {
-        padding: 4px 8px;
-        font-size: 13px;
+        font-size: 12px;
+        gap: 4px;
     }
 
     .view-btn {
-        padding: 10px 20px;
-        font-size: 13px;
+        padding: 8px 15px;
+        font-size: 12px;
+    }
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .nav-menu li a,
+    .post-filters button,
+    .post-stats .stat,
+    .view-btn {
+        min-height: 44px;
+        min-width: 44px;
     }
 
-    .post-media-preview {
-        flex: 0 1 100%;
+    .nav-icons img {
+        padding: 10px;
+    }
+}
+
+@media screen and (max-width: 768px) and (orientation: landscape) {
+    .dashboard-container {
+        flex-direction: row;
+    }
+
+    .sidebar {
+        width: 200px;
+        flex-direction: column;
+    }
+
+    .nav-menu {
+        flex-direction: column;
+    }
+
+    .nav-menu li a {
+        flex-direction: row;
+        justify-content: flex-start;
+    }
+
+    .nav-menu li a img {
+        margin-right: 8px;
+        margin-bottom: 0;
     }
 }
 
@@ -624,7 +772,6 @@ html {
     scroll-behavior: smooth;
 }
 
-/* Social Media Post Styles */
 .global-wall-posts {
     display: flex;
     flex-direction: column;
@@ -843,7 +990,6 @@ html {
     color: #1976D2;
 }
 
-/* Post Options Dropdown */
 .post-options {
     position: relative;
 }
@@ -890,7 +1036,6 @@ html {
     background-color: #f0f0f0;
 }
 
-/* Media Handling Styles */
 .post-media-container {
     width: 100%;
     max-width: 100%;
@@ -975,7 +1120,6 @@ html {
     }
 }
 
-/* Notification Styles */
 .notification {
     position: fixed;
     top: 20px;
@@ -994,7 +1138,6 @@ html {
     opacity: 1;
 }
 
-/* Video Styling */
 .post-media-preview.video-preview {
     position: relative;
 }
@@ -1036,7 +1179,6 @@ html {
     margin: 0;
 }
 
-/* Video controls styling */
 .post-media-preview video:focus {
     outline: none;
 }
@@ -1053,7 +1195,6 @@ html {
     }
 }
 
-/* Preview Modal Styles */
 .preview-modal-container {
     position: fixed;
     top: 0;

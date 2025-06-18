@@ -355,22 +355,40 @@ body::before {
 }
 
 @media screen and (max-width: 1024px) {
+    .setting-container {
+        padding: 10px;
+    }
+
     .main-content {
         flex-direction: column;
+        gap: 16px;
     }
-    
+
     .sidebar {
         width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 12px;
+        gap: 8px;
     }
-}
 
-@media screen and (max-width: 768px) {
+    .menu-item {
+        flex-grow: 1;
+    }
+
+    .menu-item a {
+        justify-content: center;
+        padding: 10px;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .menu-item a img {
+        margin-bottom: 4px;
+    }
+
     .page-title {
         font-size: 36px;
-    }
-
-    .settings-container {
-        padding: 24px;
     }
 
     .profile-section {
@@ -379,23 +397,120 @@ body::before {
         text-align: center;
     }
 
-    .sidebar {
-        padding: 16px;
-        }
+    .profile-avatar {
+        margin-bottom: 16px;
+    }
 }
 
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
     .page-title {
-        font-size: 28px;
+        font-size: 32px;
+        margin-bottom: 16px;
     }
 
     .settings-container {
-        padding: 16px;
+        padding: 20px;
+    }
+
+    .settings-section {
+        margin-bottom: 16px;
+        padding-bottom: 16px;
+    }
+
+    .settings-section h2 {
+        font-size: 18px;
+        margin-bottom: 16px;
+    }
+
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .form-input {
+        width: 100%;
+    }
+
+    .password-change-fields {
+        flex-direction: column;
+        gap: 12px;
     }
 
     .update-btn, .save-btn, .logout-btn, .action-btn {
         width: 100%;
-        margin-left: 0;
-        margin-bottom: 12px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .page-title {
+        font-size: 24px;
+    }
+
+    .settings-container {
+        padding: 15px;
+    }
+
+    .profile-avatar {
+        width: 60px;
+        height: 60px;
+    }
+
+    .setting-label {
+        font-size: 14px;
+    }
+
+    .form-input {
+        padding: 8px;
+        font-size: 14px;
+    }
+
+    .settings-section h2 {
+        font-size: 16px;
+    }
+
+    .update-btn, .save-btn, .logout-btn, .action-btn {
+        padding: 10px;
+        font-size: 14px;
+    }
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .menu-item a,
+    .form-input,
+    .update-btn, 
+    .save-btn, 
+    .logout-btn, 
+    .action-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+
+@media screen and (max-width: 768px) and (orientation: landscape) {
+    .setting-container {
+        flex-direction: row;
+    }
+
+    .sidebar {
+        width: 200px;
+        flex-direction: column;
+    }
+
+    .menu-item a {
+        flex-direction: row;
+        justify-content: flex-start;
+    }
+
+    .menu-item a img {
+        margin-right: 8px;
+        margin-bottom: 0;
+    }
+
+    .settings-content {
+        flex: 1;
     }
 }
