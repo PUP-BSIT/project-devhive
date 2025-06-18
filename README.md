@@ -22,6 +22,19 @@ seamless and interactive experience.
 
 ---
 
+## 🔑 Test Credentials
+
+For testing purposes, you can use the following credentials:
+
+```
+Email: jamesmichaelmejares@gmail.com
+Password: Admin@123
+```
+
+Please use these credentials responsibly and only for testing purposes.
+
+---
+
 ## 🌍 Website and Web Hosting Link
 
 [![Hostinger](https://img.shields.io/badge/Hostinger-blueviolet?style=for-the-badge&logo=hostinger&logoColor=white)](https://mediumslateblue-tapir-985631.hostingersite.com/)
