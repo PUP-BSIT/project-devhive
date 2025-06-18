@@ -45,9 +45,9 @@ seamless and interactive experience.
 
 ## ⭐ Team Composition
 
-- 👩‍💻 **Project Manager/Developer:** James Michael Mejares
+- 👩‍💻 **Project Manager/Developer:** Mikka Kette Esparagoza
 - 👨‍💻 **Tech Lead/Developer:** Aleck Alejandro
-- 👨‍💻 **Tester/Developer:** Hannah Lorainne Genandoy
-- 👩‍💻 **UI/UX Designer/Developer:** Mikka Kette Esparagoza
+- 👨‍💻 **Tester/Developer:** James Michael Mejares
+- 👩‍💻 **UI/UX Designer/Developer:** Hannah Lorainne Genandoy
 
 </div>
