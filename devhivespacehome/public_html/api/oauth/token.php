@@ -78,7 +78,7 @@ if (!$redirect_valid) {
 // Validate authorization code
 $stmt = $conn->prepare(
     "SELECT token_id, user_id, client_id, expires_at, is_authorized, token_type 
-     FROM auth_token 
+     FROM oauth_tokens 
      WHERE token = ? AND token_type = 'authorization_code' AND client_id = ?"
 );
 $stmt->bind_param("ss", $code, $client_id);
@@ -99,7 +99,7 @@ if (strtotime($expires_at) < time()) {
 }
 
 // Mark authorization code as used (prevent replay)
-$stmt = $conn->prepare("UPDATE auth_token SET is_authorized = 0 WHERE token_id = ?");
+$stmt = $conn->prepare("UPDATE oauth_tokens SET is_authorized = 0 WHERE token_id = ?");
 $stmt->bind_param("i", $token_id);
 $stmt->execute();
 $stmt->close();
@@ -109,10 +109,10 @@ $access_token = generate_token(64);
 $access_expires_at = date('Y-m-d H:i:s', time() + 3600); // 1 hour
 
 $stmt = $conn->prepare(
-    "INSERT INTO auth_token (user_id, token, client_id, token_type, expires_at, is_authorized, authorized_at) 
-     VALUES (?, ?, ?, 'access_token', ?, 1, NOW())"
+    "INSERT INTO oauth_tokens (user_id, client_id, token, token_type, expires_at, is_authorized) 
+     VALUES (?, ?, ?, 'access_token', ?, 1)"
 );
-$stmt->bind_param("isss", $user_id, $access_token, $client_id, $access_expires_at);
+$stmt->bind_param("isss", $user_id, $client_id, $access_token, $access_expires_at);
 if (!$stmt->execute()) {
     oauth_error("server_error", "Failed to issue access token.", 500);
 }
