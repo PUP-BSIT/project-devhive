@@ -49,3 +49,31 @@ try {
     ]);
 }
 ?>
+
+<?php
+session_start();
+require_once __DIR__ . '/../../../config/database.php';
+
+$provider = $_GET['provider'] ?? $_POST['provider'] ?? null;
+if (!$provider) {
+    http_response_code(400);
+    exit('No provider specified.');
+}
+
+// check provider info
+$stmt = $conn->prepare("SELECT client_id, redirect_uri, provider_url FROM oauth_providers WHERE provider_name = ?");
+$stmt->bind_param("s", $provider);
+$stmt->execute();
+$stmt->bind_result($client_id, $redirect_uri, $provider_url);
+if (!$stmt->fetch()) {
+    http_response_code(404);
+    exit('Unknown provider.');
+}
+$stmt->close();
+
+$provider_url = rtrim($provider_url, '/');
+$auth_url = "{$provider_url}/oauth_authorize.php?client_id={$client_id}&redirect_uri=" . urlencode($redirect_uri) . "&provider=devhive";
+
+header("Location: $auth_url");
+exit;
+?>
