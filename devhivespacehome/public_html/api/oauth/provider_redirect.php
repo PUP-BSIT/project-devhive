@@ -7,8 +7,7 @@ if (!$provider) {
     exit('No provider specified.');
 }
 
-//oauth_providers table
-$stmt = $conn->prepare("SELECT client_id, redirect_uri, provider_url FROM oauth_providers WHERE provider_name = ?");
+$stmt = $conn->prepare("SELECT client_id, redirect_uri, provider_url FROM oauth_clients WHERE provider_name = ?");
 $stmt->bind_param("s", $provider);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -35,9 +34,6 @@ if ($row = $result->fetch_assoc()) {
 
     $auth_url = "{$provider_url}{$auth_path}?client_id={$client_id}&redirect_uri=" . urlencode($redirect_uri);
     $auth_url = trim($auth_url);
-
-
-    error_log("OAuth Redirect: provider=$provider, client_id=$client_id, redirect_uri=$redirect_uri, auth_url=$auth_url");
 
     header("Location: $auth_url");
     exit;
