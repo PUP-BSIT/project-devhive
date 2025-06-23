@@ -14,9 +14,157 @@ initializeSession();
 
 $provider = $_GET['provider'] ?? null;
 $token = $_GET['token'] ?? "";
+$code = $_GET['code'] ?? ""; // <-- Add this line
 
 error_log("QUERY_STRING: " . $_SERVER['QUERY_STRING']);
-error_log("provider=" . var_export($provider, true) . ", token=" . var_export($token, true));
+error_log("provider=" . var_export($provider, true) . ", token=" . var_export($token, true) . ", code=" . var_export($code, true));
+
+// --- NEW: If code is present, exchange it for a token ---
+if ($code && $provider) {
+    // Fetch client_id and client_secret for this provider
+    $stmt = $conn->prepare("SELECT client_id, client_secret, provider_url FROM oauth_clients WHERE provider_name = ?");
+    $stmt->bind_param("s", $provider);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $clientRow = $result->fetch_assoc();
+    $stmt->close();
+
+    if (!$clientRow) {
+        error_log("Client info not found for provider: $provider");
+        header('Location: /login/index.html?error=invalid_provider');
+        exit;
+    }
+
+    $client_id = $clientRow['client_id'];
+    $client_secret = $clientRow['client_secret'];
+    $provider_url = rtrim(trim($clientRow['provider_url']), '/');
+
+    // Build token endpoint URL
+    $token_url = $provider_url . '/api/oauth/token.php';
+
+    // Prepare POST data for token exchange
+    $post_fields = [
+        'grant_type' => 'authorization_code',
+        'code' => $code,
+        'client_id' => $client_id,
+        'client_secret' => $client_secret,
+        'redirect_uri' => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"
+    ];
+
+    // Remove query params from redirect_uri (keep only up to ?)
+    $post_fields['redirect_uri'] = strtok($post_fields['redirect_uri'], '?');
+
+    // Exchange code for token
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $token_url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_fields));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FAILONERROR, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_USERAGENT, 'OAuth-Client/1.0');
+
+    $token_response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+
+    if ($token_response === false) {
+        error_log("Token exchange cURL error: $curlError");
+        error_log("HTTP Code: $httpCode");
+        header('Location: /login/index.html?error=token_exchange_failed');
+        exit;
+    }
+
+    $token_data = json_decode($token_response, true);
+    if (!isset($token_data['access_token'])) {
+        error_log("Token exchange failed: " . $token_response);
+        header('Location: /login/index.html?error=token_exchange_failed');
+        exit;
+    }
+
+    $token = $token_data['access_token'];
+    // Continue as usual with $token
+}
+
+// --- END NEW ---
+
+error_log("QUERY_STRING: " . $_SERVER['QUERY_STRING']);
+error_log("provider=" . var_export($provider, true) . ", token=" . var_export($token, true) . ", code=" . var_export($code, true));
+
+// --- NEW: If code is present, exchange it for a token ---
+if ($code && $provider) {
+    // Fetch client_id and client_secret for this provider
+    $stmt = $conn->prepare("SELECT client_id, client_secret, provider_url FROM oauth_clients WHERE provider_name = ?");
+    $stmt->bind_param("s", $provider);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $clientRow = $result->fetch_assoc();
+    $stmt->close();
+
+    if (!$clientRow) {
+        error_log("Client info not found for provider: $provider");
+        header('Location: /login/index.html?error=invalid_provider');
+        exit;
+    }
+
+    $client_id = $clientRow['client_id'];
+    $client_secret = $clientRow['client_secret'];
+    $provider_url = rtrim(trim($clientRow['provider_url']), '/');
+
+    // Build token endpoint URL
+    $token_url = $provider_url . '/api/oauth/token.php';
+
+    // Prepare POST data for token exchange
+    $post_fields = [
+        'grant_type' => 'authorization_code',
+        'code' => $code,
+        'client_id' => $client_id,
+        'client_secret' => $client_secret,
+        'redirect_uri' => (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"
+    ];
+
+    // Remove query params from redirect_uri (keep only up to ?)
+    $post_fields['redirect_uri'] = strtok($post_fields['redirect_uri'], '?');
+
+    // Exchange code for token
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $token_url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post_fields));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FAILONERROR, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_USERAGENT, 'OAuth-Client/1.0');
+
+    $token_response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+
+    if ($token_response === false) {
+        error_log("Token exchange cURL error: $curlError");
+        error_log("HTTP Code: $httpCode");
+        header('Location: /login/index.html?error=token_exchange_failed');
+        exit;
+    }
+
+    $token_data = json_decode($token_response, true);
+    if (!isset($token_data['access_token'])) {
+        error_log("Token exchange failed: " . $token_response);
+        header('Location: /login/index.html?error=token_exchange_failed');
+        exit;
+    }
+
+    $token = $token_data['access_token'];
+    // Continue as usual with $token
+}
+
+// --- END NEW ---
 
 if (!$provider || !$token) {
     error_log("Missing provider or token");
