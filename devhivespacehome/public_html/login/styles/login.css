@@ -441,11 +441,6 @@ body::before {
   background: #2d1e5f;
 }
 
-.google-btn {
-  background: #fff;
-  border: 1px solid #e0e0e0;
-}
-
 @media (max-width: 768px) {
   .container {
     flex-direction: column;
