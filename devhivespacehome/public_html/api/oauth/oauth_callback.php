@@ -8,18 +8,15 @@ session_start();
 require_once __DIR__ . '/../../../config/database.php';
 
 //INPUT VALIDATION & LOGGING
-
 // Get provider and token from request
 $provider = $_GET['provider'] ?? $_POST['provider'] ?? null;
 $token = $_GET['token'] ?? $_POST['token'] ?? '';
 
 // DEBUG: Log what we received
-error_log("=== OAUTH CALLBACK DEBUG ===");
 error_log("Received Provider: '" . $provider . "'");
 error_log("Received Token: '" . $token . "'");
 error_log("Full GET: " . print_r($_GET, true));
 error_log("Full POST: " . print_r($_POST, true));
-error_log("============================");
 
 // Validate required parameters
 if (!$provider || !$token) {
@@ -31,7 +28,6 @@ if (!$provider || !$token) {
 $_SESSION['oauth_token_' . $provider] = $token;
 
 //GET PROVIDER CONFIGURATION
-
 // Get provider info from oauth_clients (consistent table/fields)
 $stmt = $conn->prepare("SELECT provider_url, client_id, redirect_uri FROM oauth_clients WHERE provider_name = ?");
 $stmt->bind_param("s", $provider);
@@ -56,10 +52,8 @@ if (isset($parsed_url['port'])) {
     $base_url .= ':' . $parsed_url['port'];
 }
 
-// TOKEN CLEANUP (Provider-side robust feature)
 $conn->query("UPDATE oauth_tokens SET is_revoked = 1 WHERE expires_at < NOW()");
 
-// CHECK FOR EXISTING VALID TOKEN (Provider-side feature)
 $local_user_id = null;
 
 // Check if we already have a valid token for this user
@@ -83,32 +77,27 @@ if ($existing_user = $result->fetch_assoc()) {
 $stmt->close();
 
 //  FETCH USER DATA FROM PROVIDER
-
 // Build get-user-data endpoint path (client-side logic with provider-side fallback)
 switch ($provider) {
     case 'heybleepi':
-        // Try provider-side path first, fallback to client-side
         $getUserDataPath = "$base_url/PROJECT-CLUB-404/heybleepi/codes/php/get-user-data.php";
         if (!@file_get_contents($getUserDataPath . "?token=" . urlencode($token) . "&provider=" . urlencode($provider))) {
             $getUserDataPath = "$provider_url/get-user-data.php";
         }
         break;
     case 'hershive':
-        // Try provider-side path first, fallback to client-side
         $getUserDataPath = "$base_url/php/get_user_data.php";
         if (!@file_get_contents($getUserDataPath . "?token=" . urlencode($token) . "&provider=" . urlencode($provider))) {
             $getUserDataPath = "$provider_url/php/get_user_data.php";
         }
         break;
     case 'devhive':
-        // Try provider-side path first, fallback to client-side
         $getUserDataPath = "$base_url/api/oauth/get-user-data.php";
         if (!@file_get_contents($getUserDataPath . "?token=" . urlencode($token) . "&provider=" . urlencode($provider))) {
             $getUserDataPath = "$provider_url/api/oauth/get-user-data.php";
         }
         break;
     default:
-        // Default: try provider-side logic first, fallback to client-side
         $getUserDataPath = "$base_url/get-user-data.php";
         if (!@file_get_contents($getUserDataPath . "?token=" . urlencode($token) . "&provider=" . urlencode($provider))) {
             $getUserDataPath = "$provider_url/get-user-data.php";
@@ -116,7 +105,7 @@ switch ($provider) {
         break;
 }
 
-// Fetch user data from provider with enhanced error handling
+// Fetch user data from provider with error handling
 $userDataJson = @file_get_contents("$getUserDataPath?token=" . urlencode($token) . "&provider=" . urlencode($provider));
 
 if ($userDataJson === false) {
@@ -136,7 +125,6 @@ if (!$userData || isset($userData['error']) || isset($userData['error_message'])
 error_log("INFO: Successfully fetched user data for: " . $userData['username']);
 
 // USER MANAGEMENT
-
 if (!$local_user_id) {
     // No existing valid token, check if user exists by username
     $stmt = $conn->prepare("SELECT user_id FROM user WHERE username = ?");
@@ -185,8 +173,7 @@ if (!$local_user_id) {
     $stmt->close();
 }
 
-//  UPDATE USER DATA (Provider-side feature - Keep user data synchronized)
-
+//  UPDATE USER DATA (Keep user data synchronized)
 // Always update user data to keep it fresh from the provider
 $stmt = $conn->prepare("
     UPDATE user 
@@ -216,7 +203,6 @@ $stmt->close();
 error_log("INFO: Updated user data for user ID: $local_user_id");
 
 //  TOKEN MANAGEMENT
-
 // Set token expiry (same as provider, or your own policy)
 $expires_at = date('Y-m-d H:i:s', strtotime('+1 hour'));
 
