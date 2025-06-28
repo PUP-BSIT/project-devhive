@@ -1,5 +1,4 @@
 <?php
-
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -7,17 +6,15 @@ error_reporting(E_ALL);
 session_start();
 require_once __DIR__ . '/../../../config/database.php';
 
-//INPUT VALIDATION & LOGGING
 // Get provider and token from request
 $provider = $_GET['provider'] ?? $_POST['provider'] ?? null;
 $token = $_GET['token'] ?? $_POST['token'] ?? '';
 
-// DEBUG: Log what we received
 error_log("Received Provider: '" . $provider . "'");
 error_log("Received Token: '" . $token . "'");
 error_log("Full GET: " . print_r($_GET, true));
-error_log("Full POST: " . print_r($_POST, true));
-
+error_log("Full POST: " . print_r($_POST, true))
+  
 // Validate required parameters
 if (!$provider || !$token) {
     error_log("ERROR: Missing provider or token");
@@ -27,7 +24,6 @@ if (!$provider || !$token) {
 
 $_SESSION['oauth_token_' . $provider] = $token;
 
-//GET PROVIDER CONFIGURATION
 // Get provider info from oauth_clients (consistent table/fields)
 $stmt = $conn->prepare("SELECT provider_url, client_id, redirect_uri FROM oauth_clients WHERE provider_name = ?");
 $stmt->bind_param("s", $provider);
@@ -52,8 +48,10 @@ if (isset($parsed_url['port'])) {
     $base_url .= ':' . $parsed_url['port'];
 }
 
+// TOKEN CLEANUP 
 $conn->query("UPDATE oauth_tokens SET is_revoked = 1 WHERE expires_at < NOW()");
 
+// CHECK FOR EXISTING VALID TOKEN 
 $local_user_id = null;
 
 // Check if we already have a valid token for this user
@@ -76,28 +74,31 @@ if ($existing_user = $result->fetch_assoc()) {
 }
 $stmt->close();
 
-//  FETCH USER DATA FROM PROVIDER
 // Build get-user-data endpoint path (client-side logic with provider-side fallback)
 switch ($provider) {
     case 'heybleepi':
+        // Try provider-side path first, fallback to client-side
         $getUserDataPath = "$base_url/PROJECT-CLUB-404/heybleepi/codes/php/get-user-data.php";
         if (!@file_get_contents($getUserDataPath . "?token=" . urlencode($token) . "&provider=" . urlencode($provider))) {
             $getUserDataPath = "$provider_url/get-user-data.php";
         }
         break;
     case 'hershive':
+        // Try provider-side path first, fallback to client-side
         $getUserDataPath = "$base_url/php/get_user_data.php";
         if (!@file_get_contents($getUserDataPath . "?token=" . urlencode($token) . "&provider=" . urlencode($provider))) {
             $getUserDataPath = "$provider_url/php/get_user_data.php";
         }
         break;
     case 'devhive':
+        // Try provider-side path first, fallback to client-side
         $getUserDataPath = "$base_url/api/oauth/get-user-data.php";
         if (!@file_get_contents($getUserDataPath . "?token=" . urlencode($token) . "&provider=" . urlencode($provider))) {
             $getUserDataPath = "$provider_url/api/oauth/get-user-data.php";
         }
         break;
     default:
+        // Default: try provider-side logic first, fallback to client-side
         $getUserDataPath = "$base_url/get-user-data.php";
         if (!@file_get_contents($getUserDataPath . "?token=" . urlencode($token) . "&provider=" . urlencode($provider))) {
             $getUserDataPath = "$provider_url/get-user-data.php";
@@ -105,7 +106,7 @@ switch ($provider) {
         break;
 }
 
-// Fetch user data from provider with error handling
+// Fetch user data from provider with enhanced error handling
 $userDataJson = @file_get_contents("$getUserDataPath?token=" . urlencode($token) . "&provider=" . urlencode($provider));
 
 if ($userDataJson === false) {
@@ -173,7 +174,7 @@ if (!$local_user_id) {
     $stmt->close();
 }
 
-//  UPDATE USER DATA (Keep user data synchronized)
+//  UPDATE USER DATA (Provider-side feature - Keep user data synchronized)
 // Always update user data to keep it fresh from the provider
 $stmt = $conn->prepare("
     UPDATE user 

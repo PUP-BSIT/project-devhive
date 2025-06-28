@@ -198,63 +198,6 @@ body::before {
   transition: color 0.3s ease;
 }
 
-.platform-buttons {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.platform-btn {
-  padding: 12px 20px;
-  background: rgba(241, 245, 249, 0.9);
-  color: #64748b;
-  border: none;
-  border-radius: 25px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(5px);
-  position: relative;
-  overflow: hidden;
-  min-width: 100px;
-}
-
-.platform-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, 
-                          transparent, 
-                          rgba(255, 255, 255, 0.3), 
-                          transparent);
-  transition: left 0.5s;
-}
-
-.platform-btn:hover::before {
-  left: 100%;
-}
-
-.platform-btn:hover {
-  background: rgba(226, 232, 240, 1);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.platform-btn.active {
-  background: linear-gradient(135deg, #2563EB 0%, #1d4ed8 100%);
-  color: white;
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
-  transform: translateY(-2px);
-}
-
-.platform-btn.active:hover {
-  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
-}
-
 .content-editor {
   padding: 20px;
   border: 2px solid rgba(226, 232, 240, 0.8);
@@ -637,35 +580,6 @@ body::before {
   }
 }
 
-.emoji-picker {
-  position: absolute;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  padding: 12px;
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 8px;
-  z-index: 1000;
-  max-width: 300px;
-  margin-top: 8px;
-}
-
-.emoji-picker button {
-  background: none;
-  border: none;
-  font-size: 20px;
-  padding: 8px;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-}
-
-.emoji-picker button:hover {
-  background: rgba(37, 99, 235, 0.1);
-  transform: scale(1.1);
-}
-
 .preview-modal-container {
   position: fixed;
   top: 0;
@@ -805,12 +719,6 @@ body::before {
     padding: 16px;
     border-top: 1px solid #f0f0f0;
     background: #f8fafc;
-}
-
-.preview-platforms h4 {
-    margin: 0 0 12px 0;
-    font-size: 14px;
-    color: #64748b;
 }
 
 .platform-list {

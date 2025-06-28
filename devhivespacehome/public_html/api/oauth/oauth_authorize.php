@@ -6,6 +6,7 @@ error_reporting(E_ALL);
 session_start();
 require_once __DIR__ . '/../../../config/database.php';
 
+
 $client_id = $_GET['client_id'] ?? $_POST['client_id'] ?? '';
 $redirect_uri = $_GET['redirect_uri'] ?? $_POST['redirect_uri'] ?? '';
 $error = '';
@@ -93,37 +94,36 @@ if (!isset($_SESSION['user_id'])) {
         }
         $stmt->close();
     }
-
     // Show login form
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<title>Authorize Access</title>
-<link rel="stylesheet" href="./oauth_authorize.css" />
-</head>
-<body>
-<div class="card-container">
-    <div class="auth-card">
-    <h2>Authorize Access</h2>
-    <p>The application <strong><?= htmlspecialchars($client_id) ?></strong> is requesting permission to access your account.</p>
-    <?php if ($error) echo "<p class='error-message'>$error</p>"; ?>
-    <form method="POST" class="auth-form">
-        <input type="hidden" name="client_id" value="<?= htmlspecialchars($client_id) ?>">
-        <input type="hidden" name="redirect_uri" value="<?= htmlspecialchars($redirect_uri) ?>">
-        <input type="email" name="email" placeholder="Email" required />
-        <input type="password" name="password" placeholder="Password" required />
-        <div class="button-group">
-            <button type="submit" class="btn login">Login</button>
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <title>Authorize Access</title>
+      <link rel="stylesheet" href="./oauth_authorize.css" />
+    </head>
+    <body>
+      <div class="card-container">
+        <div class="auth-card">
+          <h2>Authorize Access</h2>
+          <p>The application <strong><?= htmlspecialchars($client_id) ?></strong> is requesting permission to access your account.</p>
+          <?php if ($error) echo "<p class='error-message'>$error</p>"; ?>
+          <form method="POST" class="auth-form">
+            <input type="hidden" name="client_id" value="<?= htmlspecialchars($client_id) ?>">
+            <input type="hidden" name="redirect_uri" value="<?= htmlspecialchars($redirect_uri) ?>">
+            <input type="email" name="email" placeholder="Email" required />
+            <input type="password" name="password" placeholder="Password" required />
+            <div class="button-group">
+                <button type="submit" class="btn login">Login</button>
+            </div>
+          </form>
         </div>
-    </form>
-    </div>
-</div>
-</body>
-</html>
-<?php
-exit;
+      </div>
+    </body>
+    </html>
+    <?php
+    exit;
 }
 
 // Consent form
