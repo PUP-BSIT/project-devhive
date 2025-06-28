@@ -12,11 +12,13 @@ header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
+// Configuration
 require_once __DIR__ . '/../../../config/session_config.php';
 require_once __DIR__ . '/../../../config/database.php';
 
 initializeSession();
 
+// Error response function
 function sendErrorResponse($message, $status_code = 400) {
     http_response_code($status_code);
     echo json_encode([
