@@ -93,23 +93,22 @@ if (!isset($_SESSION['user_id'])) {
         }
         $stmt->close();
     }
-
-    // Show login form
-?>
+ 
+// Show login form?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Authorize Access</title>
-<link rel="stylesheet" href="./oauth_authorize.css" />
+  <meta charset="UTF-8" />
+  <title>Authorize Access</title>
+  <link rel="stylesheet" href="./oauth_authorize.css" />
 </head>
 <body>
-<div class="card-container">
+  <div class="card-container">
     <div class="auth-card">
-    <h2>Authorize Access</h2>
-    <p>The application <strong><?= htmlspecialchars($client_id) ?></strong> is requesting permission to access your account.</p>
-    <?php if ($error) echo "<p class='error-message'>$error</p>"; ?>
-    <form method="POST" class="auth-form">
+      <h2>Authorize Access</h2>
+      <p>The application <strong><?= htmlspecialchars($client_id) ?></strong> is requesting permission to access your account.</p>
+      <?php if ($error) echo "<p class='error-message'>$error</p>"; ?>
+      <form method="POST" class="auth-form">
         <input type="hidden" name="client_id" value="<?= htmlspecialchars($client_id) ?>">
         <input type="hidden" name="redirect_uri" value="<?= htmlspecialchars($redirect_uri) ?>">
         <input type="email" name="email" placeholder="Email" required />
@@ -117,13 +116,13 @@ if (!isset($_SESSION['user_id'])) {
         <div class="button-group">
             <button type="submit" class="btn login">Login</button>
         </div>
-    </form>
+      </form>
     </div>
-</div>
-</body>
-</html>
-<?php
-exit;
+  </div>
+  </body>
+  </html>
+  <?php
+  exit;
 }
 
 // Consent form

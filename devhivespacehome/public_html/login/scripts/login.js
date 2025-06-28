@@ -83,45 +83,6 @@ document.addEventListener("DOMContentLoaded", function () {
     return emailRegex.test(email);
   }
 
-  document.querySelector(".google-btn").addEventListener("click", function (e) {
-    e.preventDefault();
-    console.log("Google button clicked");
-
-    fetch("/devhivespace/api/auth/google_oauth/google.php")
-      .then((response) => {
-        console.log("Response received:", response);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("Data received:", data);
-        if (data.auth_url) {
-          console.log("Redirecting to:", data.auth_url);
-          window.location.href = data.auth_url;
-        } else if (data.error) {
-          throw new Error(data.error);
-        } else {
-          throw new Error("No auth_url received from server");
-        }
-      })
-      .catch((error) => {
-        console.error("Detailed error:", error);
-        if (error.message === "Failed to fetch") {
-          alert(
-            "Error: Unable to connect to the server. Please make sure:\n" +
-              "1. You are accessing the site through a web server " +
-              "(http://localhost)\n" +
-              "2. The web server (like XAMPP) is running\n" +
-              "3. PHP is properly configured"
-          );
-        } else {
-          alert("Error initiating Google sign-in: " + error.message);
-        }
-      });
-  });
-
   const forgotLink = document.querySelector(".forgot-link");
   if (forgotLink) {
     forgotLink.addEventListener("click", function (e) {

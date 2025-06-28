@@ -1,5 +1,4 @@
 <?php
-// Error reporting for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ini_set('display_startup_errors', 0);
@@ -59,16 +58,13 @@ try {
     // Choose query based on provider
     switch ($provider) {
         case 'heybleepi':
-            $query = "SELECT username AS user_name, first_name, middle_name,
-             last_name, email, birthday AS birthdate FROM users WHERE id = ?";
+            $query = "SELECT username AS user_name, first_name, middle_name, last_name, email, birthday AS birthdate FROM users WHERE id = ?";
             break;
         case 'devhive':
-            $query = "SELECT username, first_name, middle_name, last_name, 
-            email, birthday FROM user WHERE user_id = ?";
+            $query = "SELECT username, first_name, middle_name, last_name, email, birthday FROM user WHERE user_id = ?";
             break;
         case 'hershive':
-            $query = "SELECT username, first_name, middle_name, last_name,
-             email, birthday FROM users WHERE user_id = ?";
+            $query = "SELECT username, first_name, middle_name, last_name, email, birthday FROM users WHERE user_id = ?";
             break;
         default:
             sendErrorResponse('Invalid platform', 400);
