@@ -10,11 +10,14 @@ require_once __DIR__ . '/../../../config/database.php';
 $provider = $_GET['provider'] ?? $_POST['provider'] ?? null;
 $token = $_GET['token'] ?? $_POST['token'] ?? '';
 
+// DEBUG: Log what we received
+error_log("=== OAUTH CALLBACK DEBUG ===");
 error_log("Received Provider: '" . $provider . "'");
 error_log("Received Token: '" . $token . "'");
 error_log("Full GET: " . print_r($_GET, true));
-error_log("Full POST: " . print_r($_POST, true))
-  
+error_log("Full POST: " . print_r($_POST, true));
+error_log("============================");
+
 // Validate required parameters
 if (!$provider || !$token) {
     error_log("ERROR: Missing provider or token");
@@ -48,10 +51,10 @@ if (isset($parsed_url['port'])) {
     $base_url .= ':' . $parsed_url['port'];
 }
 
-// TOKEN CLEANUP 
+// TOKEN CLEANUP
 $conn->query("UPDATE oauth_tokens SET is_revoked = 1 WHERE expires_at < NOW()");
 
-// CHECK FOR EXISTING VALID TOKEN 
+// CHECK FOR EXISTING VALID TOKEN
 $local_user_id = null;
 
 // Check if we already have a valid token for this user
@@ -125,7 +128,6 @@ if (!$userData || isset($userData['error']) || isset($userData['error_message'])
 
 error_log("INFO: Successfully fetched user data for: " . $userData['username']);
 
-// USER MANAGEMENT
 if (!$local_user_id) {
     // No existing valid token, check if user exists by username
     $stmt = $conn->prepare("SELECT user_id FROM user WHERE username = ?");
@@ -174,7 +176,7 @@ if (!$local_user_id) {
     $stmt->close();
 }
 
-//  UPDATE USER DATA (Provider-side feature - Keep user data synchronized)
+//  UPDATE USER DATA
 // Always update user data to keep it fresh from the provider
 $stmt = $conn->prepare("
     UPDATE user 
@@ -204,7 +206,7 @@ $stmt->close();
 error_log("INFO: Updated user data for user ID: $local_user_id");
 
 //  TOKEN MANAGEMENT
-// Set token expiry (same as provider, or your own policy)
+// Set token expiry 
 $expires_at = date('Y-m-d H:i:s', strtotime('+1 hour'));
 
 // Insert or update the token in local oauth_tokens (always use client_id)
