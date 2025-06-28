@@ -57,10 +57,7 @@ if (isset($_POST['allow'])) {
             $stmt->execute();
         }
 
-        // Append token to redirect_uri
         $redir = $redirect_uri . (strpos($redirect_uri, '?') === false ? '?' : '&') . "token=$token";
-        // Optionally add provider if your client expects it and it's not already in the URL
-        // $redir .= "&provider=devhive";
 
         error_log("OAUTH REDIRECT: $redir");
         header("Location: $redir");
@@ -94,7 +91,7 @@ if (!isset($_SESSION['user_id'])) {
         $stmt->close();
     }
 
-    // Show login form
+// Show login form
 ?>
 <!DOCTYPE html>
 <html lang="en">
