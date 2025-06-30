@@ -106,6 +106,32 @@ document.addEventListener("DOMContentLoaded", () => {
     const newUpdatePasswordBtn = document.querySelector(".update-btn");
     newUpdatePasswordBtn.addEventListener("click", handlePasswordUpdate);
   }
+
+  // Add logout button event listener
+  const logoutBtn = document.getElementById("logout-btn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      fetch("../api/auth/logout.php", {
+        method: "POST",
+        credentials: "include"
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            // Optionally clear local/session storage
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = data.redirect || "/login/index.html";
+          } else {
+            showNotification(data.message || "Logout failed", "error");
+          }
+        })
+        .catch(() => {
+          showNotification("Logout error", "error");
+        });
+    });
+  }
 });
 
 function createPasswordUpdateModal() {
