@@ -7,10 +7,12 @@ ini_set('error_log', __DIR__ . '/../../../php-error.log');
 
 require_once __DIR__ . '/../../../config/database.php';
 require_once __DIR__ . '/../../../config/session_config.php';
+
 initializeSession();
 
-function respond($success, $message, $redirect_url = null) {
+function respond($success, $message, $user_id = null, $redirect_url = null) {
     $response = ['success' => $success, 'message' => $message];
+    if ($user_id !== null) $response['user_id'] = $user_id;
     if ($redirect_url) $response['redirect_url'] = $redirect_url;
     echo json_encode($response);
     exit;
@@ -53,5 +55,5 @@ $_SESSION['username'] = $user['username'];
 $sid = session_name() . '=' . session_id();
 $redirect_url = "/dashboard/dashboard.php?$sid";
 
-respond(true, "Login successful.", $redirect_url);
+respond(true, "Login successful.", $user['user_id'], $redirect_url);
 ?>

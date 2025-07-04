@@ -28,40 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     handleLoginLoading(true);
 
-    fetch("/api/auth/login.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ identifier, password }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        handleLoginLoading(false);
-        if (data.success) {
-          // Optionally redirect if backend provides a URL
-          if (data.redirect_url) {
-            // Extract session ID from redirect_url
-            const match = data.redirect_url.match(/PHPSESSID=([a-zA-Z0-9]+)/);
-            if (match) {
-              localStorage.setItem("PHPSESSID", match[1]);
-            }
-            window.location.href = data.redirect_url;
-          } else {
-            // After successful login and you have the sessionId from the server:
-            localStorage.setItem("PHPSESSID", data.sessionId);
-            window.location.href =
-              "/dashboard/dashboard.php?PHPSESSID=" + data.sessionId;
-          }
-        } else {
-          alert(data.message || "Login failed. Please try again.");
-        }
-      })
-      .catch((error) => {
-        handleLoginLoading(false);
-        console.error("Error:", error);
-        alert("An error occurred during login. Please try again.");
-      });
+    login(identifier, password);
   });
 
   function handleLoginLoading(isLoading) {
@@ -111,4 +78,40 @@ document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll(".form-group").forEach((group) => {
     group.classList.add("unfocused");
   });
+
+  function login(identifier, password) {
+    fetch("/api/auth/login.php", {
+      method: "POST",
+      body: JSON.stringify({ identifier, password }),
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        handleLoginLoading(false);
+        if (data.success) {
+          localStorage.setItem("user_id", data.user_id);
+          // Optionally redirect if backend provides a URL
+          if (data.redirect_url) {
+            // Extract session ID from redirect_url
+            const match = data.redirect_url.match(/PHPSESSID=([a-zA-Z0-9]+)/);
+            if (match) {
+              localStorage.setItem("PHPSESSID", match[1]);
+            }
+            window.location.href = data.redirect_url;
+          } else {
+            // After successful login and you have the sessionId from the server:
+            localStorage.setItem("PHPSESSID", data.sessionId);
+            window.location.href =
+              "/dashboard/dashboard.php?PHPSESSID=" + data.sessionId;
+          }
+        } else {
+          alert(data.message || "Login failed. Please try again.");
+        }
+      })
+      .catch((error) => {
+        handleLoginLoading(false);
+        console.error("Error:", error);
+        alert("An error occurred during login. Please try again.");
+      });
+  }
 });
