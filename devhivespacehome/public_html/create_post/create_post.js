@@ -591,7 +591,6 @@ class PostCreator {
   }
 
   showNotification(message) {
-    // Remove any existing notification
     const existing = document.querySelector('.notification');
     if (existing) existing.remove();
 
@@ -605,7 +604,7 @@ class PostCreator {
       setTimeout(() => {
         notification.classList.remove('show');
         setTimeout(() => notification.remove(), 300);
-      }, 2000); // Show for 2 seconds
+      }, 2000); 
     }, 100);
   }
 
@@ -652,7 +651,7 @@ class PostCreator {
       if (!response.ok) return null;
       const data = await response.json();
       if (data && data.user) {
-        return data.user; // Should contain user_id, username, etc.
+        return data.user; 
       }
       return null;
     } catch (e) {
