@@ -349,19 +349,6 @@ const additionalStyles = `
         resize: none;
     }
 
-    .share-original-preview {
-        background: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        padding: 10px;
-        margin-bottom: 10px;
-    }
-
-    .share-original-content {
-        font-size: 14px;
-        color: #333;
-    }
-
     .share-platforms {
         display: flex;
         justify-content: space-between;
@@ -397,42 +384,6 @@ const additionalStyles = `
     }
 
     .share-main-btn:hover {
-        background: #1d4ed8;
-    }
-
-    .share-link-row {
-        display: flex;
-        align-items: center;
-        margin-top: 10px;
-    }
-
-    .share-link-row label {
-        flex: 0 0 80px;
-        font-size: 14px;
-        color: #333;
-    }
-
-    .share-link-input {
-        flex: 1;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        font-size: 14px;
-        margin-right: 10px;
-    }
-
-    .copy-link-btn {
-        background: #2563eb;
-        color: white;
-        border: none;
-        padding: 8px 12px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: background 0.3s;
-    }
-
-    .copy-link-btn:hover {
         background: #1d4ed8;
     }
 `;
@@ -861,7 +812,7 @@ function createPreviewModal(post) {
 
     // Prepare media HTML
     let mediaHTML = '';
-    
+
     // Handle images from mediaData
     if (post.mediaData && post.mediaData.images && post.mediaData.images.length > 0) {
         const imageContainer = document.createElement('div');
@@ -1134,6 +1085,37 @@ function openShareModal(post) {
     const modal = document.getElementById('share-modal-overlay');
     modal.style.display = 'flex';
 
+    // Render post preview
+    const preview = modal.querySelector('.share-original-content');
+    let mediaHTML = '';
+
+    // Images
+    if (post.images && post.images.length > 0) {
+        mediaHTML += `<div class="post-media-gallery">` +
+            post.images.map(img => `<img src="${img}" alt="Post Image">`).join('') +
+            `</div>`;
+    }
+    // Video
+    if (post.video && post.video.url) {
+        mediaHTML += `
+            <div class="post-media-video">
+                <video src="${post.video.url}" controls poster="${post.video.thumbnail || ''}"></video>
+            </div>
+        `;
+    }
+
+    preview.innerHTML = `
+    <div class="post-header">
+        <img src="../assets/human.png" alt="Profile" class="profile-pic">
+        <div>
+            <strong>${post.author || 'Anonymous'}</strong>
+            <div style="font-size:12px;color:#888;">${convertUTCMySQLToLocal(post.timestamp)}</div>
+        </div>
+    </div>
+    <div class="post-content">${escapeHTML(post.content)}</div>
+    ${mediaHTML}
+    `;
+
     const closeBtn = modal.querySelector('.close-share-modal');
     closeBtn.onclick = null;
     closeBtn.addEventListener('click', () => {
@@ -1144,9 +1126,8 @@ function openShareModal(post) {
     shareBtn.onclick = null;
     shareBtn.addEventListener('click', async () => {
         const user_id = Number(localStorage.getItem('user_id')) || 1;
-        const caption = modal.querySelector('.share-caption').value.trim(); 
+        const caption = modal.querySelector('.share-caption').value.trim();
         const isReshare = post.isShare && post.share_id && post.share_id !== null && post.share_id !== undefined && post.share_id.toString().startsWith('share-');
-        const isShareOfShare = post.isShare && post.share_id && post.target_type === 'share'; 
         const postIdToShare = post.post_id;
         const shareIdToShare = isReshare ? post.share_id : undefined;
 
@@ -1163,7 +1144,6 @@ function openShareModal(post) {
         const response = await sharePostToBackend(payload);
         if (response && response.status === 'success') {
             alert('shared successfully.');
-            // Update share count in UI
             const shareCountElement = document.querySelector(
                 `.social-post[data-post-id="${post.id}"] .shares-count`
             );
