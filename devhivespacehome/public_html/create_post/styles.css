@@ -1087,4 +1087,27 @@ height: 6px;
         margin-right: 8px;
         margin-bottom: 0;
     }
-} 
+}
+
+.notification {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 250px;
+  max-width: 80vw;
+  background: rgba(40, 40, 40, 0.95);
+  color: #fff;
+  padding: 24px 32px;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  text-align: center;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+}
+.notification.show {
+  opacity: 1;
+}
