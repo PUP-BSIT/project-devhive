@@ -392,8 +392,16 @@ document.head.appendChild(document.createElement('style')).textContent = additio
 
 function createPostElement(post) {
     // Always use like_count from backend
-    const likeCount = typeof post.like_count !== 'undefined' ? post.like_count : 0;
-    const commentCount = typeof post.comment_count !== 'undefined' ? post.comment_count : (post.comments ? post.comments.length : 0);
+    const likeCount = typeof post.likes !== 'undefined' ? post.likes : 0;
+    const commentCount = typeof post.comment_count !== 'undefined' ? post.comment_count : 
+                         (post.comments ? post.comments.length : 0);
+
+    // Modify the likes count display
+    const likesHTML = `
+        <span class="likes-count" data-post-id="${post.post_id}">
+            <i class="icon-heart">👍</i> ${likeCount}
+        </span>
+    `;
 
     let mediaHTML = '';
     // Handle images
@@ -528,46 +536,24 @@ function createPostElement(post) {
     // --- Render interactions for ALL posts (shared and original) ---
     postElement.innerHTML += `
         <div class="post-interactions">
-            <div class="interaction-stats">
-                <span class="likes-count">
-                    <i class="icon-heart">❤️</i> ${likeCount}
-                </span>
-                <span class="comments-count">
-                    <i class="icon-comment">💬</i> ${commentCount}
-                </span>
-                <span class="shares-count">
-                    <i class="icon-share">🔗</i> ${post.shares}
-                </span>
-            </div>
-            <div class="interaction-buttons">
-                <button class="btn-like" data-post-id="${post.id}">
-                    <i class="icon-heart">❤️</i> Like
-                </button>
-                <button class="btn-comment" data-post-id="${post.id}">
-                    <i class="icon-comment">💬</i> Comment
-                </button>
-                <button class="btn-share" data-post-id="${post.id}">
-                    <i class="icon-share">🔗</i> Share
-                </button>
-            </div>
+            ${likesHTML}
+            <span class="comments-count">
+                <i class="icon-comment">💬</i> ${commentCount}
+            </span>
+            <span class="shares-count">
+                <i class="icon-share">🔗</i> ${post.shares || 0}
+            </span>
         </div>
-        <div class="comments-section">
-            <div class="comments-list">
-                ${(post.comments || []).map(comment => `
-                    <div class="comment">
-                        <img src="../assets/human.png" alt="Profile" class="comment-profile-pic">
-                        <div class="comment-content">
-                            <span class="comment-author">Anonymous User</span>
-                            <p class="comment-text">${escapeHTML(comment.text)}</p>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-            <div class="comments-input-container">
-                <img src="../assets/human.png" alt="Profile" class="input-profile-pic">
-                <input type="text" class="comment-input" placeholder="Write a comment...">
-                <button class="comment-send-btn">Post</button>
-            </div>
+        <div class="interaction-buttons">
+            <button class="btn-like" data-post-id="${post.post_id}">
+                <i class="icon-heart">👍</i> Like
+            </button>
+            <button class="btn-comment" data-post-id="${post.post_id}">
+                <i class="icon-comment">💬</i> Comment
+            </button>
+            <button class="btn-share" data-post-id="${post.post_id}">
+                <i class="icon-share">🔗</i> Share
+            </button>
         </div>
     `;
 
@@ -940,28 +926,71 @@ function createPreviewModal(post) {
 
 // Function to toggle like
 function toggleLike(post, likeBtn) {
-    console.log('toggleLike called for post:', post.id);
+    // Retrieve user ID from localStorage and convert to number
+    const userId = Number(localStorage.getItem('user_id'));
+    
+    console.log('Attempting to like post:', post);
+    console.log('Like Button:', likeBtn);
+    console.log('Current localStorage user_id:', userId);
+
+    if (!userId) {
+        console.error('No user_id found in localStorage');
+        showLikeError('User not logged in. Please log in first.');
+        return;
+    }
+
+    // Determine the correct post ID
+    const postId = Number(post.post_id);
+
+    const payload = {
+        post_id: postId,
+        user_id: userId,
+        reaction_type: 'like'
+    };
+    console.log('Like Payload:', payload);
+
     fetch('../api/posts/add-reaction.php', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-            post_id: post.post_id || post.id, // always use the original post_id
-            reaction_type: 'like'
-        })
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
     .then(data => {
-        console.log('add-reaction.php response:', data);
-        if (data.success) {
-            loadPosts(0, 'all post');
+        console.log('Like Response:', data);
+        
+        if (data.status === 'success') {
+            // Find the likes-count element
+            const postElement = likeBtn.closest('.social-post');
+            const likesCountEl = postElement ? 
+                postElement.querySelector('.likes-count') : 
+                document.querySelector(`.likes-count[data-post-id="${postId}"]`);
+
+            console.log('Likes Count Element:', likesCountEl);
+            console.log('Reaction Count from Server:', data.data.reaction_count);
+
+            if (likesCountEl) {
+                // Update likes count
+                likesCountEl.innerHTML = `<i class="icon-heart">👍</i> ${data.data.reaction_count}`;
+                console.log('Updated likes count successfully');
+            } else {
+                console.warn('No likes count element found for post', postId);
+            }
+            
+            // Toggle like button state
+            likeBtn.classList.toggle('liked');
         } else {
-            showLikeError(data.message || 'Failed to like post.');
+            console.error('Like Error:', data.message);
+            showLikeError(data.message || 'Failed to like post');
         }
     })
-    .catch(err => {
-        console.error('Error in toggleLike fetch:', err);
-        showLikeError('Network or server error while liking post.');
+    .catch(error => {
+        console.error('Like Error:', error);
+        showLikeError('Network error occurred. Please try again.');
     });
 }
 
@@ -1033,7 +1062,6 @@ function addComment(post, commentText, commentsList) {
         }
     }
 }
-
 async function sharePostToBackend(payload) {
     try {
         console.log('Sharing post:', payload);
@@ -1157,7 +1185,6 @@ function openShareModal(post) {
         modal.style.display = 'none';
     });
 }
-
 var btn = document.createElement('button');
 btn.innerText = 'Test Like';
 btn.className = 'btn-like';
