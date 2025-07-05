@@ -200,21 +200,42 @@ async function loadPosts(offset = 0, filter = 'all post') {
                 originalAuthor: isShare ? (post.author_username || "Anonymous") : null,
                 share_caption: isShare ? (post.share_caption || "") : null,
                 shares: post.shares !== undefined && post.shares !== null ? Number(post.shares) : 0,
-                target_type: isShare ? post.target_type : null // <-- ADD THIS LINE
+                likes: post.likes !== undefined && post.likes !== null ? Number(post.likes) : 0,
+                target_type: isShare ? post.target_type : null
             };
             
             console.log('Display post object:', displayPost); // Debug log
             
             const postElement = createPostElement(displayPost);
+            // Attach the post object to the element for later use
+            postElement._postData = displayPost;
             globalWallContainer.appendChild(postElement);
         });
 
         // Attach direct click event to all like buttons after rendering
         document.querySelectorAll('.btn-like').forEach(btn => {
             btn.onclick = function(e) {
-                alert('Button clicked!');
-                const postId = btn.getAttribute('data-post-id');
-                toggleLike({ id: postId, post_id: postId }, btn);
+                const postElement = btn.closest('.social-post');
+                if (postElement && postElement._postData) {
+                    toggleLike(postElement._postData, btn);
+                } else {
+                    // fallback: try to find postId from data attribute and extract numeric part
+                    let postId = btn.getAttribute('data-post-id');
+                    if (typeof postId === 'string') {
+                        // Remove any non-digit prefix (e.g., 'share-84' -> '84')
+                        const match = postId.match(/(\d+)$/);
+                        if (match) {
+                            postId = parseInt(match[1], 10);
+                        } else {
+                            postId = null;
+                        }
+                    }
+                    if (postId) {
+                        toggleLike({ post_id: postId }, btn);
+                    } else {
+                        showLikeError('Invalid post ID');
+                    }
+                }
             };
         });
 
@@ -391,17 +412,10 @@ const additionalStyles = `
 document.head.appendChild(document.createElement('style')).textContent = additionalStyles;
 
 function createPostElement(post) {
-    // Always use like_count from backend
+    // Always use likes from backend
+    console.log('Rendering post:', post, 'Likes:', post.likes);
     const likeCount = typeof post.likes !== 'undefined' ? post.likes : 0;
-    const commentCount = typeof post.comment_count !== 'undefined' ? post.comment_count : 
-                         (post.comments ? post.comments.length : 0);
-
-    // Modify the likes count display
-    const likesHTML = `
-        <span class="likes-count" data-post-id="${post.post_id}">
-            <i class="icon-heart">👍</i> ${likeCount}
-        </span>
-    `;
+    const commentCount = typeof post.comment_count !== 'undefined' ? post.comment_count : (post.comments ? post.comments.length : 0);
 
     let mediaHTML = '';
     // Handle images
@@ -536,24 +550,46 @@ function createPostElement(post) {
     // --- Render interactions for ALL posts (shared and original) ---
     postElement.innerHTML += `
         <div class="post-interactions">
-            ${likesHTML}
-            <span class="comments-count">
-                <i class="icon-comment">💬</i> ${commentCount}
-            </span>
-            <span class="shares-count">
-                <i class="icon-share">🔗</i> ${post.shares || 0}
-            </span>
+            <div class="interaction-stats">
+                <span class="likes-count">
+                    <i class="icon-heart">❤️</i> ${likeCount}
+                </span>
+                <span class="comments-count">
+                    <i class="icon-comment">💬</i> ${commentCount}
+                </span>
+                <span class="shares-count">
+                    <i class="icon-share">🔗</i> ${post.shares || 0}
+                </span>
+            </div>
+            <div class="interaction-buttons">
+                <button class="btn-like" data-post-id="${post.id}">
+                    <i class="icon-heart">❤️</i> Like
+                </button>
+                <button class="btn-comment" data-post-id="${post.id}">
+                    <i class="icon-comment">💬</i> Comment
+                </button>
+                <button class="btn-share" data-post-id="${post.id}">
+                    <i class="icon-share">🔗</i> Share
+                </button>
+            </div>
         </div>
-        <div class="interaction-buttons">
-            <button class="btn-like" data-post-id="${post.post_id}">
-                <i class="icon-heart">👍</i> Like
-            </button>
-            <button class="btn-comment" data-post-id="${post.post_id}">
-                <i class="icon-comment">💬</i> Comment
-            </button>
-            <button class="btn-share" data-post-id="${post.post_id}">
-                <i class="icon-share">🔗</i> Share
-            </button>
+        <div class="comments-section">
+            <div class="comments-list">
+                ${(post.comments || []).map(comment => `
+                    <div class="comment">
+                        <img src="../assets/human.png" alt="Profile" class="comment-profile-pic">
+                        <div class="comment-content">
+                            <span class="comment-author">Anonymous User</span>
+                            <p class="comment-text">${escapeHTML(comment.text)}</p>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="comments-input-container">
+                <img src="../assets/human.png" alt="Profile" class="input-profile-pic">
+                <input type="text" class="comment-input" placeholder="Write a comment...">
+                <button class="comment-send-btn">Post</button>
+            </div>
         </div>
     `;
 
@@ -926,11 +962,21 @@ function createPreviewModal(post) {
 
 // Function to toggle like
 function toggleLike(post, likeBtn) {
-    // Retrieve user ID from localStorage and convert to number
-    const userId = Number(localStorage.getItem('user_id'));
+    // Always ensure post_id is a number
+    let postId = post.post_id;
+    if (typeof postId === 'string') {
+        const match = postId.match(/(\d+)$/);
+        if (match) {
+            postId = parseInt(match[1], 10);
+        } else {
+            showLikeError('Invalid post ID');
+            return;
+        }
+    }
+    // Retrieve user ID from localStorage
+    const userId = localStorage.getItem('user_id');
     
     console.log('Attempting to like post:', post);
-    console.log('Like Button:', likeBtn);
     console.log('Current localStorage user_id:', userId);
 
     if (!userId) {
@@ -939,14 +985,12 @@ function toggleLike(post, likeBtn) {
         return;
     }
 
-    // Determine the correct post ID
-    const postId = Number(post.post_id);
-
     const payload = {
         post_id: postId,
         user_id: userId,
         reaction_type: 'like'
     };
+
     console.log('Like Payload:', payload);
 
     fetch('../api/posts/add-reaction.php', {
@@ -962,27 +1006,16 @@ function toggleLike(post, likeBtn) {
     })
     .then(data => {
         console.log('Like Response:', data);
-        
         if (data.status === 'success') {
-            // Find the likes-count element
-            const postElement = likeBtn.closest('.social-post');
-            const likesCountEl = postElement ? 
-                postElement.querySelector('.likes-count') : 
-                document.querySelector(`.likes-count[data-post-id="${postId}"]`);
-
-            console.log('Likes Count Element:', likesCountEl);
-            console.log('Reaction Count from Server:', data.data.reaction_count);
-
-            if (likesCountEl) {
-                // Update likes count
-                likesCountEl.innerHTML = `<i class="icon-heart">👍</i> ${data.data.reaction_count}`;
-                console.log('Updated likes count successfully');
-            } else {
-                console.warn('No likes count element found for post', postId);
-            }
-            
-            // Toggle like button state
+            // Update like button UI
             likeBtn.classList.toggle('liked');
+            // Update like count
+            // Find the correct likes-count element for this post
+            const postElement = likeBtn.closest('.social-post');
+            const likesCountEl = postElement ? postElement.querySelector('.likes-count') : null;
+            if (likesCountEl) {
+                likesCountEl.innerHTML = `<i class="icon-heart">❤️</i> ${data.data.reaction_count}`;
+            }
         } else {
             console.error('Like Error:', data.message);
             showLikeError(data.message || 'Failed to like post');
@@ -1062,6 +1095,7 @@ function addComment(post, commentText, commentsList) {
         }
     }
 }
+
 async function sharePostToBackend(payload) {
     try {
         console.log('Sharing post:', payload);
@@ -1113,6 +1147,9 @@ function openShareModal(post) {
     const modal = document.getElementById('share-modal-overlay');
     modal.style.display = 'flex';
 
+    // Set the post_id as a data attribute for later retrieval -changes/
+    modal.setAttribute('data-current-post-id', post.post_id || post.id);
+
     // Render post preview
     const preview = modal.querySelector('.share-original-content');
     let mediaHTML = '';
@@ -1151,13 +1188,16 @@ function openShareModal(post) {
     });
 
     const shareBtn = modal.querySelector('.share-main-btn');
-    shareBtn.onclick = null;
-    shareBtn.addEventListener('click', async () => {
+    // Remove previous event listeners by replacing the button with a clone
+    const newShareBtn = shareBtn.cloneNode(true);
+    shareBtn.parentNode.replaceChild(newShareBtn, shareBtn);
+
+    newShareBtn.addEventListener('click', async () => {
         const user_id = Number(localStorage.getItem('user_id')) || 1;
         const caption = modal.querySelector('.share-caption').value.trim();
-        const isReshare = post.isShare && post.share_id && post.share_id !== null && post.share_id !== undefined && post.share_id.toString().startsWith('share-');
+        const isReshare = post.isShare && post.share_id && !isNaN(Number(post.share_id));
         const postIdToShare = post.post_id;
-        const shareIdToShare = isReshare ? post.share_id : undefined;
+        const shareIdToShare = isReshare ? Number(post.share_id) : undefined;
 
         const payload = {
             post_id: postIdToShare,
@@ -1172,22 +1212,39 @@ function openShareModal(post) {
         const response = await sharePostToBackend(payload);
         if (response && response.status === 'success') {
             alert('shared successfully.');
-            const shareCountElement = document.querySelector(
-                `.social-post[data-post-id="${post.id}"] .shares-count`
-            );
-            if (shareCountElement) {
-                let current = parseInt(shareCountElement.textContent.match(/\d+/)?.[0] || "0", 10);
-                shareCountElement.innerHTML = `<i class="icon-share">🔗</i> ${current + 1}`;
-            }
+            // Reload posts to reflect new share and correct counts/tags
+            loadPosts(0, 'all post');
         } else {
             alert('Failed to share post.');
         }
         modal.style.display = 'none';
     });
 }
+
 var btn = document.createElement('button');
 btn.innerText = 'Test Like';
 btn.className = 'btn-like';
 btn.setAttribute('data-post-id', 'test');
 btn.onclick = function() { alert('Test Like Clicked!'); };
 document.body.appendChild(btn);
+
+// Suppose you have a button or element with data-post-id
+document.querySelectorAll('.share-btn-heybleepi, .share-btn-hershive').forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    e.preventDefault();
+    const modal = document.getElementById('share-modal-overlay');
+    const post_id = modal.getAttribute('data-current-post-id');
+    const form = btn.closest('form');
+    form.querySelector('input[name="share_post_id"]').value = post_id;
+    // Set the share_to_other value manually
+    let hiddenInput = form.querySelector('input[name="share_to_other"]');
+    if (!hiddenInput) {
+      hiddenInput = document.createElement('input');
+      hiddenInput.type = 'hidden';
+      hiddenInput.name = 'share_to_other';
+      form.appendChild(hiddenInput);
+    }
+    hiddenInput.value = btn.value;
+    form.submit();
+  });
+});
