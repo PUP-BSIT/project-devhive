@@ -11,7 +11,67 @@ document.addEventListener('click', function(e) {
     }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
+// Global variable to store current user info
+let currentUser = null;
+
+// Function to get current user information
+async function getCurrentUser() {
+    try {
+        const response = await fetch('../api/users/get-session-user.php');
+        const result = await response.json();
+        
+        if (result.success) {
+            currentUser = {
+                user_id: result.user_id,
+                username: result.username
+            };
+            console.log('Current user:', currentUser);
+            
+            // Update comment input placeholders
+            updateCommentInputs();
+            
+            // Show welcome message
+            showNotification(`Welcome back, ${currentUser.username}!`);
+        } else {
+            console.log('User not logged in');
+        }
+    } catch (error) {
+        console.error('Error getting current user:', error);
+    }
+}
+
+// Function to update comment input placeholders and user indicators
+function updateCommentInputs() {
+    const commentInputs = document.querySelectorAll('.comment-input');
+    commentInputs.forEach(input => {
+        if (currentUser) {
+            input.placeholder = `Write a comment as ${currentUser.username}...`;
+        } else {
+            input.placeholder = 'Write a comment...';
+        }
+        
+        // Update user indicator
+        const wrapper = input.closest('.comment-input-wrapper');
+        if (wrapper) {
+            let indicator = wrapper.querySelector('.comment-user-indicator');
+            if (currentUser) {
+                if (!indicator) {
+                    indicator = document.createElement('div');
+                    indicator.className = 'comment-user-indicator';
+                    wrapper.appendChild(indicator);
+                }
+                indicator.textContent = `Commenting as ${currentUser.username}`;
+            } else if (indicator) {
+                indicator.remove();
+            }
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // Get current user information first
+    await getCurrentUser();
+    
     const filterButtons = document.querySelectorAll('.post-filters button');
     filterButtons.forEach(button => {
         button.addEventListener('click', () => {
@@ -240,6 +300,9 @@ async function loadPosts(offset = 0, filter = 'all post') {
         });
 
         attachVideoEventListeners();
+
+        // Update comment input placeholders after posts are loaded
+        updateCommentInputs();
 
         // Add load more button if there are more posts
         if (pagination.total > offset + posts.length) {
@@ -573,25 +636,24 @@ function createPostElement(post) {
                 </button>
             </div>
         </div>
-        <div class="comments-section">
-            <div class="comments-list">
-                ${(post.comments || []).map(comment => `
-                    <div class="comment">
-                        <img src="../assets/human.png" alt="Profile" class="comment-profile-pic">
-                        <div class="comment-content">
-                            <span class="comment-author">Anonymous User</span>
-                            <p class="comment-text">${escapeHTML(comment.text)}</p>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-            <div class="comments-input-container">
-                <img src="../assets/human.png" alt="Profile" class="input-profile-pic">
-                <input type="text" class="comment-input" placeholder="Write a comment...">
-                <button class="comment-send-btn">Post</button>
-            </div>
-        </div>
     `;
+
+    // Only allow commenting on original posts (not shared posts)
+    if (!post.isShare) {
+        postElement.innerHTML += `
+            <div class="comments-section">
+                <div class="comments-list"></div>
+                <div class="comments-input-container">
+                    <img src="../assets/human.png" alt="Profile" class="input-profile-pic">
+                    <div class="comment-input-wrapper">
+                        <input type="text" class="comment-input" placeholder="Write a comment...">
+                        ${currentUser ? `<div class="comment-user-indicator">Commenting as ${currentUser.username}</div>` : ''}
+                    </div>
+                    <button class="comment-send-btn">Post</button>
+                </div>
+            </div>
+        `;
+    }
 
     // Add image modal functionality
     if (post.images && post.images.length > 0) {
@@ -628,7 +690,17 @@ function createPostElement(post) {
     // Comment button functionality
     if (commentBtn) {
         commentBtn.addEventListener('click', () => {
-            commentInput.focus();
+            // Check if user is logged in
+            if (!currentUser) {
+                showNotification('Please log in to comment');
+                return;
+            }
+            // Only load comments for original posts
+            if (!post.isShare) {
+                const postId = post.post_id || post.id;
+                loadComments(postId, commentsList, postElement);
+                commentInput && commentInput.focus();
+            }
         });
     }
 
@@ -642,10 +714,27 @@ function createPostElement(post) {
     // Comment send functionality
     if (commentSendBtn && commentInput) {
         commentSendBtn.addEventListener('click', () => {
+            if (!currentUser) {
+                showNotification('Please log in to comment');
+                return;
+            }
             const commentText = commentInput.value.trim();
             if (commentText) {
-                addComment(post, commentText, commentsList);
+                addComment(post, commentText, commentsList, postElement);
                 commentInput.value = '';
+            }
+        });
+        commentInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                if (!currentUser) {
+                    showNotification('Please log in to comment');
+                    return;
+                }
+                const commentText = commentInput.value.trim();
+                if (commentText) {
+                    addComment(post, commentText, commentsList, postElement);
+                    commentInput.value = '';
+                }
             }
         });
     }
@@ -1044,55 +1133,82 @@ function showLikeError(message) {
     setTimeout(() => { errorDiv.remove(); }, 5000);
 }
 
-// Function to add a comment
-function addComment(post, commentText, commentsList) {
-    // Retrieve posts from local storage
-    let posts = JSON.parse(localStorage.getItem('devhive_posts') || '[]');
-    
-    // Find the specific post
-    const postIndex = posts.findIndex(p => p.id === post.id);
-    
-    if (postIndex !== -1) {
-        // Ensure comments array exists
-        if (!posts[postIndex].comments) {
-            posts[postIndex].comments = [];
+// Function to load comments for a post
+async function loadComments(postId, commentsList, postElement) {
+    try {
+        const response = await fetch(`../api/posts/get-comments.php?post_id=${postId}&limit=10`, {
+            credentials: 'include'
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const result = await response.json();
+        if (result.status === 'success') {
+            commentsList.innerHTML = '';
+            result.data.comments.forEach(comment => {
+                const commentElement = document.createElement('div');
+                commentElement.className = 'comment';
+                const authorName = (currentUser && comment.user_id == currentUser.user_id)
+                    ? 'You'
+                    : escapeHTML(comment.username);
+                commentElement.innerHTML = `
+                    <img src="${comment.profile_picture}" alt="Profile" class="comment-profile-pic">
+                    <div class="comment-content">
+                        <span class="comment-author">${authorName}</span>
+                        <p class="comment-text">${escapeHTML(comment.content)}</p>
+                        <span class="comment-time">${comment.formatted_time}</span>
+                    </div>
+                `;
+                commentsList.appendChild(commentElement);
+            });
+            // Update comment count
+            if (!postElement) postElement = commentsList.closest('.social-post');
+            if (postElement) {
+                const commentsCountElement = postElement.querySelector('.comments-count');
+                if (commentsCountElement) {
+                    commentsCountElement.innerHTML = `<i class="icon-comment">💬</i> ${result.data.total}`;
+                }
+            }
+            // Show the comments section
+            const commentsSection = commentsList.closest('.comments-section');
+            if (commentsSection) commentsSection.classList.add('show');
         }
+    } catch (error) {
+        showNotification('Error loading comments. Please try again.');
+    }
+}
 
-        // Create new comment object
-        const newComment = {
-            id: Date.now(), // Unique identifier
-            text: commentText,
-            timestamp: new Date().toISOString()
-        };
-        
-        // Add comment to post's comments array
-        posts[postIndex].comments.push(newComment);
-        
-        // Update local storage
-        localStorage.setItem('devhive_posts', JSON.stringify(posts));
-        
-        // Create and append comment element
-        const commentElement = document.createElement('div');
-        commentElement.className = 'comment';
-        commentElement.innerHTML = `
-            <img src="../assets/human.png" alt="Profile" class="comment-profile-pic">
-            <div class="comment-content">
-                <span class="comment-author">Anonymous User</span>
-                <p class="comment-text">${escapeHTML(commentText)}</p>
-            </div>
-        `;   
-        // Append to comments list
-        commentsList.appendChild(commentElement);
-
-        const commentsCountElement = document.querySelector(
-            `.social-post[data-post-id="${post.id}"] .comments-count`
-        );
-        
-        if (commentsCountElement) {
-            commentsCountElement.innerHTML = `
-                <i class="icon-comment">💬</i> ${posts[postIndex].comments.length}
-            `;
+async function addComment(post, commentText, commentsList, postElement) {
+    try {
+        if (!currentUser) {
+            showNotification('Please log in to comment');
+            return;
         }
+        const postId = post.post_id || post.id;
+        const formData = new FormData();
+        formData.append('post_id', postId);
+        formData.append('content', commentText);
+        const response = await fetch('../api/posts/add-comment.php', {
+            method: 'POST',
+            body: formData,
+            credentials: 'include'
+        });
+        if (!response.ok) {
+            if (response.status === 401) {
+                showNotification('Please log in to comment');
+                return;
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result = await response.json();
+        if (result.status === 'success') {
+            await loadComments(postId, commentsList, postElement);
+            const commentsSection = commentsList.closest('.comments-section');
+            if (commentsSection) commentsSection.classList.add('show');
+            showNotification('Comment added successfully!');
+        } else {
+            showNotification('Failed to add comment: ' + result.message);
+        }
+    } catch (error) {
+        showNotification('Error adding comment. Please try again.');
     }
 }
 
@@ -1230,7 +1346,7 @@ document.body.appendChild(btn);
 
 // Suppose you have a button or element with data-post-id
 document.querySelectorAll('.share-btn-heybleepi, .share-btn-hershive').forEach(btn => {
-  btn.addEventListener('click', function(e) {
+    btn.addEventListener('click', function(e) {
     e.preventDefault();
     const modal = document.getElementById('share-modal-overlay');
     const post_id = modal.getAttribute('data-current-post-id');
@@ -1239,12 +1355,12 @@ document.querySelectorAll('.share-btn-heybleepi, .share-btn-hershive').forEach(b
     // Set the share_to_other value manually
     let hiddenInput = form.querySelector('input[name="share_to_other"]');
     if (!hiddenInput) {
-      hiddenInput = document.createElement('input');
-      hiddenInput.type = 'hidden';
-      hiddenInput.name = 'share_to_other';
-      form.appendChild(hiddenInput);
+        hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'share_to_other';
+        form.appendChild(hiddenInput);
     }
     hiddenInput.value = btn.value;
     form.submit();
-  });
+    });
 });

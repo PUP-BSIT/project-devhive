@@ -1,8 +1,8 @@
 <?php
 
 if (session_status() === PHP_SESSION_NONE) {
-    ini_set('session.use_cookies', '0');
-    ini_set('session.use_only_cookies', '0');
+    // ini_set('session.use_cookies', '0'); // COMMENTED OUT to enable PHP session cookies
+    // ini_set('session.use_only_cookies', '0'); // COMMENTED OUT to enable PHP session cookies
     ini_set('session.use_trans_sid', '1');
     ini_set('session.cache_limiter', 'nocache');
     ini_set('session.gc_maxlifetime', '3600');

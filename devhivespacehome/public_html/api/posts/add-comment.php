@@ -1,118 +1,84 @@
 <?php
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST');
-header('Access-Control-Allow-Headers: Content-Type');
-
+require_once '../../../config/session_config.php';
+initializeSession();
 require_once '../../../config/database.php';
 
-try {
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        throw new Exception('Only POST method is allowed');
-    }
+header('Content-Type: application/json');
 
-    // Get and decode the JSON data
-    $jsonData = file_get_contents('php://input');
-    if (!$jsonData) {
-        throw new Exception('No data received');
-    }
-
-    $data = json_decode($jsonData, true);
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new Exception('Invalid JSON data: ' . json_last_error_msg());
-    }
-
-    // Validate required fields
-    if (!isset($data['post_id']) || !isset($data['user_id']) || !isset($data['content'])) {
-        throw new Exception('post_id, user_id, and content are required');
-    }
-
-    $postId = (int)$data['post_id'];
-    $userId = (int)$data['user_id'];
-    $content = trim($data['content']);
-
-    if (empty($content)) {
-        throw new Exception('Comment content cannot be empty');
-    }
-
-    // Start transaction
-    $conn->begin_transaction();
-
-    try {
-        // Insert comment
-        $query = "INSERT INTO comment (post_id, user_id, content) VALUES (?, ?, ?)";
-        $stmt = $conn->prepare($query);
-        if (!$stmt) {
-            throw new Exception("Prepare failed: " . $conn->error);
-        }
-
-        $stmt->bind_param("iis", $postId, $userId, $content);
-        
-        if (!$stmt->execute()) {
-            throw new Exception("Execute failed: " . $stmt->error);
-        }
-
-        $commentId = $conn->insert_id;
-        $stmt->close();
-
-        // Get comment count
-        $countQuery = "SELECT COUNT(*) as count FROM comment WHERE post_id = ?";
-        $countStmt = $conn->prepare($countQuery);
-        if (!$countStmt) {
-            throw new Exception("Prepare failed: " . $conn->error);
-        }
-
-        $countStmt->bind_param("i", $postId);
-        
-        if (!$countStmt->execute()) {
-            throw new Exception("Execute failed: " . $countStmt->error);
-        }
-
-        $countResult = $countStmt->get_result();
-        $commentCount = $countResult->fetch_assoc()['count'];
-        $countStmt->close();
-
-        // Get the newly created comment with user info
-        $commentQuery = "SELECT c.*, u.username 
-                        FROM comment c 
-                        LEFT JOIN user u ON c.user_id = u.user_id 
-                        WHERE c.comment_id = ?";
-        $commentStmt = $conn->prepare($commentQuery);
-        if (!$commentStmt) {
-            throw new Exception("Prepare failed: " . $conn->error);
-        }
-
-        $commentStmt->bind_param("i", $commentId);
-        
-        if (!$commentStmt->execute()) {
-            throw new Exception("Execute failed: " . $commentStmt->error);
-        }
-
-        $commentResult = $commentStmt->get_result();
-        $comment = $commentResult->fetch_assoc();
-        $commentStmt->close();
-
-        // Commit transaction
-        $conn->commit();
-
-        echo json_encode([
-            'status' => 'success',
-            'message' => 'Comment added successfully',
-            'data' => [
-                'comment' => $comment,
-                'comment_count' => $commentCount
-            ]
-        ]);
-
-    } catch (Exception $e) {
-        $conn->rollback();
-        throw $e;
-    }
-
-} catch (Exception $e) {
-    http_response_code(400);
+// Function to send error response
+function sendErrorResponse($message, $code = 400) {
+    http_response_code($code);
     echo json_encode([
         'status' => 'error',
-        'message' => $e->getMessage()
+        'message' => $message
     ]);
-} 
+    exit;
+}
+
+// Only allow commenting if the user is actually logged in
+if (!isset($_SESSION['user_id'])) {
+    sendErrorResponse('User not logged in. Please log in to comment.', 401);
+}
+$user_id = $_SESSION['user_id'];
+
+// Validate input
+$requiredFields = ['post_id', 'content'];
+foreach ($requiredFields as $field) {
+    if (!isset($_POST[$field]) || trim($_POST[$field]) === '') {
+        sendErrorResponse("Missing or empty $field", 400);
+    }
+}
+$post_id = intval($_POST['post_id']);
+$content = trim($_POST['content']);
+
+// Validate comment length
+if (strlen($content) > 500) {
+    sendErrorResponse('Comment too long. Maximum 500 characters.', 400);
+}
+
+// Check if user exists
+$user_check = $conn->prepare("SELECT user_id, username, profile_picture FROM user WHERE user_id = ?");
+$user_check->bind_param("i", $user_id);
+$user_check->execute();
+$user_result = $user_check->get_result();
+if ($user_result->num_rows === 0) {
+    sendErrorResponse('User does not exist.', 400);
+}
+$user = $user_result->fetch_assoc();
+
+// Check if post exists
+$post_check = $conn->prepare("SELECT post_id FROM post WHERE post_id = ?");
+$post_check->bind_param("i", $post_id);
+$post_check->execute();
+$post_result = $post_check->get_result();
+if ($post_result->num_rows === 0) {
+    sendErrorResponse('Post does not exist.', 400);
+}
+
+try {
+    $stmt = $conn->prepare("INSERT INTO `comment` (post_id, user_id, content) VALUES (?, ?, ?)");
+    $stmt->bind_param("iis", $post_id, $user_id, $content);
+
+    if ($stmt->execute()) {
+        $comment_id = $stmt->insert_id;
+        $response = [
+            'status' => 'success',
+            'data' => [
+                'comment_id' => $comment_id,
+                'user_id' => $user_id,
+                'username' => $user['username'] ?? 'Anonymous',
+                'profile_picture' => $user['profile_picture'] ?? '../assets/human.png',
+                'content' => $content,
+                'created_at' => date('Y-m-d H:i:s')
+            ]
+        ];
+        echo json_encode($response);
+    } else {
+        sendErrorResponse('Failed to add comment: ' . $stmt->error, 500);
+    }
+    $stmt->close();
+} catch (Exception $e) {
+    sendErrorResponse('Database error: ' . $e->getMessage(), 500);
+}
+$conn->close();
+?> 
