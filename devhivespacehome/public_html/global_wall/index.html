@@ -6,7 +6,7 @@
     <title>Global Wall - DevHive</title>
     <link href="https://fonts.googleapis.com/css2?family=Coda+Caption:wght@800&family=Inter:wght@400;500;600&display=swap" 
         rel="stylesheet">
-    <link rel="stylesheet" href="global_wall.css">
+    <link rel="stylesheet" href="globalwall3.css">
 </head>
 <body>
     <div class="dashboard-container">
@@ -59,23 +59,25 @@
             </div>
         </div>
     </div>
-
     <div id="share-modal-overlay" class="share-modal-overlay" style="display:none;">
       <div class="share-modal">
         <button class="close-share-modal" title="Close">&times;</button>
         <h2>Share Post</h2>
         <textarea class="share-caption" placeholder="Say something about this..."></textarea>
         <div class="share-original-preview">
-            <div class="share-original-content"></div>
+          <div class="share-original-content"></div>
         </div>
         <div class="share-platforms">
-          <button class="share-btn-devhive active">DevHive</button>
-          <button class="share-btn-hershive" disabled style="opacity:0.5;cursor:not-allowed;">Hershive</button>
-          <button class="share-btn-heybleepi" disabled style="opacity:0.5;cursor:not-allowed;">Heybleepi</button>
+            <button class="share-btn-devhive active">DevHive</button>
+        <form action="/api/posts/share-create-post.php" method ="POST">
+            <input type="hidden" name="share_post_id" value="">
+            <button type="submit" value="hershive" name="share_to_other" class="share-btn-hershive  active" >Hershive</button>
+            <button type="submit" value="heybleepi" name="share_to_other" class="share-btn-heybleepi  active">Heybleepi</button>
+        </form>
         </div>
         <button class="share-main-btn">Share</button>
-      </div>
     </div>
-    <script src="global_wall.js"></script>
+    </div>
+    <script src="global_wall9.js"></script>
 </body>
 </html>

@@ -1,3 +1,13 @@
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('oauth_token');
+  if (token) {
+    localStorage.setItem('oauth_token', token);
+    window.history.replaceState({}, document.title, window.location.pathname);
+    console.log('OAuth token stored in localStorage:', token);
+  }
+})();
+
 document.addEventListener("DOMContentLoaded", function () {
   const navItems = document.querySelectorAll(".nav-menu li");
 
@@ -85,9 +95,13 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     Object.entries(stats).forEach(([key, value]) => {
-      const statCard = document.querySelector(
-        `.stat-card:has(h4:contains("${key}")) p`
-      );
+      let statCard = null;
+      document.querySelectorAll('.stat-card').forEach(card => {
+        const h4 = card.querySelector('h4');
+        if (h4 && h4.textContent.trim() === key) {
+          statCard = card.querySelector('p');
+        }
+      });
       if (statCard) {
         const currentValue = parseInt(
           statCard.textContent.replace(/[^0-9]/g, "")
@@ -99,7 +113,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   updateStats();
-
   setInterval(updateStats, 30000);
 
   const tabButtons = document.querySelectorAll(".tab-btn");
@@ -107,13 +120,11 @@ document.addEventListener("DOMContentLoaded", function () {
     button.addEventListener("click", () => {
       tabButtons.forEach((btn) => btn.classList.remove("active"));
       button.classList.add("active");
-
       console.log(`Switched to ${button.textContent} tab`);
     });
   });
 
   const menuItems = document.querySelectorAll(".menu-item");
-
   menuItems.forEach((item) => {
     item.addEventListener("click", function () {
       const page = this.getAttribute("data-page");
@@ -123,10 +134,16 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  const profileMenuItem = document.querySelector(
-    '.menu-item span:contains("Profile")'
-  ).parentElement;
-  profileMenuItem.addEventListener("click", function () {
-    window.location.href = "../user_profile/index.html";
-  });
+  // Fetch and display username in welcome message
+  fetch('/api/users/get-session-user.php', { credentials: 'include' })
+    .then(res => res.json())
+    .then(data => {
+      console.log('User data:', data);
+      if (data && data.success && data.username) {
+        const usernameSpan = document.getElementById('dashboard-username');
+        if (usernameSpan) {
+          usernameSpan.textContent = data.username;
+        }
+      }
+    });
 });
