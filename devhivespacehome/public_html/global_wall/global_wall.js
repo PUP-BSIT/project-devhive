@@ -118,6 +118,54 @@ document.addEventListener('DOMContentLoaded', async () => {
                 toggleLike({ id: postId, post_id: postId }, likeBtn);
                 return;
             }
+            // Event delegation for comment send button
+            const commentSendBtn = e.target.closest('.comment-send-btn');
+            if (commentSendBtn) {
+                // Find the parent .social-post
+                const postElement = commentSendBtn.closest('.social-post');
+                if (!postElement) return;
+                // Get the post data
+                const post = postElement._postData;
+                // Find the input
+                const commentInput = postElement.querySelector('.comment-input');
+                const commentsList = postElement.querySelector('.comments-list');
+                if (!commentInput || !commentsList) return;
+                if (!currentUser) {
+                    showNotification('Please log in to comment');
+                    return;
+                }
+                const commentText = commentInput.value.trim();
+                if (commentText) {
+                    addComment(post, commentText, commentsList, postElement).then(() => {
+                        commentInput.value = '';
+                        // Show the comments section after posting
+                        const commentsSection = postElement.querySelector('.comments-section');
+                        if (commentsSection) commentsSection.classList.add('show');
+                    });
+                }
+                return;
+            }
+            // Event delegation for pressing Enter in comment input
+            const commentInput = e.target.closest('.comment-input');
+            if (commentInput && e.type === 'keypress' && e.key === 'Enter') {
+                const postElement = commentInput.closest('.social-post');
+                if (!postElement) return;
+                const post = postElement._postData;
+                const commentsList = postElement.querySelector('.comments-list');
+                if (!currentUser) {
+                    showNotification('Please log in to comment');
+                    return;
+                }
+                const commentText = commentInput.value.trim();
+                if (commentText) {
+                    addComment(post, commentText, commentsList, postElement).then(() => {
+                        commentInput.value = '';
+                        const commentsSection = postElement.querySelector('.comments-section');
+                        if (commentsSection) commentsSection.classList.add('show');
+                    });
+                }
+                return;
+            }
             const videoElement = e.target.closest('video');
             
             if (videoElement) {
@@ -135,6 +183,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                     });
                 } else {
                     videoElement.pause();
+                }
+            }
+        });
+        // Add event delegation for Enter key on comment input
+        globalWallContainer.addEventListener('keypress', (e) => {
+            if (e.target.classList.contains('comment-input') && e.key === 'Enter') {
+                const postElement = e.target.closest('.social-post');
+                if (!postElement) return;
+                const post = postElement._postData;
+                const commentsList = postElement.querySelector('.comments-list');
+                if (!currentUser) {
+                    showNotification('Please log in to comment');
+                    return;
+                }
+                const commentText = e.target.value.trim();
+                if (commentText) {
+                    addComment(post, commentText, commentsList, postElement).then(() => {
+                        e.target.value = '';
+                        const commentsSection = postElement.querySelector('.comments-section');
+                        if (commentsSection) commentsSection.classList.add('show');
+                    });
                 }
             }
         });
@@ -628,9 +697,9 @@ function createPostElement(post) {
                 <button class="btn-like" data-post-id="${post.id}">
                     <i class="icon-heart">❤️</i> Like
                 </button>
-                <button class="btn-comment" data-post-id="${post.id}">
+                ${!post.isShare ? `<button class="btn-comment" data-post-id="${post.id}">
                     <i class="icon-comment">💬</i> Comment
-                </button>
+                </button>` : ''}
                 <button class="btn-share" data-post-id="${post.id}">
                     <i class="icon-share">🔗</i> Share
                 </button>
@@ -638,22 +707,20 @@ function createPostElement(post) {
         </div>
     `;
 
-    // Only allow commenting on original posts (not shared posts)
-    if (!post.isShare) {
-        postElement.innerHTML += `
-            <div class="comments-section">
-                <div class="comments-list"></div>
-                <div class="comments-input-container">
-                    <img src="../assets/human.png" alt="Profile" class="input-profile-pic">
-                    <div class="comment-input-wrapper">
-                        <input type="text" class="comment-input" placeholder="Write a comment...">
-                        ${currentUser ? `<div class="comment-user-indicator">Commenting as ${currentUser.username}</div>` : ''}
-                    </div>
-                    <button class="comment-send-btn">Post</button>
+    // Allow commenting on both original and shared posts
+    postElement.innerHTML += `
+        <div class="comments-section">
+            <div class="comments-list"></div>
+            <div class="comments-input-container">
+                <img src="../assets/human.png" alt="Profile" class="input-profile-pic">
+                <div class="comment-input-wrapper">
+                    <input type="text" class="comment-input" placeholder="Write a comment...">
+                    ${currentUser ? `<div class="comment-user-indicator">Commenting as ${currentUser.username}</div>` : ''}
                 </div>
+                <button class="comment-send-btn">Post</button>
             </div>
-        `;
-    }
+        </div>
+    `;
 
     // Add image modal functionality
     if (post.images && post.images.length > 0) {
@@ -687,6 +754,13 @@ function createPostElement(post) {
         console.warn('Like button NOT FOUND for post:', post.id);
     }
 
+    // Automatically load comments for each post (original and shared)
+    if (!post.isShare) {
+        loadComments(post.post_id || post.id, commentsList, postElement, false);
+    } else if (post.isShare && post.share_id) {
+        loadComments(post.share_id, commentsList, postElement, true);
+    }
+
     // Comment button functionality
     if (commentBtn) {
         commentBtn.addEventListener('click', () => {
@@ -697,9 +771,14 @@ function createPostElement(post) {
             }
             // Only load comments for original posts
             if (!post.isShare) {
+                // Always use post.post_id for API
                 const postId = post.post_id || post.id;
-                loadComments(postId, commentsList, postElement);
+                console.log('[commentBtn] Loading comments for postId:', postId);
+                loadComments(postId, commentsList, postElement, post.isShare);
                 commentInput && commentInput.focus();
+                // Always show the comments section when comment button is clicked
+                const commentsSection = postElement.querySelector('.comments-section');
+                if (commentsSection) commentsSection.classList.add('show');
             }
         });
     }
@@ -708,34 +787,6 @@ function createPostElement(post) {
     if (shareBtn) {
         shareBtn.addEventListener('click', () => {
             openShareModal(post);
-        });
-    }
-
-    // Comment send functionality
-    if (commentSendBtn && commentInput) {
-        commentSendBtn.addEventListener('click', () => {
-            if (!currentUser) {
-                showNotification('Please log in to comment');
-                return;
-            }
-            const commentText = commentInput.value.trim();
-            if (commentText) {
-                addComment(post, commentText, commentsList, postElement);
-                commentInput.value = '';
-            }
-        });
-        commentInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                if (!currentUser) {
-                    showNotification('Please log in to comment');
-                    return;
-                }
-                const commentText = commentInput.value.trim();
-                if (commentText) {
-                    addComment(post, commentText, commentsList, postElement);
-                    commentInput.value = '';
-                }
-            }
         });
     }
 
@@ -1134,9 +1185,10 @@ function showLikeError(message) {
 }
 
 // Function to load comments for a post
-async function loadComments(postId, commentsList, postElement) {
+async function loadComments(id, commentsList, postElement, isShare = false) {
     try {
-        const response = await fetch(`../api/posts/get-comments.php?post_id=${postId}&limit=10`, {
+        const param = isShare ? 'share_id' : 'post_id';
+        const response = await fetch(`../api/posts/get-comments.php?${param}=${id}&limit=10`, {
             credentials: 'include'
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -1170,9 +1222,12 @@ async function loadComments(postId, commentsList, postElement) {
             // Show the comments section
             const commentsSection = commentsList.closest('.comments-section');
             if (commentsSection) commentsSection.classList.add('show');
+        } else {
+            showNotification('Failed to load comments: ' + result.message);
         }
     } catch (error) {
         showNotification('Error loading comments. Please try again.');
+        console.error('[loadComments] Error:', error);
     }
 }
 
@@ -1182,9 +1237,13 @@ async function addComment(post, commentText, commentsList, postElement) {
             showNotification('Please log in to comment');
             return;
         }
-        const postId = post.post_id || post.id;
+        // Use post_id for originals, share_id for shared posts
         const formData = new FormData();
-        formData.append('post_id', postId);
+        if (post.isShare && post.share_id) {
+            formData.append('share_id', post.share_id);
+        } else {
+            formData.append('post_id', post.post_id || post.id);
+        }
         formData.append('content', commentText);
         const response = await fetch('../api/posts/add-comment.php', {
             method: 'POST',
@@ -1200,7 +1259,9 @@ async function addComment(post, commentText, commentsList, postElement) {
         }
         const result = await response.json();
         if (result.status === 'success') {
-            await loadComments(postId, commentsList, postElement);
+            // Reload comments and update count
+            const id = post.isShare && post.share_id ? post.share_id : (post.post_id || post.id);
+            await loadComments(id, commentsList, postElement, post.isShare);
             const commentsSection = commentsList.closest('.comments-section');
             if (commentsSection) commentsSection.classList.add('show');
             showNotification('Comment added successfully!');
@@ -1209,6 +1270,7 @@ async function addComment(post, commentText, commentsList, postElement) {
         }
     } catch (error) {
         showNotification('Error adding comment. Please try again.');
+        console.error('[addComment] Error:', error);
     }
 }
 
