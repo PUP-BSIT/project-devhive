@@ -1,26 +1,21 @@
 <?php
-// Strict error reporting and security headers
-error_reporting(E_ALL);
-ini_set('display_errors', 1); // Change to 1 for debugging
-ini_set('display_startup_errors', 1);
+ini_set('error_log', __DIR__ . '/../../../get-user.log');
 
-// Enhanced CORS and security headers
+// CORS and security headers
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
 header('Referrer-Policy: no-referrer');
-header('Access-Control-Allow-Origin: *'); // Allow all origins for development
+header('Access-Control-Allow-Origin: *'); 
 header('Access-Control-Allow-Methods: GET');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 header('Access-Control-Max-Age: 86400');
 
-// Configuration
 require_once __DIR__ . '/../../../config/session_config.php';
 require_once __DIR__ . '/../../../config/database.php';
 
-session_start();
+initializeSession();
 
-// Error response function
 function sendErrorResponse($message, $status_code = 400) {
     http_response_code($status_code);
     echo json_encode([
@@ -39,6 +34,7 @@ function logError($message) {
 }
 
 try {
+    // Validate request method
     if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
         sendErrorResponse('Only GET method is allowed', 405);
     }
@@ -48,7 +44,6 @@ try {
         sendErrorResponse('Missing token', 400);
     }
 
-    // OAuth token flow
     $stmt = $conn->prepare(
         "SELECT user_id
          FROM oauth_tokens
@@ -67,60 +62,86 @@ try {
     switch ($provider) {
         case 'heybleepi':
             $query = "
-                SELECT username AS user_name, first_name, middle_name, last_name, email, birthday AS birthdate 
-                FROM users 
-                WHERE id = ?
-            ";
-            break;
-
-        case 'devhive':
-            $query = "
-                SELECT username, first_name, middle_name, last_name, email, birthday 
-                FROM user
-                WHERE user_id = ?
-            ";
-            break;
-
-        case 'hershive':
-            $query = "
-                SELECT username, first_name, middle_name, last_name, email, birthday 
+                SELECT user_id, username AS user_name, first_name, middle_name,
+                last_name, email, birthday AS birthdate
                 FROM users
                 WHERE user_id = ?
             ";
             break;
 
+
+        case 'devhive':
+            $query = "
+                SELECT user_id, username, first_name, middle_name, last_name, 
+                email, birthday
+                FROM user
+                WHERE user_id = ?
+            ";
+            break;
+
+
+        case 'hershive':
+            $query = "
+                SELECT user_id, username, first_name, middle_name, last_name, 
+                email, birthday
+                FROM user
+                WHERE user_id = ?
+            ";
+            break;
+
+
         default:
             sendErrorResponse('Invalid platform', 400);
     }
+
 
     $userStmt = $conn->prepare($query);
     $userStmt->bind_param("i", $user_id);
     $userStmt->execute();
     $userResult = $userStmt->get_result();
 
+
     if ($user = $userResult->fetch_assoc()) {
-        $likeStmt = $conn->prepare("SELECT COUNT(*) as total_likes FROM reaction WHERE user_id = ? AND reaction_type = 'like'");
+        // Get total likes made by the user
+        $likeStmt = $conn->prepare("SELECT COUNT(*) as total_likes FROM reaction 
+             WHERE user_id = ? AND reaction_type = 'like'");
         $likeStmt->bind_param("i", $user_id);
         $likeStmt->execute();
         $likeResult = $likeStmt->get_result();
         $likeCount = $likeResult->fetch_assoc()['total_likes'];
         $likeStmt->close();
-        $commentStmt = $conn->prepare("SELECT COUNT(*) as total_comments FROM comment WHERE user_id = ?");
+
+        // Get total comments made by the user
+        $commentStmt = $conn->prepare("SELECT COUNT(*) as total_comments                                                
+          FROM comment WHERE user_id = ?");
         $commentStmt->bind_param("i", $user_id);
         $commentStmt->execute();
         $commentResult = $commentStmt->get_result();
         $commentCount = $commentResult->fetch_assoc()['total_comments'];
         $commentStmt->close();
 
-        $user['total_likes'] = $likeCount;
-        $user['total_comments'] = $commentCount;
+        $user = [
+            'user_id' => $user['user_id'],
+            'username' => $user['username'] ?? $user['user_name'] ?? null,
+            'first_name' => $user['first_name'],
+            'middle_name' => $user['middle_name'],
+            'last_name' => $user['last_name'],
+            'email' => $user['email'],
+            'birthday' => $user['birthday'] ?? $user['birthdate'],
+            'total_likes' => $likeCount,
+            'total_comments' => $commentCount,
+        ];
+
+        if (empty($user['user_id']) || empty($user['username'])) {
+            sendErrorResponse('User data incomplete', 500);
+        }
+
         echo json_encode($user);
     } else {
         sendErrorResponse('User not found', 404);
     }
     $userStmt->close();
 } catch (PDOException $e) {
-    // Log the actual error server-side, return generic message
     $errorDetails = [
         'message' => $e->getMessage(),
         'code' => $e->getCode(),
@@ -129,8 +150,7 @@ try {
         'trace' => $e->getTraceAsString()
     ];
     error_log('Database Error in Get User Data: ' . json_encode($errorDetails));
-    
-    // Log additional context
+   
     logError('PDO Connection Details: ' . json_encode([
         'host' => 'localhost',
         'dbname' => 'devhive',
@@ -138,10 +158,9 @@ try {
         'token_provided' => isset($_GET['token']),
         'session_user_id' => $_SESSION['user_id'] ?? 'Not set'
     ]));
-    
+   
     sendErrorResponse('Internal server error', 500);
 } catch (Exception $e) {
-    // Log unexpected errors with full details
     $errorDetails = [
         'message' => $e->getMessage(),
         'code' => $e->getCode(),
@@ -150,7 +169,7 @@ try {
         'trace' => $e->getTraceAsString()
     ];
     error_log('Unexpected Error in Get User Data: ' . json_encode($errorDetails));
-    
+   
     sendErrorResponse('An unexpected error occurred', 500);
 }
 ?>
