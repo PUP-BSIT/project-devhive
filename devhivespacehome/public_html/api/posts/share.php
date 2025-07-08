@@ -12,6 +12,7 @@ try {
 
     // Get POST data
     $data = json_decode(file_get_contents('php://input'), true);
+
     $post_id = isset($data['post_id']) ? (int)$data['post_id'] : null;
     $user_id = isset($data['user_id']) ? (int)$data['user_id'] : null;
     $platform = isset($data['platform']) ? $data['platform'] : 'devhive';
@@ -21,15 +22,18 @@ try {
         throw new Exception('post_id and user_id are required');
     }
 
+    // Check if sharing a shared post or an original post
     if (isset($data['share_id'])) {
+        // Sharing a shared post
         $target_id = (int)$data['share_id'];
         $target_type = 'share';
     } else {
-
+        // Sharing an original post
         $target_id = (int)$data['post_id'];
         $target_type = 'post';
     }
 
+    // Insert into share table
     $stmt = $conn->prepare("INSERT INTO share (post_id, user_id, platform, caption, target_id, target_type) VALUES (?, ?, ?, ?, ?, ?)");
     if (!$stmt) {
         throw new Exception("Prepare failed: " . $conn->error);
@@ -40,10 +44,13 @@ try {
         throw new Exception("Execute failed: " . $stmt->error);
     }
 
+    // After successfully inserting the share:
     if ($target_type === 'post') {
         $conn->query("UPDATE post SET shares = shares + 1 WHERE post_id = $target_id");
+        file_put_contents(__DIR__ . '/../../../share.log', "Incremented post $target_id\n", FILE_APPEND);
     } else if ($target_type === 'share') {
         $conn->query("UPDATE share SET shares = shares + 1 WHERE share_id = $target_id");
+        file_put_contents(__DIR__ . '/../../../share.log', "Incremented share $target_id\n", FILE_APPEND);
     }
 
     echo json_encode([
@@ -53,6 +60,7 @@ try {
     ]);
 } catch (Exception $e) {
     http_response_code(400);
+    file_put_contents(__DIR__ . '/../../../share.log', "Error: " . $e->getMessage() . "\n", FILE_APPEND);
     echo json_encode([
         'status' => 'error',
         'message' => $e->getMessage()
