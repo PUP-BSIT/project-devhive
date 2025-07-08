@@ -1,3 +1,13 @@
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('oauth_token');
+  if (token) {
+    localStorage.setItem('oauth_token', token);
+    window.history.replaceState({}, document.title, window.location.pathname);
+    console.log('OAuth token stored in localStorage:', token);
+  }
+})();
+
 class PostCreator {
   constructor() {
     this.selectedPlatforms = ["all"];
@@ -489,6 +499,13 @@ class PostCreator {
   }
 
   async sharePost() {
+    const userId = this.getCurrentUserId();
+    if (!userId) {
+      this.showNotification("Please wait, loading your user info...");
+      // Optionally, try to fetch user data again here
+      return;
+    }
+
     try {
       const editor = document.getElementById('post-content');
       const content = editor.innerHTML;
@@ -498,11 +515,6 @@ class PostCreator {
         return;
       }
 
-      const userId = this.getCurrentUserId();
-      if (!userId) {
-        this.showNotification("You must be logged in to post.");
-        return;
-      }
       const postData = {
         content: content,
         user_id: userId
@@ -591,6 +603,7 @@ class PostCreator {
   }
 
   showNotification(message) {
+    // Remove any existing notification
     const existing = document.querySelector('.notification');
     if (existing) existing.remove();
 
@@ -604,7 +617,7 @@ class PostCreator {
       setTimeout(() => {
         notification.classList.remove('show');
         setTimeout(() => notification.remove(), 300);
-      }, 2000); 
+      }, 2000); // Show for 2 seconds
     }, 100);
   }
 
@@ -644,14 +657,16 @@ class PostCreator {
 
   async getCurrentUser() {
     try {
-      const response = await fetch('/api/users/get-user-data.php', {
+      const token = localStorage.getItem('oauth_token');
+      if (!token) return null;
+      const response = await fetch(`/api/users/get-user-data.php?token=${encodeURIComponent(token)}`, {
         method: 'GET',
         credentials: 'include'
       });
       if (!response.ok) return null;
       const data = await response.json();
       if (data && data.user) {
-        return data.user; 
+        return data.user;
       }
       return null;
     } catch (e) {
@@ -892,3 +907,20 @@ function createPost(content) {
       alert("An error occurred while creating the post. Please try again.");
     });
 }
+
+const token = localStorage.getItem('oauth_token');
+if (token) {
+  fetch(`/api/users/get-user-data.php?token=${encodeURIComponent(token)}`, { credentials: 'include' })
+    .then(res => res.json())
+    .then(data => {
+      console.log('API user data:', data);
+      const userId = data.user?.user_id || data.user_id;
+      if (userId) {
+        localStorage.setItem('user_id', userId);
+      }
+    });
+} else {
+  console.warn('No oauth_token found in localStorage');
+}
+
+console.log(localStorage.getItem('user_id'));
