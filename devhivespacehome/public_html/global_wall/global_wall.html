@@ -25,7 +25,7 @@
                             Global Wall
                         </a>
                     </li>
-                    <li>image.png
+                    <li>
                         <a href="../user_profile/user_profile.html">
                             <img src="../assets/human.png" alt="Profile">
                             Profile
@@ -63,21 +63,20 @@
       <div class="share-modal">
         <button class="close-share-modal" title="Close">&times;</button>
         <h2>Share Post</h2>
-        <textarea class="share-caption" placeholder="Say something about this..."></textarea>
         <div class="share-original-preview">
           <div class="share-original-content"></div>
         </div>
         <div class="share-platforms">
-            <button class="share-btn-devhive active">DevHive</button>
-        <form action="/api/posts/share-create-post.php" method ="POST">
+          <form action="/api/posts/share-create-post.php" method="POST" id="share-form">
             <input type="hidden" name="share_post_id" value="">
-            <button type="submit" value="hershive" name="share_to_other" class="share-btn-hershive  active" >Hershive</button>
-            <button type="submit" value="heybleepi" name="share_to_other" class="share-btn-heybleepi  active">Heybleepi</button>
-        </form>
+            <textarea class="share-caption" name="caption" placeholder="Say something about this..."></textarea>
+            <button type="submit" value="hershive" name="share_to_other" class="share-btn-hershive active">Share to Hershive</button>
+            <button type="submit" value="heybleepi" name="share_to_other" class="share-btn-heybleepi active">Share to Heybleepi</button>
+          </form>
         </div>
-        <button class="share-main-btn">Share</button>
+        <button class="share-main-btn">Share to Devhive</button>
+      </div>
     </div>
-    </div>
-    <script src="global_wall10.js"></script>
+    <script src="global_wall.js"></script>
 </body>
 </html>

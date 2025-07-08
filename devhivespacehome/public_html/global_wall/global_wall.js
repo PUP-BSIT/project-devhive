@@ -1,4 +1,3 @@
-console.log("globalfeed20.js loaded");
 document.addEventListener('click', function(e) {
     console.log('Global click detected:', e.target);
     const likeBtn = e.target.closest('.btn-like');
@@ -330,7 +329,8 @@ async function loadPosts(offset = 0, filter = 'all post') {
                 share_caption: isShare ? (post.share_caption || "") : null,
                 shares: post.shares !== undefined && post.shares !== null ? Number(post.shares) : 0,
                 likes: post.likes !== undefined && post.likes !== null ? Number(post.likes) : 0,
-                target_type: isShare ? post.target_type : null
+                target_type: isShare ? post.target_type : null,
+                provider: post.provider || post.platform || ''
             };
             
             console.log('Display post object:', displayPost); // Debug log
@@ -367,7 +367,6 @@ async function loadPosts(offset = 0, filter = 'all post') {
                 }
             };
         });
-
         attachVideoEventListeners();
 
         // Update comment input placeholders after posts are loaded
@@ -600,29 +599,63 @@ function createPostElement(post) {
         `;
     }
 
-    const postElement = document.createElement('div');
-    postElement.className = 'social-post';
-    postElement.setAttribute('data-post-id', post.id);
+    // --- Provider tag for OAuth posts (original or shared) ---
+    let provider = post.provider || post.platform || '';
+    let providerTagHTML = '';
+    // Update providerTagHTML style
+    if (provider === 'heybleepi' || provider === 'hershive') {
+        providerTagHTML = `
+            <span class="platform-oauth-tag" style="
+                display:inline-block;
+                margin-top:2px;
+                background:#e3f0ff;
+                color:#2563eb;
+                font-size:12px;
+                font-weight:500;
+                padding:2px 10px;
+                border-radius:12px;
+                letter-spacing:0.3px;
+            ">
+                Shared post from ${provider.charAt(0).toUpperCase() + provider.slice(1)}
+            </span>
+        `;
+    }
 
     // --- Render post header and content ---
+    let postHTML = '';
     if (post.isShare) {
-        // Check if this is a reshare of a share (not just a share of a post)
-        const isReshareOfShare = post.target_type === 'share'; // Only if you pass this from backend
-
-        postElement.innerHTML = `
+        const isReshareOfShare = post.target_type === 'share';
+        postHTML = `
             <div class="post-header">
                 <div class="post-user-info">
                     <img src="../assets/human.png" alt="Profile" class="profile-pic">
                     <div class="user-details">
                         <h3 class="post-author">${post.author || 'Anonymous'}</h3>
                         <span class="post-timestamp">
-                            ${getTimeDifference(post.timestamp)}<br>
+                            ${getTimeDifference(post.timestamp)}
+                            ${provider === 'heybleepi' || provider === 'hershive' ? `
+                                <span class="platform-oauth-tag" style="
+                                    display:inline-block;
+                                    margin-left:8px;
+                                    background:#e3f0ff;
+                                    color:#2563eb;
+                                    font-size:12px;
+                                    font-weight:500;
+                                    padding:2px 10px;
+                                    border-radius:12px;
+                                    letter-spacing:0.3px;
+                                    vertical-align:middle;
+                                ">
+                                    • Shared post from ${provider.charAt(0).toUpperCase() + provider.slice(1)}
+                                </span>
+                            ` : ''}
+                            <br>
                             <span class="local-time">${convertUTCMySQLToLocal(post.timestamp)}</span>
                         </span>
                     </div>
                 </div>
             </div>
-            <div class="post-content">
+            <div class="post-content" style="position:relative;">
                 ${post.share_caption ? `<div class="share-caption-text" style="margin-bottom:8px;">${escapeHTML(post.share_caption)}</div>` : ''}
                 <div class="shared-post-box${isReshareOfShare ? ' reshared-share-box' : ''}" style="background:${isReshareOfShare ? '#fffbe6' : '#f5f6fa'};border-radius:8px;padding:12px;border:1px solid #e0e0e0;position:relative;">
                     <div style="font-size:13px;color:#555;margin-bottom:4px;">
@@ -647,14 +680,31 @@ function createPostElement(post) {
             </div>
         `;
     } else {
-        postElement.innerHTML = `
+        postHTML = `
             <div class="post-header">
                 <div class="post-user-info">
                     <img src="../assets/human.png" alt="Profile" class="profile-pic">
                     <div class="user-details">
                         <h3 class="post-author">${post.author || 'Anonymous'}</h3>
                         <span class="post-timestamp">
-                            ${getTimeDifference(post.timestamp)}<br>
+                            ${getTimeDifference(post.timestamp)}
+                            ${provider === 'heybleepi' || provider === 'hershive' ? `
+                                <span class="platform-oauth-tag" style="
+                                    display:inline-block;
+                                    margin-left:8px;
+                                    background:#e3f0ff;
+                                    color:#2563eb;
+                                    font-size:12px;
+                                    font-weight:500;
+                                    padding:2px 10px;
+                                    border-radius:12px;
+                                    letter-spacing:0.3px;
+                                    vertical-align:middle;
+                                ">
+                                    • Shared post from ${provider.charAt(0).toUpperCase() + provider.slice(1)}
+                                </span>
+                            ` : ''}
+                            <br>
                             <span class="local-time">${convertUTCMySQLToLocal(post.timestamp)}</span>
                         </span>
                     </div>
@@ -668,7 +718,7 @@ function createPostElement(post) {
                     </div>
                 </div>
             </div>
-            <div class="post-content">
+            <div class="post-content" style="position:relative;">
                 <div class="post-text">${post.content}</div>
                 ${mediaHTML ? `
                     <div class="post-media-container">
@@ -680,7 +730,7 @@ function createPostElement(post) {
     }
 
     // --- Render interactions for ALL posts (shared and original) ---
-    postElement.innerHTML += `
+    postHTML += `
         <div class="post-interactions">
             <div class="interaction-stats">
                 <span class="likes-count">
@@ -708,7 +758,7 @@ function createPostElement(post) {
     `;
 
     // Allow commenting on both original and shared posts
-    postElement.innerHTML += `
+    postHTML += `
         <div class="comments-section">
             <div class="comments-list"></div>
             <div class="comments-input-container">
@@ -724,9 +774,8 @@ function createPostElement(post) {
 
     // Add image modal functionality
     if (post.images && post.images.length > 0) {
-        postElement.innerHTML += `
-            <div id="image-modal" class="image-modal" onclick="closeImageModal()">
-                <span class="close-modal">&times;</span>
+        postHTML += `
+            <div id="image-modal" class="image-modal" onclick="closeImageModal()"
                 <img class="modal-content" id="modal-image">
                 <div id="image-caption"></div>
                 ${post.images.length > 1 ? `
@@ -736,6 +785,10 @@ function createPostElement(post) {
             </div>
         `;
     }
+
+    const postElement = document.createElement('div');
+    postElement.className = 'social-post';
+    postElement.setAttribute('data-post-id', post.id);
 
     const likeBtn = postElement.querySelector('.btn-like');
     const commentBtn = postElement.querySelector('.btn-comment');
@@ -1259,7 +1312,6 @@ async function addComment(post, commentText, commentsList, postElement) {
         }
         const result = await response.json();
         if (result.status === 'success') {
-            // Reload comments and update count
             const id = post.isShare && post.share_id ? post.share_id : (post.post_id || post.id);
             await loadComments(id, commentsList, postElement, post.isShare);
             const commentsSection = commentsList.closest('.comments-section');
@@ -1325,7 +1377,6 @@ function openShareModal(post) {
     const modal = document.getElementById('share-modal-overlay');
     modal.style.display = 'flex';
 
-    // Set the post_id as a data attribute for later retrieval -changes/
     modal.setAttribute('data-current-post-id', post.post_id || post.id);
 
     // Render post preview
@@ -1390,7 +1441,6 @@ function openShareModal(post) {
         const response = await sharePostToBackend(payload);
         if (response && response.status === 'success') {
             alert('shared successfully.');
-            // Reload posts to reflect new share and correct counts/tags
             loadPosts(0, 'all post');
         } else {
             alert('Failed to share post.');
@@ -1406,23 +1456,13 @@ btn.setAttribute('data-post-id', 'test');
 btn.onclick = function() { alert('Test Like Clicked!'); };
 document.body.appendChild(btn);
 
-// Suppose you have a button or element with data-post-id
 document.querySelectorAll('.share-btn-heybleepi, .share-btn-hershive').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-    e.preventDefault();
+  btn.addEventListener('click', function(e) {
     const modal = document.getElementById('share-modal-overlay');
     const post_id = modal.getAttribute('data-current-post-id');
     const form = btn.closest('form');
     form.querySelector('input[name="share_post_id"]').value = post_id;
-    // Set the share_to_other value manually
-    let hiddenInput = form.querySelector('input[name="share_to_other"]');
-    if (!hiddenInput) {
-        hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.name = 'share_to_other';
-        form.appendChild(hiddenInput);
-    }
-    hiddenInput.value = btn.value;
-    form.submit();
-    });
+    const caption = modal.querySelector('.share-caption').value;
+    form.querySelector('textarea[name="caption"]').value = caption;
+  });
 });
