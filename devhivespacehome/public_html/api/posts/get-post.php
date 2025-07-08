@@ -18,11 +18,10 @@ try {
     // Combined query for posts and shares
     $query = "
         SELECT 
-            p.post_id, p.user_id, u.username as author_username, p.content, p.created_at, p.updated_at,
+            p.post_id, p.user_id, p.provider, u.username as author_username, p.content, p.created_at, p.updated_at,
             GROUP_CONCAT(DISTINCT pi.image_url) as images,
             GROUP_CONCAT(DISTINCT CONCAT(pv.video_url, ':::', COALESCE(pv.thumbnail_url, ''), ':::', COALESCE(pv.duration, ''))) as videos,
             p.shares,
-            (SELECT COUNT(*) FROM reaction r WHERE r.post_id = p.post_id AND r.reaction_type = 'like') as likes,
             NULL as share_id,
             NULL as shared_by,
             NULL as shared_at,
@@ -38,11 +37,10 @@ try {
         UNION ALL
 
         SELECT 
-            p.post_id, p.user_id, u.username as author_username, p.content, p.created_at, p.updated_at,
+            p.post_id, p.user_id, p.provider, u.username as author_username, p.content, p.created_at, p.updated_at,
             GROUP_CONCAT(DISTINCT pi.image_url) as images,
             GROUP_CONCAT(DISTINCT CONCAT(pv.video_url, ':::', COALESCE(pv.thumbnail_url, ''), ':::', COALESCE(pv.duration, ''))) as videos,
             s.shares,
-            (SELECT COUNT(*) FROM reaction r WHERE r.post_id = p.post_id AND r.reaction_type = 'like') as likes,
             s.share_id,
             s.user_id as shared_by,
             s.shared_at,
