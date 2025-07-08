@@ -29,11 +29,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Load user avatar from local storage
-    loadUserAvatar();
-
-    // Load user display name from local storage
+    // Always load display name from localStorage
     loadUserDisplayName();
+
+    // Fetch user data from backend and update profile avatar only
+    fetch('../api/users/get-user-data.php?token=' + (localStorage.getItem('userToken') || ''))
+        .then(response => response.json())
+        .then(data => {
+            const avatarImg = document.getElementById('user-profile-avatar');
+            if (data.avatar_url && data.avatar_url !== '') {
+                avatarImg.src = data.avatar_url;
+            } else {
+                avatarImg.src = '../assets/human.png';
+            }
+            // Do not set name here, handled by loadUserDisplayName()
+        })
+        .catch(() => {
+            document.getElementById('user-profile-avatar').src = '../assets/human.png';
+        });
 
     // Load and display user posts
     loadUserPosts();

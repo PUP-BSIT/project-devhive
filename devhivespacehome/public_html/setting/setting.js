@@ -132,6 +132,71 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
   }
+
+  // Add logic for saving display name
+  const saveChangesBtn = document.getElementById("save-changes-btn");
+  if (saveChangesBtn) {
+    saveChangesBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      const displayNameInput = document.getElementById("display-name");
+      if (displayNameInput) {
+        const newDisplayName = displayNameInput.value.trim();
+        if (newDisplayName.length === 0) {
+          showNotification("Display name cannot be empty", "error");
+          return;
+        }
+        // Save to localStorage
+        localStorage.setItem("userDisplayName", newDisplayName);
+        // Trigger storage event for other tabs/pages
+        window.dispatchEvent(new StorageEvent('storage', { key: 'userDisplayName', newValue: newDisplayName }));
+        showNotification("Display name updated!", "success");
+      }
+    });
+  }
+
+  // Profile photo change logic
+  const changePhotoBtn = document.getElementById("change-photo-btn");
+  const photoUploadInput = document.getElementById("photo-upload");
+  const profileImage = document.getElementById("profile-image");
+
+  if (changePhotoBtn && photoUploadInput && profileImage) {
+    changePhotoBtn.addEventListener("click", function () {
+      photoUploadInput.click();
+    });
+
+    photoUploadInput.addEventListener("change", function () {
+      const file = this.files[0];
+      if (!file) return;
+
+      // Optionally: validate file type/size here
+
+      const formData = new FormData();
+      formData.append("avatar", file);
+
+      // Add user token if needed for authentication
+      const userToken = localStorage.getItem('user_token') || sessionStorage.getItem('user_token');
+      if (userToken) {
+        formData.append("token", userToken);
+      }
+
+      fetch("../api/users/upload-avatar.php", {
+        method: "POST",
+        body: formData
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.avatar_url) {
+            profileImage.src = data.avatar_url;
+            showNotification("Profile photo updated!", "success");
+          } else {
+            showNotification(data.message || "Failed to update photo", "error");
+          }
+        })
+        .catch(() => {
+          showNotification("Error uploading photo", "error");
+        });
+    });
+  }
 });
 
 function createPasswordUpdateModal() {
