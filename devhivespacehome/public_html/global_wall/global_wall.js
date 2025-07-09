@@ -1,19 +1,18 @@
+console.log("globalfeed20.js loaded");
 document.addEventListener('click', function(e) {
     console.log('Global click detected:', e.target);
     const likeBtn = e.target.closest('.btn-like');
     console.log('Result of closest(".btn-like"):', likeBtn);
     if (likeBtn) {
         const postId = likeBtn.getAttribute('data-post-id');
-        alert('Like button clicked for post: ' + postId); // Debugging
+        alert('Like button clicked for post: ' + postId);
         toggleLike({ id: postId, post_id: postId }, likeBtn);
         return;
     }
 });
 
-// Global variable to store current user info
 let currentUser = null;
 
-// Function to get current user information
 async function getCurrentUser() {
     try {
         const response = await fetch('../api/users/get-session-user.php');
@@ -25,11 +24,9 @@ async function getCurrentUser() {
                 username: result.username
             };
             console.log('Current user:', currentUser);
-            
-            // Update comment input placeholders
+
             updateCommentInputs();
-            
-            // Show welcome message
+
             showNotification(`Welcome back, ${currentUser.username}!`);
         } else {
             console.log('User not logged in');
@@ -39,7 +36,6 @@ async function getCurrentUser() {
     }
 }
 
-// Function to update comment input placeholders and user indicators
 function updateCommentInputs() {
     const commentInputs = document.querySelectorAll('.comment-input');
     commentInputs.forEach(input => {
@@ -48,8 +44,7 @@ function updateCommentInputs() {
         } else {
             input.placeholder = 'Write a comment...';
         }
-        
-        // Update user indicator
+    
         const wrapper = input.closest('.comment-input-wrapper');
         if (wrapper) {
             let indicator = wrapper.querySelector('.comment-user-indicator');
@@ -68,7 +63,6 @@ function updateCommentInputs() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Get current user information first
     await getCurrentUser();
     
     const filterButtons = document.querySelectorAll('.post-filters button');
@@ -88,10 +82,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Initial load
     loadPosts(0, 'all post');
 
-    // Add refresh button to header
     const globalWallHeader = document.querySelector('.global-wall-header');
     const refreshButton = document.createElement('button');
     refreshButton.className = 'refresh-btn';
@@ -106,26 +98,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     const globalWallContainer = document.querySelector('.global-wall-posts');
     
     if (globalWallContainer) {
-        // Event delegation for like button with detailed logging
         globalWallContainer.addEventListener('click', (e) => {
             console.log('Clicked element:', e.target);
             const likeBtn = e.target.closest('.btn-like');
             console.log('Result of closest(".btn-like"):', likeBtn);
             if (likeBtn) {
                 const postId = likeBtn.getAttribute('data-post-id');
-                alert('Like button clicked for post: ' + postId); // Debugging
+                alert('Like button clicked for post: ' + postId); 
                 toggleLike({ id: postId, post_id: postId }, likeBtn);
                 return;
             }
-            // Event delegation for comment send button
             const commentSendBtn = e.target.closest('.comment-send-btn');
             if (commentSendBtn) {
-                // Find the parent .social-post
                 const postElement = commentSendBtn.closest('.social-post');
                 if (!postElement) return;
-                // Get the post data
                 const post = postElement._postData;
-                // Find the input
                 const commentInput = postElement.querySelector('.comment-input');
                 const commentsList = postElement.querySelector('.comments-list');
                 if (!commentInput || !commentsList) return;
@@ -137,14 +124,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (commentText) {
                     addComment(post, commentText, commentsList, postElement).then(() => {
                         commentInput.value = '';
-                        // Show the comments section after posting
                         const commentsSection = postElement.querySelector('.comments-section');
                         if (commentsSection) commentsSection.classList.add('show');
                     });
                 }
                 return;
             }
-            // Event delegation for pressing Enter in comment input
             const commentInput = e.target.closest('.comment-input');
             if (commentInput && e.type === 'keypress' && e.key === 'Enter') {
                 const postElement = commentInput.closest('.social-post');
@@ -185,7 +170,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
         });
-        // Add event delegation for Enter key on comment input
         globalWallContainer.addEventListener('keypress', (e) => {
             if (e.target.classList.contains('comment-input') && e.key === 'Enter') {
                 const postElement = e.target.closest('.social-post');
@@ -207,7 +191,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     } else {
-        // If the container is not found, show a visible error
         const errorDiv = document.createElement('div');
         errorDiv.style.background = '#ffdddd';
         errorDiv.style.color = '#b00020';
@@ -254,12 +237,10 @@ async function loadPosts(offset = 0, filter = 'all post') {
     if (!globalWallContainer) return;
 
     try {
-        // Show loading state
         if (offset === 0) {
             globalWallContainer.innerHTML = '<div class="loading">Loading posts...</div>';
         }
 
-        // Construct API URL with parameters
         const url = new URL('../api/posts/get-post.php', window.location.href);
         url.searchParams.append('offset', offset);
         url.searchParams.append('limit', 10);
@@ -267,14 +248,13 @@ async function loadPosts(offset = 0, filter = 'all post') {
             url.searchParams.append('platform', filter);
         }
 
-        // Fetch posts from the API
         const response = await fetch(url);
         if (!response.ok) {
             throw new Error('Failed to fetch posts');
         }
 
         const data = await response.json();
-        console.log('API Response:', data); // Debug log
+        console.log('API Response:', data);
         
         if (data.status !== 'success' || !data.data.posts) {
             throw new Error('Invalid response format');
@@ -282,7 +262,6 @@ async function loadPosts(offset = 0, filter = 'all post') {
 
         const { posts, pagination } = data.data;
         
-        // Clear container only on first load
         if (offset === 0) {
             globalWallContainer.innerHTML = '';
         }
@@ -293,27 +272,24 @@ async function loadPosts(offset = 0, filter = 'all post') {
         }
 
         posts.forEach(post => {
-            // Parse video data if exists
             let videoData = null;
             if (post.videos) {
-                console.log('Video data found:', post.videos); // Debug log
+                console.log('Video data found:', post.videos); 
                 const videoInfos = post.videos.split(',').map(videoStr => {
                     const [url, thumbnail, duration] = videoStr.split(':::');
                     return { url, thumbnail, duration };
                 });
-                videoData = videoInfos[0]; // Take the first video for now
-                console.log('Parsed video data:', videoData); // Debug log
+                videoData = videoInfos[0]; 
+                console.log('Parsed video data:', videoData); 
             }
 
-            // Parse image data if exists
             let imageUrls = [];
             if (post.images) {
-                console.log('Image data found:', post.images); // Debug log
+                console.log('Image data found:', post.images); 
                 imageUrls = post.images.split(',').filter(url => url.trim());
-                console.log('Parsed image URLs:', imageUrls); // Debug log
+                console.log('Parsed image URLs:', imageUrls); 
             }
 
-            // Convert the database post format to our display format
             const isShare = post.shared_by !== null;
             const displayPost = {
                 id: isShare ? `share-${post.share_id}` : post.post_id,
@@ -333,25 +309,21 @@ async function loadPosts(offset = 0, filter = 'all post') {
                 provider: post.provider || post.platform || ''
             };
             
-            console.log('Display post object:', displayPost); // Debug log
+            console.log('Display post object:', displayPost);
             
             const postElement = createPostElement(displayPost);
-            // Attach the post object to the element for later use
             postElement._postData = displayPost;
             globalWallContainer.appendChild(postElement);
         });
 
-        // Attach direct click event to all like buttons after rendering
         document.querySelectorAll('.btn-like').forEach(btn => {
             btn.onclick = function(e) {
                 const postElement = btn.closest('.social-post');
                 if (postElement && postElement._postData) {
                     toggleLike(postElement._postData, btn);
                 } else {
-                    // fallback: try to find postId from data attribute and extract numeric part
                     let postId = btn.getAttribute('data-post-id');
                     if (typeof postId === 'string') {
-                        // Remove any non-digit prefix (e.g., 'share-84' -> '84')
                         const match = postId.match(/(\d+)$/);
                         if (match) {
                             postId = parseInt(match[1], 10);
@@ -367,12 +339,11 @@ async function loadPosts(offset = 0, filter = 'all post') {
                 }
             };
         });
+
         attachVideoEventListeners();
 
-        // Update comment input placeholders after posts are loaded
         updateCommentInputs();
 
-        // Add load more button if there are more posts
         if (pagination.total > offset + posts.length) {
             const loadMoreContainer = document.createElement('div');
             loadMoreContainer.className = 'load-more-container';
@@ -405,7 +376,6 @@ async function loadPosts(offset = 0, filter = 'all post') {
         }
     }
 }
-// Add styles for new elements
 const additionalStyles = `
     .refresh-btn {
         background: #2563eb;
@@ -543,13 +513,11 @@ const additionalStyles = `
 document.head.appendChild(document.createElement('style')).textContent = additionalStyles;
 
 function createPostElement(post) {
-    // Always use likes from backend
     console.log('Rendering post:', post, 'Likes:', post.likes);
     const likeCount = typeof post.likes !== 'undefined' ? post.likes : 0;
     const commentCount = typeof post.comment_count !== 'undefined' ? post.comment_count : (post.comments ? post.comments.length : 0);
 
     let mediaHTML = '';
-    // Handle images
     if (post.images && post.images.length > 0) {
         mediaHTML += `
             <div class="post-media-gallery ${post.images.length > 1 ? 'multi-image' : 'single-image'}">
@@ -573,7 +541,6 @@ function createPostElement(post) {
         `;
     }
 
-    // Handle video
     if (post.video) {
         mediaHTML += `
             <div class="post-media-video">
@@ -599,10 +566,8 @@ function createPostElement(post) {
         `;
     }
 
-    // --- Provider tag for OAuth posts (original or shared) ---
     let provider = post.provider || post.platform || '';
     let providerTagHTML = '';
-    // Update providerTagHTML style
     if (provider === 'heybleepi' || provider === 'hershive') {
         providerTagHTML = `
             <span class="platform-oauth-tag" style="
@@ -621,7 +586,6 @@ function createPostElement(post) {
         `;
     }
 
-    // --- Render post header and content ---
     let postHTML = '';
     if (post.isShare) {
         const isReshareOfShare = post.target_type === 'share';
@@ -729,7 +693,6 @@ function createPostElement(post) {
         `;
     }
 
-    // --- Render interactions for ALL posts (shared and original) ---
     postHTML += `
         <div class="post-interactions">
             <div class="interaction-stats">
@@ -757,7 +720,6 @@ function createPostElement(post) {
         </div>
     `;
 
-    // Allow commenting on both original and shared posts
     postHTML += `
         <div class="comments-section">
             <div class="comments-list"></div>
@@ -772,7 +734,6 @@ function createPostElement(post) {
         </div>
     `;
 
-    // Add image modal functionality
     if (post.images && post.images.length > 0) {
         postHTML += `
             <div id="image-modal" class="image-modal" onclick="closeImageModal()"
@@ -789,6 +750,10 @@ function createPostElement(post) {
     const postElement = document.createElement('div');
     postElement.className = 'social-post';
     postElement.setAttribute('data-post-id', post.id);
+
+    postElement.innerHTML = `
+        ${postHTML}
+    `;
 
     const likeBtn = postElement.querySelector('.btn-like');
     const commentBtn = postElement.querySelector('.btn-comment');
@@ -807,43 +772,35 @@ function createPostElement(post) {
         console.warn('Like button NOT FOUND for post:', post.id);
     }
 
-    // Automatically load comments for each post (original and shared)
     if (!post.isShare) {
         loadComments(post.post_id || post.id, commentsList, postElement, false);
     } else if (post.isShare && post.share_id) {
         loadComments(post.share_id, commentsList, postElement, true);
     }
 
-    // Comment button functionality
     if (commentBtn) {
         commentBtn.addEventListener('click', () => {
-            // Check if user is logged in
             if (!currentUser) {
                 showNotification('Please log in to comment');
                 return;
             }
-            // Only load comments for original posts
             if (!post.isShare) {
-                // Always use post.post_id for API
                 const postId = post.post_id || post.id;
                 console.log('[commentBtn] Loading comments for postId:', postId);
                 loadComments(postId, commentsList, postElement, post.isShare);
                 commentInput && commentInput.focus();
-                // Always show the comments section when comment button is clicked
                 const commentsSection = postElement.querySelector('.comments-section');
                 if (commentsSection) commentsSection.classList.add('show');
             }
         });
     }
 
-    // Share button functionality
     if (shareBtn) {
         shareBtn.addEventListener('click', () => {
             openShareModal(post);
         });
     }
 
-    // Add event listener for delete button
     const deleteBtn = postElement.querySelector('.delete-post-btn');
     const moreBtn = postElement.querySelector('.post-more-btn');
     
@@ -851,8 +808,6 @@ function createPostElement(post) {
         moreBtn.addEventListener('click', (e) => {
             const dropdownMenu = e.currentTarget.nextElementSibling;
             dropdownMenu.classList.toggle('show');
-            
-            // Close dropdown when clicking outside
             const closeDropdown = (event) => {
                 if (!dropdownMenu.contains(event.target) && event.target !== moreBtn) {
                     dropdownMenu.classList.remove('show');
@@ -875,40 +830,33 @@ function createPostElement(post) {
 }
 
 function parsePostContent(content) {
-    // Initialize result object
     const result = {
         text: escapeHTML(content || ''),
         media: null
     };
 
-    // Check for images
     const imageMediaHTML = post.images && post.images.length > 0 
         ? post.images.map(imageSrc => `
             <img src="${imageSrc}" alt="Post Image" style="max-width: 100%; max-height: 300px; object-fit: cover;">
         `).join('')
         : null;
 
-    // Check for video
     const videoMediaHTML = post.video 
         ? `<video src="${post.video}" controls style="max-width: 100%; max-height: 300px;"></video>`
         : null;
 
-    // Combine media
     result.media = imageMediaHTML || videoMediaHTML;
 
     return result;
 }
 
 function convertUTCMySQLToLocal(dateString) {
-    // Parse the MySQL UTC datetime string
     const [datePart, timePart] = dateString.split(' ');
     const [year, month, day] = datePart.split('-').map(Number);
     const [hour, minute, second] = timePart.split(':').map(Number);
 
-    // Create a Date object in UTC
     const utcDate = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
 
-    // Convert to local time string (e.g., "Jun 13, 2025, 2:17 AM")
     return utcDate.toLocaleString(undefined, {
         year: 'numeric',
         month: 'short',
@@ -955,14 +903,12 @@ function escapeHTML(str) {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-// Add event listener to update posts when a new post is added
 window.addEventListener('storage', (event) => {
     if (event.key === 'devhive_posts') {
         loadPosts();
     }
 });
 
-// Add a function to help debug local storage
 function debugLocalStorage() {
     console.log('Local Storage Debug:');
     console.log('Uploaded Images:', JSON.parse(localStorage.getItem('devhive_uploaded_images') || '{}'));
@@ -970,35 +916,26 @@ function debugLocalStorage() {
     console.log('DevHive Posts:', JSON.parse(localStorage.getItem('devhive_posts') || '[]'));
 }
 
-// Function to delete a post
 function deletePost(postId) {
-    // Retrieve posts from local storage
     let posts = JSON.parse(localStorage.getItem('devhive_posts') || '[]');
     
-    // Find the index of the post to delete
     const postIndex = posts.findIndex(post => post.id === postId);
     
     if (postIndex !== -1) {
-        // Remove the post from the array
         posts.splice(postIndex, 1);
-        
-        // Update local storage
+
         localStorage.setItem('devhive_posts', JSON.stringify(posts));
-        
-        // Remove the post element from the DOM
         const postElement = document.querySelector(`.social-post[data-post-id="${postId}"]`);
         if (postElement) {
             postElement.remove();
         }
-        
-        // Show notification
+
         showNotification('Post deleted successfully');
     } else {
         showNotification('Post not found');
     }
 }
 
-// Add a notification function if not already present
 function showNotification(message) {
     const notification = document.createElement('div');
     notification.className = 'notification';
@@ -1014,21 +951,16 @@ function showNotification(message) {
     }, 100);
 }
 
-// Attach video event listeners on initial page load
 document.addEventListener('DOMContentLoaded', () => {
     attachVideoEventListeners();
 });
 
-// Add preview modal functionality
 function createPreviewModal(post) {
-    // Create modal container
     const modalContainer = document.createElement('div');
     modalContainer.className = 'preview-modal-container';
 
-    // Prepare media HTML
     let mediaHTML = '';
 
-    // Handle images from mediaData
     if (post.mediaData && post.mediaData.images && post.mediaData.images.length > 0) {
         const imageContainer = document.createElement('div');
         imageContainer.className = 'preview-media-container';
@@ -1047,7 +979,6 @@ function createPreviewModal(post) {
         mediaHTML += imageContainer.outerHTML;
     }
 
-    // Handle videos from mediaData
     if (post.mediaData && post.mediaData.videos && post.mediaData.videos.length > 0) {
         const videoContainer = document.createElement('div');
         videoContainer.className = 'preview-media-container';
@@ -1072,7 +1003,6 @@ function createPreviewModal(post) {
         mediaHTML += videoContainer.outerHTML;
     }
 
-    // Fallback to parsing content if no mediaData
     if (!mediaHTML) {
         const parsedContent = parsePostContent(post.content);
         mediaHTML = parsedContent.media || '';
@@ -1119,15 +1049,12 @@ function createPreviewModal(post) {
         </div>
     `;
 
-    // Add to body
     document.body.appendChild(modalContainer);
 
-    // Close modal functionality
     const closeBtn = modalContainer.querySelector('.preview-modal-close');
     const editBtn = modalContainer.querySelector('.preview-edit-btn');
     const shareBtn = modalContainer.querySelector('.preview-share-btn');
 
-    // Close modal when clicking close button or outside modal
     closeBtn.addEventListener('click', () => {
         modalContainer.remove();
     });
@@ -1138,13 +1065,11 @@ function createPreviewModal(post) {
         }
     });
 
-    // Edit post functionality (placeholder)
     editBtn.addEventListener('click', () => {
         // TODO: Implement edit post functionality
         alert('Edit post functionality coming soon!');
     });
 
-    // Share post functionality
     shareBtn.addEventListener('click', () => {
         sharePost(post, shareBtn);
         modalContainer.remove();
@@ -1153,9 +1078,7 @@ function createPreviewModal(post) {
     return modalContainer;
 }
 
-// Function to toggle like
 function toggleLike(post, likeBtn) {
-    // Always ensure post_id is a number
     let postId = post.post_id;
     if (typeof postId === 'string') {
         const match = postId.match(/(\d+)$/);
@@ -1166,7 +1089,6 @@ function toggleLike(post, likeBtn) {
             return;
         }
     }
-    // Retrieve user ID from localStorage
     const userId = localStorage.getItem('user_id');
     
     console.log('Attempting to like post:', post);
@@ -1200,10 +1122,7 @@ function toggleLike(post, likeBtn) {
     .then(data => {
         console.log('Like Response:', data);
         if (data.status === 'success') {
-            // Update like button UI
             likeBtn.classList.toggle('liked');
-            // Update like count
-            // Find the correct likes-count element for this post
             const postElement = likeBtn.closest('.social-post');
             const likesCountEl = postElement ? postElement.querySelector('.likes-count') : null;
             if (likesCountEl) {
@@ -1237,7 +1156,6 @@ function showLikeError(message) {
     setTimeout(() => { errorDiv.remove(); }, 5000);
 }
 
-// Function to load comments for a post
 async function loadComments(id, commentsList, postElement, isShare = false) {
     try {
         const param = isShare ? 'share_id' : 'post_id';
@@ -1264,7 +1182,6 @@ async function loadComments(id, commentsList, postElement, isShare = false) {
                 `;
                 commentsList.appendChild(commentElement);
             });
-            // Update comment count
             if (!postElement) postElement = commentsList.closest('.social-post');
             if (postElement) {
                 const commentsCountElement = postElement.querySelector('.comments-count');
@@ -1272,7 +1189,6 @@ async function loadComments(id, commentsList, postElement, isShare = false) {
                     commentsCountElement.innerHTML = `<i class="icon-comment">💬</i> ${result.data.total}`;
                 }
             }
-            // Show the comments section
             const commentsSection = commentsList.closest('.comments-section');
             if (commentsSection) commentsSection.classList.add('show');
         } else {
@@ -1290,7 +1206,6 @@ async function addComment(post, commentText, commentsList, postElement) {
             showNotification('Please log in to comment');
             return;
         }
-        // Use post_id for originals, share_id for shared posts
         const formData = new FormData();
         if (post.isShare && post.share_id) {
             formData.append('share_id', post.share_id);
@@ -1417,7 +1332,6 @@ function openShareModal(post) {
     });
 
     const shareBtn = modal.querySelector('.share-main-btn');
-    // Remove previous event listeners by replacing the button with a clone
     const newShareBtn = shareBtn.cloneNode(true);
     shareBtn.parentNode.replaceChild(newShareBtn, shareBtn);
 
