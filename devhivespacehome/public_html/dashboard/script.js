@@ -1,4 +1,4 @@
-(function() {
+(function () {
   const params = new URLSearchParams(window.location.search);
   const token = params.get('oauth_token');
   if (token) {
@@ -134,7 +134,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Fetch and display username in welcome message
   fetch('/api/users/get-session-user.php', { credentials: 'include' })
     .then(res => res.json())
     .then(data => {
@@ -145,5 +144,41 @@ document.addEventListener("DOMContentLoaded", function () {
           usernameSpan.textContent = data.username;
         }
       }
+    });
+
+  fetch('/api/posts/get-recent-posts.php', { credentials: 'include' })
+    .then(res => {
+      if (res.status === 401) {
+        window.location.href = '/login/index.html';
+        return null;
+      }
+      return res.json();
+    })
+    .then(data => {
+      if (!data || !data.posts) return;
+      const postsList = document.getElementById('posts-list');
+      const noPostsMsg = document.getElementById('no-posts-message');
+      postsList.innerHTML = '';
+      if (data.posts.length === 0) {
+        noPostsMsg.style.display = 'block';
+        return;
+      } else {
+        noPostsMsg.style.display = 'none';
+      }
+      data.posts.forEach(post => {
+        const card = document.createElement('div');
+        card.className = 'post-card';
+        const date = new Date(post.created_at);
+        card.innerHTML = `
+          <h3>Post #${post.post_id}</h3>
+          <p>Posted ${date.toLocaleString()}${post.user_id ? ' | User ID: ' + post.user_id : ''}</p>
+          <span class="platform">devhivespace</span>
+          <div class="post-content">${post.content}</div>
+        `;
+        postsList.appendChild(card);
+      });
+    })
+    .catch(err => {
+      console.error('Failed to load recent posts:', err);
     });
 });

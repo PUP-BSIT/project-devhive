@@ -10,18 +10,18 @@ try {
         throw new Exception('Only GET method is allowed');
     }
 
-    // Get query parameters
     $postId = isset($_GET['id']) ? (int)$_GET['id'] : null;
     $limit = isset($_GET['limit']) ? min((int)$_GET['limit'], 50) : 10;
     $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
 
-    // Combined query for posts and shares
     $query = "
         SELECT 
-            p.post_id, p.user_id, p.provider, u.username as author_username, p.content, p.created_at, p.updated_at,
+            p.post_id, p.user_id, u.username as author_username, p.content, p.created_at, p.updated_at,
             GROUP_CONCAT(DISTINCT pi.image_url) as images,
             GROUP_CONCAT(DISTINCT CONCAT(pv.video_url, ':::', COALESCE(pv.thumbnail_url, ''), ':::', COALESCE(pv.duration, ''))) as videos,
             p.shares,
+            (SELECT COUNT(*) FROM reaction r WHERE r.post_id = p.post_id AND r.reaction_type = 'like') as likes,
+            (SELECT COUNT(*) FROM comment WHERE post_id = p.post_id) as comment_count,
             NULL as share_id,
             NULL as shared_by,
             NULL as shared_at,
@@ -37,10 +37,12 @@ try {
         UNION ALL
 
         SELECT 
-            p.post_id, p.user_id, p.provider, u.username as author_username, p.content, p.created_at, p.updated_at,
+            p.post_id, p.user_id, u.username as author_username, p.content, p.created_at, p.updated_at,
             GROUP_CONCAT(DISTINCT pi.image_url) as images,
             GROUP_CONCAT(DISTINCT CONCAT(pv.video_url, ':::', COALESCE(pv.thumbnail_url, ''), ':::', COALESCE(pv.duration, ''))) as videos,
             s.shares,
+            (SELECT COUNT(*) FROM reaction r WHERE r.post_id = p.post_id AND r.reaction_type = 'like') as likes,
+            (SELECT COUNT(*) FROM comment WHERE post_id = p.post_id) as comment_count,
             s.share_id,
             s.user_id as shared_by,
             s.shared_at,
@@ -59,7 +61,6 @@ try {
         LIMIT ?, ?
     ";
 
-    // Add debug logging
     error_log("SQL Query: " . $query);
 
     $stmt = $conn->prepare($query);
@@ -77,10 +78,8 @@ try {
     $result = $stmt->get_result();
     $posts = $result->fetch_all(MYSQLI_ASSOC);
 
-    // Debug log the results
     error_log("Query results: " . json_encode($posts));
 
-    // Get total count for pagination
     $countResult = $conn->query("SELECT COUNT(*) as total FROM post");
     if (!$countResult) {
         throw new Exception("Count query failed: " . $conn->error);

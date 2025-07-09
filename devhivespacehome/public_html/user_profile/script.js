@@ -29,33 +29,32 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Always load display name from localStorage
     loadUserDisplayName();
 
-    // Fetch user data from backend and update profile avatar only
-    fetch('../api/users/get-user-data.php?token=' + (localStorage.getItem('userToken') || ''))
+    fetch('../api/users/get-user-data.php', { credentials: 'include' })
         .then(response => response.json())
         .then(data => {
             const avatarImg = document.getElementById('user-profile-avatar');
-            if (data.avatar_url && data.avatar_url !== '') {
-                avatarImg.src = data.avatar_url;
-            } else {
-                avatarImg.src = '../assets/human.png';
+            if (data.profile_image_url && avatarImg) {
+                avatarImg.src = data.profile_image_url;
             }
-            // Do not set name here, handled by loadUserDisplayName()
+            const profileNameElement = document.querySelector('.profile-details h2');
+            if (data.first_name && data.last_name) {
+                profileNameElement.textContent = data.first_name + ' ' + data.last_name;
+            } else if (data.username) {
+                profileNameElement.textContent = data.username;
+            }
         })
         .catch(() => {
             document.getElementById('user-profile-avatar').src = '../assets/human.png';
         });
 
-    // Load and display user posts
     loadUserPosts();
 
-    // Listen for storage changes
     window.addEventListener('storage', function(event) {
         if (event.key === 'userDisplayName') {
             loadUserDisplayName();
-            loadUserPosts(); // Reload posts to update author name
+            loadUserPosts(); 
         }
     });
 });
@@ -72,8 +71,7 @@ function loadUserAvatar() {
 
 function loadUserDisplayName() {
     const savedDisplayName = localStorage.getItem('userDisplayName');
-    
-    // Update display name in profile details
+
     const profileNameElements = [
         document.querySelector('.profile-details h2')
     ];
@@ -91,255 +89,49 @@ function loadUserPosts() {
     const postsSection = document.querySelector('.posts-section');
     if (!postsSection) return;
 
-    // Retrieve user posts from local storage
-    const userPosts = JSON.parse(localStorage.getItem('userPosts') || '[]');
+    fetch('../api/posts/get-user-posts.php', { credentials: 'include' })
+        .then(res => res.json())
+        .then(data => {
+            postsSection.innerHTML = '';
+            if (!data.success || !data.posts || data.posts.length === 0) {
+                const noPostsMessage = document.createElement('p');
+                noPostsMessage.textContent = 'No posts yet. Create your first post!';
+                noPostsMessage.style.textAlign = 'center';
+                noPostsMessage.style.color = '#888';
+                postsSection.appendChild(noPostsMessage);
+                return;
+            }
 
-    // Get current user profile information
-    const displayName = localStorage.getItem('userDisplayName') || 'User';
-    const userAvatar = localStorage.getItem('userProfileAvatar') || '../assets/human.png';
+            data.posts.forEach(post => {
+                const postElement = document.createElement('div');
+                postElement.className = 'post-item';
 
-    // Clear existing posts
-    postsSection.innerHTML = '';
+                const postDate = new Date(post.created_at);
+                const formattedDate = postDate.toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
 
-    // If no posts, add a message
-    if (userPosts.length === 0) {
-        const noPostsMessage = document.createElement('p');
-        noPostsMessage.textContent = 'No posts yet. Create your first post!';
-        noPostsMessage.style.textAlign = 'center';
-        noPostsMessage.style.color = '#888';
-        postsSection.appendChild(noPostsMessage);
-        return;
-    }
-
-    // Create and append post elements
-    userPosts.forEach(post => {
-        const postElement = document.createElement('div');
-        postElement.className = 'post-item';
-        
-        // Format timestamp
-        const postDate = new Date(post.timestamp);
-        const formattedDate = postDate.toLocaleString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
+                postElement.innerHTML = `
+                    <div class="post-header">
+                        <div class="post-author">
+                            <div class="post-meta">
+                                <h3>You</h3>
+                                <p>Posted ${formattedDate}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        <p>${post.content}</p>
+                    </div>
+                `;
+                postsSection.appendChild(postElement);
+            });
+        })
+        .catch(() => {
+            postsSection.innerHTML = '<p style="color:#888;text-align:center;">Failed to load posts.</p>';
         });
-
-        // Create media content HTML
-        let mediaHTML = '';
-        if (post.images && post.images.length > 0) {
-            mediaHTML = `
-            <div class="post-media-gallery ${post.images.length > 1 ? 'multi-image' : 'single-image'}">
-                ${post.images.map((imageSrc, index) => `
-                    <div class="post-media-item" data-index="${index}">
-                        <img 
-                            src="${imageSrc}" 
-                            alt="Post Image ${index + 1}" 
-                            onclick="openImageModal(this)"
-                            style="
-                                width: 100%; 
-                                height: ${post.images.length === 1 ? '400px' : '200px'}; 
-                                object-fit: ${post.images.length === 1 ? 'contain' : 'cover'}; 
-                                border-radius: 8px; 
-                                cursor: pointer;
-                            "
-                        >
-                    </div>
-                `).join('')}
-            </div>
-            `;
-        } else if (post.video) {
-            mediaHTML = `
-            <div class="post-media-video">
-                <video 
-                    src="${post.video}" 
-                    controls 
-                    style="
-                        width: 100%; 
-                        max-height: 400px; 
-                        object-fit: contain; 
-                        border-radius: 8px;
-                    "
-                    preload="metadata"
-                    playsinline
-                >
-                    Your browser does not support the video tag.
-                </video>
-            </div>
-            `;
-        }
-
-        postElement.innerHTML = `
-            <div class="post-header">
-                <div class="post-author">
-                    <img src="${userAvatar}" 
-                        alt="Profile Picture" class="post-avatar">
-                    <div class="post-meta">
-                        <h3>${displayName}</h3>
-                        <p>Posted ${formattedDate}</p>
-                    </div>
-                </div>
-            </div>
-            ${post.content ? `
-                <div class="post-content">
-                    <p>${post.content}</p>
-                </div>
-            ` : ''}
-            ${mediaHTML}
-            <div class="post-actions">
-                <div class="action-stats">
-                    <span class="likes">
-                        <img src="../assets/heart.png" alt="Likes"> 
-                        ${post.likes} Likes
-                    </span>
-                    <span class="comments">
-                        <img src="../assets/comment.png" alt="Comments"> 
-                        ${post.comments.length} Comments
-                    </span>
-                    <span class="shares">
-                        <img src="../assets/share.png" alt="Shares"> 
-                        ${post.shares} Shares
-                    </span>
-                </div>
-            </div>
-        `;
-
-        // Add image modal functionality
-        if (post.images && post.images.length > 0) {
-            postElement.innerHTML += `
-                <div id="image-modal" class="image-modal" onclick="closeImageModal()">
-                    <span class="close-modal">&times;</span>
-                    <img class="modal-content" id="modal-image">
-                    <div id="image-caption"></div>
-                    ${post.images.length > 1 ? `
-                        <a class="prev" onclick="changeImage(-1)">&#10094;</a>
-                        <a class="next" onclick="changeImage(1)">&#10095;</a>
-                    ` : ''}
-                </div>
-            `;
-        }
-
-        postsSection.appendChild(postElement);
-    });
-
-    // Add global functions for image modal if not already added
-    if (!window.openImageModal) {
-        window.openImageModal = function(img) {
-            const modal = document.getElementById('image-modal');
-            const modalImg = document.getElementById('modal-image');
-            const captionText = document.getElementById('image-caption');
-            
-            modal.style.display = "block";
-            modalImg.src = img.src;
-            captionText.innerHTML = img.alt;
-            
-            // Set current image index
-            const gallery = img.closest('.post-media-gallery');
-            if (gallery) {
-                window.currentImageIndex = parseInt(img.closest('.post-media-item').dataset.index);
-                window.currentImageGallery = gallery;
-            }
-        }
-
-        window.closeImageModal = function() {
-            const modal = document.getElementById('image-modal');
-            modal.style.display = "none";
-        }
-
-        window.changeImage = function(direction) {
-            if (!window.currentImageGallery) return;
-            
-            const images = window.currentImageGallery.querySelectorAll('.post-media-item');
-            const totalImages = images.length;
-            
-            window.currentImageIndex = (window.currentImageIndex + direction + totalImages) % totalImages;
-            
-            const newImage = images[window.currentImageIndex].querySelector('img');
-            const modalImg = document.getElementById('modal-image');
-            const captionText = document.getElementById('image-caption');
-            
-            modalImg.src = newImage.src;
-            captionText.innerHTML = newImage.alt;
-        }
-
-        // Add CSS for image modal
-        const modalStyle = document.createElement('style');
-        modalStyle.textContent = `
-            .post-media-gallery.multi-image {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                gap: 10px;
-            }
-
-            .image-modal {
-                display: none;
-                position: fixed;
-                z-index: 1000;
-                padding-top: 100px;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                overflow: auto;
-                background-color: rgba(0,0,0,0.9);
-            }
-
-            .modal-content {
-                margin: auto;
-                display: block;
-                width: 80%;
-                max-width: 700px;
-                max-height: 80vh;
-                object-fit: contain;
-            }
-
-            .close-modal {
-                position: absolute;
-                top: 15px;
-                right: 35px;
-                color: #f1f1f1;
-                font-size: 40px;
-                font-weight: bold;
-                cursor: pointer;
-            }
-
-            .prev, .next {
-                cursor: pointer;
-                position: absolute;
-                top: 50%;
-                width: auto;
-                padding: 16px;
-                margin-top: -50px;
-                color: white;
-                font-weight: bold;
-                font-size: 20px;
-                transition: 0.6s ease;
-                border-radius: 0 3px 3px 0;
-                user-select: none;
-                -webkit-user-select: none;
-            }
-
-            .next {
-                right: 0;
-                border-radius: 3px 0 0 3px;
-            }
-
-            .prev:hover, .next:hover {
-                background-color: rgba(0, 0, 0, 0.8);
-            }
-
-            #image-caption {
-                margin: auto;
-                display: block;
-                width: 80%;
-                max-width: 700px;
-                text-align: center;
-                color: #ccc;
-                padding: 10px 0;
-                height: 150px;
-            }
-        `;
-        document.head.appendChild(modalStyle);
-    }
 }
