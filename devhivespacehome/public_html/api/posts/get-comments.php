@@ -4,8 +4,6 @@ initializeSession();
 require_once '../../../config/database.php';
 
 header('Content-Type: application/json');
-
-// Function to send error response
 function sendErrorResponse($message, $code = 400) {
     http_response_code($code);
     echo json_encode([
@@ -15,10 +13,8 @@ function sendErrorResponse($message, $code = 400) {
     exit;
 }
 
-// Add debug logging
 error_log("get-comments.php called with GET params: " . json_encode($_GET));
 
-// Validate post ID or share ID
 if (!isset($_GET['post_id']) && !isset($_GET['share_id'])) {
     sendErrorResponse('Missing post_id or share_id', 400);
 }
@@ -35,7 +31,6 @@ $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 10;
 $offset = isset($_GET['offset']) ? intval($_GET['offset']) : 0;
 
 try {
-    // Fetch comments with user details
     $stmt = $conn->prepare("
         SELECT 
             c.comment_id, 
@@ -43,7 +38,7 @@ try {
             c.created_at, 
             u.user_id, 
             u.username, 
-            u.profile_picture
+            u.profile_image_id
         FROM `comment` c
         JOIN `user` u ON c.user_id = u.user_id
         WHERE c." . $id_type . " = ?
@@ -56,17 +51,26 @@ try {
 
     $comments = [];
     while ($comment = $result->fetch_assoc()) {
-        // Use default profile picture if none exists
-        $comment['profile_picture'] = $comment['profile_picture'] 
-            ?? '../assets/human.png';
-        
-        // Format timestamp
+        $profile_image_url = null;
+        if (!empty($comment['profile_image_id'])) {
+            $stmt2 = $conn->prepare("SELECT filename FROM media_files WHERE id = ?");
+            $stmt2->bind_param("i", $comment['profile_image_id']);
+            $stmt2->execute();
+            $result2 = $stmt2->get_result();
+            if ($media = $result2->fetch_assoc()) {
+                $profile_image_url = '/uploads/avatars/' . str_replace('\\', '/', $media['filename']);
+            }
+            $stmt2->close();
+        }
+        if (!$profile_image_url) {
+            $profile_image_url = '../assets/human.png';
+        }
+        $comment['profile_image_url'] = $profile_image_url;
+        unset($comment['profile_image_id']);
         $comment['formatted_time'] = formatTimeAgo($comment['created_at']);
-        
         $comments[] = $comment;
     }
 
-    // Get total comment count
     $count_stmt = $conn->prepare("SELECT COUNT(*) AS total FROM `comment` WHERE " . $id_type . " = ?");
     $count_stmt->bind_param("i", $id_value);
     $count_stmt->execute();
@@ -87,7 +91,6 @@ try {
     sendErrorResponse('Database error: ' . $e->getMessage(), 500);
 }
 
-// Function to convert timestamp to human-readable format
 function formatTimeAgo($timestamp) {
     $time = strtotime($timestamp);
     $now = time();
@@ -100,5 +103,4 @@ function formatTimeAgo($timestamp) {
     return date('M d, Y', $time);
 }
 
-// $conn->close();
 ?> 

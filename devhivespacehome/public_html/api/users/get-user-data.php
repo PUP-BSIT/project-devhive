@@ -50,7 +50,8 @@ if ($user = $result->fetch_assoc()) {
         $stmt2->execute();
         $result2 = $stmt2->get_result();
         if ($media = $result2->fetch_assoc()) {
-            $profile_image_url = '../uploads/avatars/' . $media['filename'];
+            $profile_image_url = '/uploads/avatars/' . $media['filename'];
+            $profile_image_url = str_replace('\\', '/', $profile_image_url);
         }
         $stmt2->close();
     }
