@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="../login/styles/login.css" rel="stylesheet" />
-    <script src="../login/scripts/login.js"></script>
+    <script src="../login/scripts/login3.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Coda+Caption:wght@800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <title>DevHive Space - Login</title>
@@ -57,14 +57,20 @@
         </div>
 
         <div class="social-buttons">
-          <a href="#" class="social-btn heybleepi-btn">
+          <button
+            type="button"
+            class="social-btn heybleepi-btn"
+            onclick="window.location.href='/api/oauth/provider_redirect.php?provider=heybleepi'">
             <img src="../assets/heybleepi_logo.png" alt="HeyBleepi" class="social-icon">
             Continue with HeyBleepi
-          </a>
-          <a href="#" class="social-btn hershive-btn">
+          </button>
+          <button
+            type="button"
+            class="social-btn hershive-btn"
+            onclick="window.location.href='/api/oauth/provider_redirect.php?provider=hershive'">
             <img src="../assets/hershive_logo.png" alt="HersHive" class="social-icon">
             Continue with HersHive
-          </a>
+          </button>
         </div>
         </form>
 
