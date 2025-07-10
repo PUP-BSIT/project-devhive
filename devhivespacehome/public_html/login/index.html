@@ -4,21 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="../login/styles/login.css" rel="stylesheet" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Coda+Caption:wght@800&family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"/>
     <script src="../login/scripts/login.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Coda+Caption:wght@800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <title>DevHive Space - Login</title>
   </head>
   <body>
     <div class="container">
       <div class="login-section">
-        <div class="logo">
-          <div class="logo-icon">
-            <img src="../assets/devhive_logo.png" alt="DevHive Space" />
-          </div>
-          <div class="logo-text">DevHive Space</div>
-        </div>
+        
 
         <h1 class="welcome-title">Welcome to your content Hive</h1>
         <p class="welcome-subtitle">
@@ -58,20 +52,20 @@
           </div>
 
           <button type="submit" class="login-btn">Access Your Hive</button>
-          <div class="oauth-buttons inline-oauth">
-            <button
-              type="button"
-              class="oauth-circle hershive-btn"
-              onclick="window.location.href='/api/auth/get_token.php?application_name=HersHive&redirect_url=https://hershive.com/oauth/callback'">
-              <img src="../assets/hershive_logo.png" alt="HersHive Logo" class="oauth-logo" />
-            </button>
-            <button
-              type="button"
-              class="oauth-circle heybleepi-btn"
-              onclick="window.location.href='/api/oauth/oauth_login.php?provider=heybleepi'">
-              <img src="../assets/heybleepi_logo.png" alt="HeyBleepi Logo" class="oauth-logo" />
-            </button>
-          </div>
+          <div class="divider">
+          <p>Or log in with</p>
+        </div>
+
+        <div class="social-buttons">
+          <a href="#" class="social-btn heybleepi-btn">
+            <img src="../assets/heybleepi_logo.png" alt="HeyBleepi" class="social-icon">
+            Continue with HeyBleepi
+          </a>
+          <a href="#" class="social-btn hershive-btn">
+            <img src="../assets/hershive_logo.png" alt="HersHive" class="social-icon">
+            Continue with HersHive
+          </a>
+        </div>
         </form>
 
         <div class="signup-section">
@@ -88,9 +82,7 @@
           <div class="floating-circle"></div>
           <div class="floating-circle"></div>
         </div>
-        <div class="image-placeholder">
-          <img src="../assets/login_image.png" alt="DevHive Space" />
-        </div>
+        <img src="../assets/login_image.png" alt="DevHive Space" />
       </div>
     </div>
   </body>
