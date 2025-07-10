@@ -4,12 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Verify Email - DevHive Space</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter&display=swap"
-      rel="stylesheet" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Coda+Caption&display=swap"
-      rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style/email_verify.css" />
   </head>
   <body>
@@ -20,9 +17,11 @@
         <p>
           We've sent a verification link to your email address.<br />
           Please check your inbox and click the link to activate your account.
+          <br /><br />
+          <small>Didn't receive the email? Check your spam folder or request a new verification link.</small>
         </p>
-        <button id="openEmailBtn" class="success">Open My Email</button>
-        <a href="../signup/index.html" class="back-link">Back to signup</a>
+        <button id="openEmailBtn" class="success">Open Email Client</button>
+        <a href="../signup/index.html" class="back-link">← Back to signup</a>
       </div>
     </div>
     <script src="scripts/email_verify.js"></script>
