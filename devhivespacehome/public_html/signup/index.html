@@ -14,18 +14,9 @@
   </head>
   <body>
     <div class="container">
-      <div class="left">
-        <h2>Post to All Platforms with One Click</h2>
-        <ul>
-          <li>Connect all your social platforms in one place</li>
-          <li>Post to multiple platforms with a single click</li>
-          <li>Schedule content at optimal times</li>
-          <li>Track performance with unified analytics</li>
-        </ul>
-      </div>
       <div class="right">
         <h1>Join DevHive Space</h1>
-        <p>Start posting smarter across all your platforms</p>
+        <p>Fill out the form below to create your account</p>
         <form id="signup-form">
           <input
             type="email"
@@ -63,46 +54,14 @@
             required />
           <button type="submit">Create My Account</button>
         </form>
-        <div class="or">Or sign up with</div>
-        <div class="social-buttons">
-          <button onclick="handleGoogleSignUp()">
-            <img src="../assets/google.png" alt="Google" style="width: 16px" />
-            Continue with Google
-          </button>
-        </div>
+        
         <div class="login-link">
           Already have an account?
           <a href="../login/index.html">Log in</a>
         </div>
       </div>
     </div>
-    <script>
-      function handleGoogleSignUp() {
-        fetch("/api/auth/google.php", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then((data) => {
-            if (data.auth_url) {
-              window.location.href = data.auth_url;
-            } else {
-              throw new Error(data.message || "Failed to get Google auth URL");
-            }
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-            alert("Failed to initialize Google sign-in. Please try again.");
-          });
-      }
-    </script>
+    
     <script src="scripts/sign_up.js"></script>
   </body>
 </html>
