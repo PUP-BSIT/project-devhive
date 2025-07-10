@@ -3,68 +3,157 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DevHiveSpace Home</title>
+    <title>DevHiveSpace - Post Everywhere At Once</title>
     <link rel="stylesheet" href="./homepage/styles.css" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Coda+Caption:wght@800&family=Inter:wght@400;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Coda+Caption:wght@800&family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet" />
     <script src="./homepage/script.js" defer></script>
     <script src="./homepage/contact.js" defer></script>
   </head>
   <body>
     <nav class="navbar">
-      <img src="./assets/devhive_logo.png" alt="DevHive Space Logo" />
+      <div class="nav-container">
+        <img src="./assets/devhive_logo.png" alt="DevHive Space Logo" />
+        <div class="nav-links">
+          <a href="#features" class="nav-link">Features</a>
+          <a href="#social-section" class="nav-link">Integrations</a>
+          <div class="nav-buttons">
+            <a href="./login/index.html" class="btn nav-btn">Log In</a>
+            <a href="./signup/index.html" class="btn signup-btn">Get Started</a>
+          </div>
+        </div>
+      </div>
     </nav>
 
     <section class="hero">
       <div class="hero-content">
-        <h1>DevHive Space</h1>
+        <div class="hero-badge">🚀 Your All-in-One Content Hub</div>
+        <h1>Your Voice,<br/>Unleashed.</h1>
         <p class="hero-subtitle">
-          Post Everywhere At Once
+          Save time and expand your reach by managing all your social media content from one powerful platform.
         </p>
         <div class="hero-buttons">
-          <a href="#" class="btn signup-btn">Sign Up</a>
-          <a href="#" class="btn login-btn">Log In</a>
+          <a href="./signup/index.html" class="btn signup-btn">Start Creating</a>
+          <a href="#features" class="btn login-btn">See How It Works</a>
         </div>
-        <div class="laptop-mockup">
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-number">10K+</span>
+            <span class="stat-label">Active Users</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">1M+</span>
+            <span class="stat-label">Posts Created</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">50+</span>
+            <span class="stat-label">Integrations</span>
+          </div>
+        </div>
+      </div>
+      <div class="laptop-mockup">
+        <div class="mockup-wrapper">
           <img src="./assets/LAPTOP.png" alt="Dashboard Preview" />
         </div>
       </div>
     </section>
 
     <section class="social-section" id="social-section">
-      <div class="social-content">
-        <h2>Save Time. Expand Reach. Grow Faster.</h2>
-        <p>
-          Connect your content to other Social Media Website with our seamless
-          integrations.
+      <div class="section-header">
+        <h2>Connect & Grow</h2>
+        <p class="section-subtitle">
+          Seamlessly integrate with your favorite platforms
         </p>
+      </div>
+      <div class="platform-grid">
+        <div class="platform-card">
+          <img src="./assets/heybleepi_logo.png" alt="HeyBleepi" />
+          <span>HeyBleepi</span>
+        </div>
+        <div class="platform-card">
+          <img src="./assets/hershive_logo.png" alt="HersHive" />
+          <span>HersHive</span>
+        </div>
+        <!-- Add more platform cards as needed -->
+      </div>
     </section>
 
-    <section class="features">
-      <h2>Why Creators Love DevHive Space</h2>
+    <section class="features" id="features">
+      <div class="section-header">
+        <h2>Why Creators Love DevHive Space</h2>
+        <p class="section-subtitle">Everything you need to succeed in one place</p>
+      </div>
       <div class="features-grid">
         <div class="feature-card">
-          <img src="./assets/publishing.png" alt="One-Click Publishing" />
+          <div class="feature-icon">
+            <img src="./assets/publishing.png" alt="One-Click Publishing" />
+          </div>
           <h3>One-Click Publishing</h3>
-          <p>Create once, publish everywhere</p>
+          <p>Create your content once and publish it across all your connected platforms instantly.</p>
         </div>
         <div class="feature-card">
-          <img src="./assets/collaboration.png" alt="Collaboration" />
-          <h3>Team Collaboration</h3>
-          <p>Seamless work with team members</p>
+          <div class="feature-icon">
+            <img src="./assets/collaboration.png" alt="Collaboration" />
+          </div>
+          <h3>Exercise Your Free Speech</h3>
+          <p>Post your thoughts, ideas, and opinions without censorship.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <img src="./assets/analytics.png" alt="Analytics" />
+          </div>
+          <h3>Interactive Design</h3>
+          <p>Aesthetically pleasing design that makes your content stand out.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <img src="./assets/touch.png" alt="Scheduling" />
+          </div>
+          <h3>Join the Hive</h3>
+          <p>Connect with other creators and share your content with a community of like-minded individuals.</p>
         </div>
       </div>
     </section>
 
-    <section class="trusted">
-      <h2>Trusted by Content Creators Worldwide</h2>
-    </section>
-
-      <div class="devhive-footer">
-        <img src="./assets/devhive_logo.png" alt="DevHive Space Logo" />
-        <span>DevHive Space</span>
+    <section class="cta-section">
+      <div class="cta-content">
+        <h2>Ready to Streamline Your Content?</h2>
+        <p>Join thousands of creators who trust DevHive Space</p>
+        <a href="./signup/index.html" class="btn signup-btn">Get Started Free</a>
       </div>
     </section>
+
+    <footer class="devhive-footer">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <img src="./assets/devhive_logo.png" alt="DevHive Space Logo" />
+          <span>DevHive Space</span>
+        </div>
+        <div class="footer-links">
+          <div class="footer-column">
+            <h4>Product</h4>
+            <a href="#features">Features</a>
+            <a href="#social-section">Integrations</a>
+            <a href="./signup/index.html">Sign Up</a>
+          </div>
+          <div class="footer-column">
+            <h4>Company</h4>
+            <a href="#">About Us</a>
+            <a href="#">Contact</a>
+            <a href="#">Privacy Policy</a>
+          </div>
+          <div class="footer-column">
+            <h4>Resources</h4>
+            <a href="#">Blog</a>
+            <a href="#">Help Center</a>
+            <a href="#">Community</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 DevHive Space. All rights reserved.</p>
+      </div>
+    </footer>
   </body>
 </html>
