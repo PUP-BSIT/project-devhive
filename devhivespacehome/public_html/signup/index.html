@@ -63,46 +63,14 @@
             required />
           <button type="submit">Create My Account</button>
         </form>
-        <div class="or">Or sign up with</div>
-        <div class="social-buttons">
-          <button onclick="handleGoogleSignUp()">
-            <img src="../assets/google.png" alt="Google" style="width: 16px" />
-            Continue with Google
-          </button>
-        </div>
+        
         <div class="login-link">
           Already have an account?
           <a href="../login/index.html">Log in</a>
         </div>
       </div>
     </div>
-    <script>
-      function handleGoogleSignUp() {
-        fetch("/api/auth/google.php", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-          })
-          .then((data) => {
-            if (data.auth_url) {
-              window.location.href = data.auth_url;
-            } else {
-              throw new Error(data.message || "Failed to get Google auth URL");
-            }
-          })
-          .catch((error) => {
-            console.error("Error:", error);
-            alert("Failed to initialize Google sign-in. Please try again.");
-          });
-      }
-    </script>
+    
     <script src="scripts/sign_up.js"></script>
   </body>
 </html>
