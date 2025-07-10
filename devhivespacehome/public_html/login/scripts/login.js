@@ -1,117 +1,136 @@
-document.addEventListener("DOMContentLoaded", function () {
-  document.getElementById("loginForm").addEventListener("submit", function (e) {
-    e.preventDefault();
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('loginForm');
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+  const loginBtn = document.querySelector('.login-btn');
 
-    const identifier = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    const emailInput = document.getElementById("email");
-    const passwordInput = document.getElementById("password");
+  // Add focus effects
+  const inputs = document.querySelectorAll('.form-input');
+  inputs.forEach(input => {
+    input.addEventListener('focus', () => {
+      input.parentElement.classList.add('focused');
+    });
 
-    emailInput.classList.remove("error", "success");
-    passwordInput.classList.remove("error", "success");
-
-    if (!identifier || !password) {
-      if (!identifier) emailInput.classList.add("error");
-      if (!password) passwordInput.classList.add("error");
-      alert("Please fill in all fields");
-      return;
-    }
-
-    if (!isValidEmail(identifier)) {
-      emailInput.classList.add("error");
-      alert("Please enter a valid email address");
-      return;
-    }
-
-    emailInput.classList.add("success");
-    passwordInput.classList.add("success");
-
-    handleLoginLoading(true);
-
-    login(identifier, password);
-  });
-
-  function handleLoginLoading(isLoading) {
-    const btn = document.querySelector(".login-btn");
-
-    if (isLoading) {
-      btn.classList.add("loading");
-      btn.textContent = "Accessing Your Hive...";
-      btn.disabled = true;
-    } else {
-      btn.classList.remove("loading");
-      btn.textContent = "Access Your Hive";
-      btn.disabled = false;
-    }
-  }
-
-  function isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
-
-  const forgotLink = document.querySelector(".forgot-link");
-  if (forgotLink) {
-    forgotLink.addEventListener("click", function (e) {
-      e.preventDefault();
-      const email = prompt("Enter your email address to reset password:");
-      if (email && isValidEmail(email)) {
-        alert("Password reset instructions have been sent to " + email);
-      } else if (email) {
-        alert("Please enter a valid email address");
+    input.addEventListener('blur', () => {
+      input.parentElement.classList.remove('focused');
+      // Validate email on blur
+      if (input.type === 'email' && input.value) {
+        const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.value);
+        input.classList.toggle('error', !isValid);
       }
     });
-  }
 
-  document.querySelectorAll(".form-input").forEach((input) => {
-    input.addEventListener("focus", function () {
-      this.parentElement.classList.add("focused");
-      this.parentElement.classList.remove("unfocused");
-    });
-
-    input.addEventListener("blur", function () {
-      this.parentElement.classList.add("unfocused");
-      this.parentElement.classList.remove("focused");
+    // Add subtle interaction effect
+    input.addEventListener('keydown', () => {
+      input.style.transform = 'translateY(1px)';
+      setTimeout(() => {
+        input.style.transform = 'none';
+      }, 100);
     });
   });
 
-  document.querySelectorAll(".form-group").forEach((group) => {
-    group.classList.add("unfocused");
-  });
+  // Form submission
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-  function login(identifier, password) {
-    fetch("/api/auth/login.php", {
-      method: "POST",
-      body: JSON.stringify({ identifier, password }),
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        handleLoginLoading(false);
-        if (data.success) {
-          localStorage.setItem("user_id", data.user_id);
-          // Optionally redirect if backend provides a URL
-          if (data.redirect_url) {
-            // Extract session ID from redirect_url
-            const match = data.redirect_url.match(/PHPSESSID=([a-zA-Z0-9]+)/);
-            if (match) {
-              localStorage.setItem("PHPSESSID", match[1]);
-            }
-            window.location.href = data.redirect_url;
-          } else {
-            // After successful login and you have the sessionId from the server:
-            localStorage.setItem("PHPSESSID", data.sessionId);
-            window.location.href =
-              "/dashboard/dashboard.php?PHPSESSID=" + data.sessionId;
-          }
-        } else {
-          alert(data.message || "Login failed. Please try again.");
-        }
-      })
-      .catch((error) => {
-        handleLoginLoading(false);
-        console.error("Error:", error);
-        alert("An error occurred during login. Please try again.");
+    // Clear previous errors
+    inputs.forEach(input => input.classList.remove('error'));
+
+    // Basic validation
+    let hasError = false;
+    if (!emailInput.value) {
+      emailInput.classList.add('error');
+      hasError = true;
+    }
+    if (!passwordInput.value) {
+      passwordInput.classList.add('error');
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    // Show loading state
+    loginBtn.classList.add('loading');
+    loginBtn.textContent = 'Signing in...';
+    loginBtn.disabled = true;
+
+    try {
+      const response = await fetch('../api/auth/login.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: emailInput.value,
+          password: passwordInput.value,
+        }),
       });
-  }
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Success animation
+        loginBtn.style.background = 'var(--primary)';
+        loginBtn.textContent = 'Success!';
+        
+        // Redirect after success animation
+        setTimeout(() => {
+          window.location.href = '../dashboard/';
+        }, 1000);
+    } else {
+        // Error animation
+        loginBtn.classList.remove('loading');
+        loginBtn.classList.add('error');
+        loginBtn.textContent = 'Login failed';
+        loginBtn.style.background = '#FF3B30';
+        
+        // Show error on inputs
+        emailInput.classList.add('error');
+        passwordInput.classList.add('error');
+        
+        // Reset button after delay
+        setTimeout(() => {
+          loginBtn.classList.remove('error');
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'Sign in';
+          loginBtn.style.background = '';
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      
+      // Error state
+      loginBtn.classList.remove('loading');
+      loginBtn.classList.add('error');
+      loginBtn.textContent = 'Network error';
+      loginBtn.style.background = '#FF3B30';
+      
+      // Reset button after delay
+      setTimeout(() => {
+        loginBtn.classList.remove('error');
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Sign in';
+        loginBtn.style.background = '';
+      }, 2000);
+      }
+    });
+
+  // Remember me checkbox animation
+  const checkbox = document.getElementById('remember');
+  checkbox.addEventListener('change', () => {
+    if (checkbox.checked) {
+      checkbox.style.transform = 'scale(0.9)';
+      setTimeout(() => {
+        checkbox.style.transform = 'scale(1)';
+      }, 100);
+    }
+  });
+
+  // Smooth hover effects for buttons
+  const buttons = document.querySelectorAll('button');
+  buttons.forEach(button => {
+    button.addEventListener('mouseover', () => {
+      button.style.transition = 'all 0.2s ease';
+    });
+  });
 });
