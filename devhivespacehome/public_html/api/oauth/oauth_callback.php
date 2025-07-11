@@ -183,7 +183,6 @@ $stmt = $conn->prepare("
     WHERE user_id = ?
 ");
 
-// Prepare variables for binding
 $first_name = $userData['first_name'];
 $middle_name = isset($userData['middle_name']) ? $userData['middle_name'] : '';
 $last_name = $userData['last_name'];
@@ -213,14 +212,12 @@ $stmt->execute();
 $stmt->store_result();
 
 if ($stmt->num_rows === 0) {
-    // Insert new token
     $stmt->close();
     $stmt = $conn->prepare("INSERT INTO oauth_tokens (user_id, client_id, token, expires_at) VALUES (?, ?, ?, ?)");
     $stmt->bind_param("isss", $local_user_id, $client_id, $token, $expires_at);
     $stmt->execute();
     error_log("INFO: Inserted new token for user ID: $local_user_id");
 } else {
-    // Update existing token
     $stmt->close();
     $stmt = $conn->prepare("UPDATE oauth_tokens SET expires_at = ?, is_revoked = 0 WHERE token = ? AND client_id = ?");
     $stmt->bind_param("sss", $expires_at, $token, $client_id);
