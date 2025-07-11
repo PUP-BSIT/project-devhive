@@ -8,11 +8,27 @@
   }
 })();
 
+document.addEventListener('DOMContentLoaded', function() {
+  const sidebar = document.getElementById('sidebar');
+  const sidebarToggle = document.getElementById('sidebarToggle');
+
+  const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+  if (sidebarCollapsed) {
+    sidebar.classList.add('collapsed');
+  }
+
+  sidebarToggle.addEventListener('click', function() {
+    sidebar.classList.toggle('collapsed');
+    const isCollapsed = sidebar.classList.contains('collapsed');
+    localStorage.setItem('sidebarCollapsed', isCollapsed);
+  });
+});
+
 class PostCreator {
   constructor() {
     this.selectedPlatforms = ["all"];
     this.storageManager = new StorageManager();
-    this.apiBaseUrl = '/api/posts'; // Base URL for API endpoints
+    this.apiBaseUrl = '/api/posts'; 
     this.uploadedImages = [];
     this.uploadedVideos = [];
     this.activeFormats = new Set();
@@ -20,7 +36,6 @@ class PostCreator {
   }
 
   initializeEventListeners() {
-    // Bind methods to preserve 'this' context
     this.handlePlatformSelection = this.handlePlatformSelection.bind(this);
     this.handleNavigation = this.handleNavigation.bind(this);
     this.handleFormatting = this.handleFormatting.bind(this);
@@ -31,7 +46,6 @@ class PostCreator {
     this.insertImage = this.insertImage.bind(this);
     this.insertVideo = this.insertVideo.bind(this);
 
-    // Helper function to safely add event listeners
     const addListener = (selector, event, handler) => {
       const element = document.querySelector(selector);
       if (element) {
@@ -39,17 +53,14 @@ class PostCreator {
       }
     };
 
-    // Helper function to safely add event listeners to multiple elements
     const addListeners = (selector, event, handler) => {
       const elements = document.querySelectorAll(selector);
       elements.forEach(element => element.addEventListener(event, handler));
     };
 
-    // Add event listeners with error checking
     addListeners(".platform-btn", "click", this.handlePlatformSelection);
     addListeners(".nav-item", "click", this.handleNavigation);
-    
-    // Only add toolbar button listeners for non-media buttons
+
     document.querySelectorAll(".toolbar-btn:not(#video-upload-btn):not(#image-upload-btn)").forEach(btn => {
       btn.addEventListener("click", this.handleFormatting);
     });
@@ -61,7 +72,6 @@ class PostCreator {
     addListener("#image-upload-btn", "click", this.insertImage);
     addListener("#video-upload-btn", "click", this.insertVideo);
 
-    // Add formatting button listeners
     document.querySelectorAll('.toolbar-btn[data-format]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const format = e.target.closest('.toolbar-btn').dataset.format;
@@ -69,13 +79,11 @@ class PostCreator {
       });
     });
 
-    // Add input event listener for the editor
     const editor = document.getElementById('post-content');
     editor.addEventListener('input', () => {
       this.updateFormatButtons();
     });
 
-    // Handle paste events to clean up formatting
     editor.addEventListener('paste', (e) => {
       e.preventDefault();
       const text = e.clipboardData.getData('text/plain');
@@ -167,7 +175,6 @@ class PostCreator {
             const formData = new FormData();
             formData.append('image', file);
 
-            // Upload image to server
             const response = await fetch(`${this.apiBaseUrl}/upload-image.php`, {
               method: 'POST',
               body: formData
@@ -180,14 +187,12 @@ class PostCreator {
             const result = await response.json();
             
             if (result.status === 'success') {
-              // Add image to uploadedImages array
               this.uploadedImages.push({
                 url: result.data.url,
                 id: result.data.image_id,
                 filename: result.data.filename
               });
 
-              // Add image preview
               const previewContainer = document.createElement('div');
               previewContainer.className = 'image-preview';
               
@@ -248,13 +253,11 @@ class PostCreator {
       for (const file of files) {
         if (file.type.startsWith('video/')) {
           try {
-            // Create local preview URL immediately
             const localVideoUrl = URL.createObjectURL(file);
             
             const formData = new FormData();
             formData.append('video', file);
 
-            // Create and show preview before upload completes
             const previewContainer = document.createElement('div');
             previewContainer.className = 'video-preview';
             
@@ -282,7 +285,6 @@ class PostCreator {
             }
             document.getElementById("video-previews").appendChild(previewContainer);
 
-            // Upload video to server
             const response = await fetch(`${this.apiBaseUrl}/upload-video.php`, {
               method: 'POST',
               body: formData
@@ -295,7 +297,6 @@ class PostCreator {
             const result = await response.json();
             
             if (result.status === 'success') {
-              // Update uploadedVideos array
               const videoData = {
                 url: result.data.url,
                 localUrl: localVideoUrl,
@@ -307,7 +308,6 @@ class PostCreator {
               
               this.uploadedVideos.push(videoData);
 
-              // Update remove button functionality
               removeBtn.onclick = () => {
                 URL.revokeObjectURL(localVideoUrl);
                 this.uploadedVideos = this.uploadedVideos.filter(v => v.url !== result.data.url);
@@ -323,7 +323,6 @@ class PostCreator {
 
               this.showNotification(`Video ${file.name} uploaded successfully`);
             } else {
-              // Clean up on upload failure
               URL.revokeObjectURL(localVideoUrl);
               previewContainer.remove();
               throw new Error(result.message || `Failed to upload video: ${file.name}`);
@@ -343,25 +342,20 @@ class PostCreator {
 
   insertEmoji() {
     const editor = document.getElementById('post-content');
-    
-    // Create a new text node with the emoji
+
     const textNode = document.createTextNode(emoji);
-    
-    // Get the current selection
+
     const selection = window.getSelection();
     const range = selection.getRangeAt(0);
-    
-    // Insert the emoji at the cursor position
+
     range.deleteContents();
     range.insertNode(textNode);
-    
-    // Move cursor after the inserted emoji
+
     range.setStartAfter(textNode);
     range.setEndAfter(textNode);
     selection.removeAllRanges();
     selection.addRange(range);
-    
-    // Focus back on the editor
+
     editor.focus();
   }
 
@@ -377,22 +371,18 @@ class PostCreator {
     const postAuthor = document.querySelector('.preview-post .post-author');
     const postContent = document.querySelector('.preview-post .post-content');
 
-    // Get current user info
     const currentUser = this.getCurrentUser();
     if (currentUser) {
       postAuthor.textContent = currentUser.name || 'Your Name';
     }
 
-    // Parse and update post content
     const parsedContent = this.parsePreviewContent(content);
     postText.innerHTML = parsedContent.text;
-    
-    // Add media if any
+
     if (parsedContent.media) {
       postContent.innerHTML = parsedContent.media + postContent.innerHTML;
     }
 
-    // Update platform list
     platformList.innerHTML = '';
     this.selectedPlatforms.forEach(platform => {
       if (platform !== 'all') {
@@ -403,10 +393,8 @@ class PostCreator {
       }
     });
 
-    // Show modal
     modalContainer.style.display = 'flex';
 
-    // Close modal handlers
     const closeModal = () => {
       modalContainer.style.display = 'none';
     };
@@ -418,14 +406,12 @@ class PostCreator {
       this.sharePost();
     };
 
-    // Close on outside click
     modalContainer.onclick = (e) => {
       if (e.target === modalContainer) {
         closeModal();
       }
     };
 
-    // Close on escape key
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         closeModal();
@@ -441,7 +427,6 @@ class PostCreator {
     let text = content;
     const mediaElements = [];
 
-    // Add uploaded images
     this.uploadedImages.forEach(image => {
       const filePreview = document.createElement('div');
       filePreview.className = 'preview-media-item';
@@ -457,11 +442,9 @@ class PostCreator {
       mediaElements.push(filePreview.outerHTML);
     });
 
-    // Add uploaded videos
     this.uploadedVideos.forEach(video => {
       const videoPreview = document.createElement('div');
       videoPreview.className = 'preview-media-item';
-      // Use local URL for preview if available, fallback to server URL
       const videoUrl = video.localUrl || video.url;
       videoPreview.innerHTML = `
         <div class="preview-media-wrapper">
@@ -578,7 +561,7 @@ class PostCreator {
         
         // Redirect to the global wall page after successful post
         setTimeout(() => {
-          window.location.href = '/global_wall/';
+          window.location.href = '/global_wall/global_wall.html';
         }, 1500); // Wait 1.5 seconds so user can see the success message
       } else {
         throw new Error(result.message || 'Failed to create post');
@@ -675,7 +658,6 @@ class PostCreator {
   }
 
   cleanup() {
-    // Revoke all object URLs when they're no longer needed
     this.uploadedVideos.forEach(video => {
       if (video.localUrl) {
         URL.revokeObjectURL(video.localUrl);
@@ -685,12 +667,10 @@ class PostCreator {
 
   toggleFormat(format) {
     const editor = document.getElementById('post-content');
-    
-    // Save current selection
+
     const selection = window.getSelection();
     const range = selection.getRangeAt(0);
-    
-    // Apply formatting
+
     switch (format) {
       case 'bold':
         document.execCommand('bold', false, null);
@@ -702,16 +682,14 @@ class PostCreator {
         document.execCommand('underline', false, null);
         break;
     }
-    
-    // Restore focus
+
     editor.focus();
     this.updateFormatButtons();
   }
 
   updateFormatButtons() {
     const editor = document.getElementById('post-content');
-    
-    // Update button states based on current formatting
+
     document.querySelectorAll('.toolbar-btn[data-format]').forEach(btn => {
       const format = btn.dataset.format;
       let isActive = false;
@@ -735,7 +713,6 @@ class PostCreator {
   getMediaPreviewHTML() {
     const mediaElements = [];
 
-    // Add uploaded images
     this.uploadedImages.forEach(image => {
       const imagePreview = document.createElement('div');
       imagePreview.innerHTML = `
@@ -748,10 +725,8 @@ class PostCreator {
       mediaElements.push(imagePreview.outerHTML);
     });
 
-    // Add uploaded videos
     this.uploadedVideos.forEach(video => {
       const videoPreview = document.createElement('div');
-      // Use local URL for preview if available, fallback to server URL
       const videoUrl = video.localUrl || video.url;
       videoPreview.innerHTML = `
         <video 
@@ -785,19 +760,18 @@ class PostCreator {
 }
 
 class StorageManager {
-  constructor(maxSizeBytes = 64 * 1024 * 1024) { // 64MB max
+  constructor(maxSizeBytes = 64 * 1024 * 1024) { 
     this.maxSizeBytes = maxSizeBytes;
     this.storageKeys = {
       images: 'devhive_uploaded_images',
       videos: 'devhive_uploaded_videos'
     };
-    this.MAX_FILE_SIZE = 64 * 1024 * 1024; // 64MB max file size
+    this.MAX_FILE_SIZE = 64 * 1024 * 1024; 
   }
 
   getBase64Size(base64String) {
     if (!base64String) return 0;
-    
-    // Remove data URL prefix if present
+
     const base64Content = base64String.split(',')[1] || base64String;
     
     const binarySize = atob(base64Content).length;
@@ -823,7 +797,7 @@ class StorageManager {
   canStoreItem(storageType, newItemSize) {
     const currentUsage = this.getCurrentStorageUsage(storageType);
     const canStore = (currentUsage + newItemSize) <= this.maxSizeBytes && 
-                     newItemSize <= this.MAX_FILE_SIZE;
+                      newItemSize <= this.MAX_FILE_SIZE;
     
     console.log('Storage check:', {
       currentUsage: currentUsage / (1024 * 1024),
@@ -852,11 +826,9 @@ class StorageManager {
       }
 
       const storedData = JSON.parse(localStorage.getItem(this.storageKeys[storageType]) || '{}');
-      
-      // Add new item
+
       storedData[key] = item;
-      
-      // Store updated data
+
       localStorage.setItem(this.storageKeys[storageType], JSON.stringify(storedData));
       
       console.log('Item stored successfully');
