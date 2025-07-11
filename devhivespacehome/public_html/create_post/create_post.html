@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Create Post - DevHive</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="create_post.css" />
     <link 
       href="https://fonts.googleapis.com/css2?family=Coda+Caption:wght@800&family=Inter:wght@400;500;600;700&display=swap" 
       rel="stylesheet">
@@ -12,35 +12,40 @@
   <body>
     <div class="container">
       <div class="left-section">
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
+          <div class="sidebar-header">
+            <button class="sidebar-toggle" id="sidebarToggle">
+              <span class="toggle-icon">☰</span>
+            </button>
+          </div>
           <div class="menu-item">
-            <a href="../dashboard/index.html">
+            <a href="../dashboard/dashboard.html">
               <img src="../assets/DASHBOARD.png" alt="">
-              <span>Dashboard</span>
+              <span class="menu-text">Dashboard</span>
             </a>
           </div>
           <div class="menu-item">
-            <a href="../global_wall/index.html">
+            <a href="../global_wall/global_wall.html">
               <img src="../assets/global_feed.png" alt="">
-              <span>Global Wall</span>
+              <span class="menu-text">Global Wall</span>
             </a>
           </div>
           <div class="menu-item">
-            <a href="../user_profile/index.html">
+            <a href="../user_profile/user_profile.html">
               <img src="../assets/human.png" alt="">
-              <span>Profile</span>
+              <span class="menu-text">Profile</span>
             </a>
           </div>
           <div class="menu-item active">
-            <a href="../create_post/index.html">
+            <a href="../create_post/create_post.html">
               <img src="../assets/create_post.png" alt="">
-              <span>Create Post</span>
+              <span class="menu-text">Create Post</span>
             </a>
           </div>
           <div class="menu-item">
-            <a href="../setting/index.html">
+            <a href="../setting/setting.html">
               <img src="../assets/settings.png" alt="">
-              <span>Settings</span>
+              <span class="menu-text">Settings</span>
             </a>
           </div>
         </aside>
@@ -50,6 +55,7 @@
         <h1 class="page-title">Create Post</h1>
 
         <main class="main-content">
+          <form id="post-form">
             <div class="form-group">
               <label class="form-label" for="post-content">Caption</label>
               <div id="post-content" class="content-editor" contenteditable="true" placeholder="What's on your mind?"></div>
@@ -71,9 +77,6 @@
                   🎥
                 </button>
               </div>
-
-              <div id="image-previews" class="media-previews"></div>
-              <div id="video-previews" class="media-previews"></div>
             </div>
 
             <div class="action-buttons">
@@ -85,7 +88,7 @@
       </div>
     </div>
     <div class="preview-modal-container" style="display: none;">
-      <div class="preview-modal">ds
+      <div class="preview-modal">
         <div class="preview-modal-header">
           <h2 class="preview-modal-title">Post Preview</h2>
           <button class="preview-modal-close">&times;</button>
@@ -105,6 +108,7 @@
               <p class="post-text"></p>
             </div>
             <div class="preview-platforms">
+              <h4>Posting to:</h4>
               <div class="platform-list"></div>
             </div>
           </div>
@@ -115,6 +119,6 @@
         </div>
       </div>
     </div>
-    <script src="script.js"></script>
+    <script src="create_post.js"></script>
   </body>
 </html>
