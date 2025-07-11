@@ -178,7 +178,7 @@ return;
     }
     break;
 
-  default:r
+  default:
     echo '<h1>Invalid provider.</h1>';
     break;
 }
