@@ -12,7 +12,6 @@ if (!isset($_SESSION['user_id'])) {
   exit;
 }
 
-// Get the post ID to share from POST data
 $shared_post_id = isset($_POST['share_post_id']) ? intval($_POST['share_post_id']) : 0;
 
 if ($shared_post_id <= 0) {
@@ -21,14 +20,13 @@ if ($shared_post_id <= 0) {
     return;
 }
 
-$content = null;
+$content = $_POST['content'] ?? '';
 $user_id = $_SESSION['user_id'] ?? '';
-// "heybleepi" or "hershive"
 $client = $_POST['share_to_other'] ?? '';
 error_log("DEBUG: share_to_other (client): " . $client);
-// for heybleepi receiver client
+// for heybleepi receiver
 $heybleepi_endpoint = "https://heybleepi.site/PROJECT-CLUB-404/heybleepi/codes/php/receive-post.php";
-// for hershive receiver client
+// for hershive receiver 
 $hershive_endpoint ="https://hershive.com/project-hershell/Hershive/php/receive-post.php";
 
 $stmt = $conn->prepare("SELECT
@@ -62,10 +60,8 @@ while ($stmt->fetch()) {
         'created_at' => $created_at,
         'image_url' => $image_url ? 'https://devhivespace.com' . str_replace(['../', './'], '', $image_url) : null,
         'video_url' => $video_url ? 'https://devhivespace.com' . str_replace(['../', './'], '', $video_url) : null,
-        'client' => 'devhive', // the sender (your platform)
+        'client' => 'devhive',
     ];
-
-
 }
 
 $stmt->close();
@@ -79,8 +75,6 @@ if (empty($posts)) {
 switch ($client) {
   case 'heybleepi':
     $isAllowed = $_SESSION['isAllowed'] ?? '';
-
-    // Check if the session has a token
     if (!isset($_SESSION['oauth_token_' . $client])) {
         error_log("Heybleepi share: Missing oauth token for client: $client, user_id: " . ($_SESSION['user_id'] ?? 'unknown'));
         echo "Account not from devhive. (No token found)";
@@ -92,13 +86,12 @@ switch ($client) {
     $data = [
         'token' => $user_token,
         'shared_post_id' => $post['id'],
-        'content' => $post['content'],
+        'content' => $content,
         'image_url' => $post['image_url'],
         'video_url' => $post['video_url'],
         'provider' => 'devhive'
     ];
 
-    // Checks if the user is allowed to share
     if ($isAllowed === 'allowed_to_share') {
         $ch = curl_init($heybleepi_endpoint);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -120,9 +113,11 @@ switch ($client) {
         error_log("Heybleepi share: HTTP $httpCode, Response: $response, Data: " . json_encode($data));
 
         if ($httpCode === 200) {
-            echo "<h1>Post shared to Heybleepi successfully.</h1><p>Response: {$response}</p>";
+            header("Location: https://devhivespace.com/global_wall/global_wall.html");
+            exit;
         } else {
-            echo "<h1>Failed to share post to Heybleepi.</h1><p>HTTP Code: {$httpCode}</p><p>Response: {$response}</p>";
+            header("HTTP/1.1 500 Internal Server Error");
+            exit;
         }
         return;
     } else {
@@ -136,7 +131,6 @@ switch ($client) {
   case 'hershive':
     $isAllowed = $_SESSION['isAllowed'] ?? '';
 
-    // Checks if the session has a token.
     $key = 'oauth_token_' . $client;
     error_log("DEBUG: Checking for session key: $key");
     if (!isset($_SESSION[$key])) {
@@ -146,22 +140,21 @@ switch ($client) {
     }
     $user_token = $_SESSION[$key];
 
-    // Handles JSON post data
     $data = [
         'token' => $user_token,
         'posts' => $posts,
-        'provider' => 'devhive'
+        'provider' => 'devhive',
+        'content' => $content 
     ];
 
-    // Checks if the user has a session that is allowed to share post to other soc med.
     if ($isAllowed === 'allowed_to_share') {
         $ch = curl_init($hershive_endpoint);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true); // sets the method to POST
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data)); // sends the data to client
+        curl_setopt($ch, CURLOPT_POST, true); 
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data)); 
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'Content-Type: application/json',
-            'Authorization: Bearer ' . $user_token // if needed
+            'Authorization: Bearer ' . $user_token 
         ]);
 
         $response = curl_exec($ch);
@@ -172,25 +165,20 @@ switch ($client) {
         }
         curl_close($ch);
 
-        // Debug output
         error_log("Hershive share: HTTP $httpCode, Response: $response, Data: " . json_encode($data));
 
         if ($httpCode === 200) {
-            echo "<h1>Post shared to Hershive successfully.</h1><p>Response: {$response}</p>";
-        } else {
-            echo "<h1>Failed to share post to Hershive.</h1><p>HTTP Code: {$httpCode}</p><p>Response: {$response}</p>";
-        }
-        return;
-    } else {
-        error_log("Hershive share: User not allowed to share. user_id=" . ($_SESSION['user_id'] ?? 'unknown') . ", isAllowed=$isAllowed");
-        echo "<h1>This account is not authorized to share.</h1>
-            <p>Not Authorized or No account from Hershive</p>";
-        return;
+    header("Location: https://devhivespace.com/global_wall/global_wall.html");
+    exit;
+} else {
+    header("HTTP/1.1 500 Internal Server Error");
+    exit;
+}
+return;
     }
     break;
 
   default:
-    // invalid provider
     echo '<h1>Invalid provider.</h1>';
     break;
 }

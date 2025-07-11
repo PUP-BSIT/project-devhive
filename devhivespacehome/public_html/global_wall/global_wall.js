@@ -17,26 +17,35 @@ let currentUser = null;
 // Function to get current user information
 async function getCurrentUser() {
     try {
-        const response = await fetch('../api/users/get-session-user.php');
+        // Try token-based first (OAuth)
+        const token = localStorage.getItem('user_token') || localStorage.getItem('token') || localStorage.getItem('oauth_token');
+        const provider = localStorage.getItem('provider') || 'devhive';
+        let url = `/../api/users/get-user-data.php?provider=${encodeURIComponent(provider)}`;
+        if (token) {
+            url += `&token=${encodeURIComponent(token)}`;
+        }
+        const response = await fetch(url, { credentials: 'include' });
         const result = await response.json();
-        
+
         if (result.success) {
             currentUser = {
                 user_id: result.user_id,
-                username: result.username
+                username: result.username,
+                provider: result.provider || null
             };
+            if (currentUser.provider) {
+                localStorage.setItem('provider', currentUser.provider);
+            }
             console.log('Current user:', currentUser);
-            
-            // Update comment input placeholders
             updateCommentInputs();
-            
-            // Show welcome message
             showNotification(`Welcome back, ${currentUser.username}!`);
         } else {
-            console.log('User not logged in');
+            console.log('User not logged in:', result.error);
+            currentUser = null;
         }
     } catch (error) {
         console.error('Error getting current user:', error);
+        currentUser = null;
     }
 }
 
@@ -50,7 +59,7 @@ function updateCommentInputs() {
             input.placeholder = 'Write a comment...';
         }
         
-        // Update user indicator
+        // Update user indicatora
         const wrapper = input.closest('.comment-input-wrapper');
         if (wrapper) {
             let indicator = wrapper.querySelector('.comment-user-indicator');
@@ -69,7 +78,14 @@ function updateCommentInputs() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Get current user information first
+    // Restore session if token exists but no session
+    // const token = localStorage.getItem('user_token') || localStorage.getItem('token') || localStorage.getItem('oauth_token');
+    // if (token) {
+    //     try {
+    //         await fetch('/api/auth/test_session.php?token=' + encodeURIComponent(token), { credentials: 'include' });
+    //     } catch (e) { console.warn('Session restore failed', e); }
+    // }
+    // // Get current user information first
     await getCurrentUser();
     
     const filterButtons = document.querySelectorAll('.post-filters button');
@@ -122,7 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const commentSendBtn = e.target.closest('.comment-send-btn');
             if (commentSendBtn) {
                 // Find the parent .social-post
-                const postElement = commentSendBtn.closest('.social-post');
+                const postElement = commentSend
                 if (!postElement) return;
                 // Get the post data
                 const post = postElement._postData;
@@ -218,6 +234,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         errorDiv.textContent = 'Error: .global-wall-posts container not found. Like button will not work.';
         document.body.prepend(errorDiv);
     }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Sidebar toggle functionality (match settings page)
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    // Load sidebar state from localStorage
+    const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    if (sidebarCollapsed) {
+        sidebar.classList.add('collapsed');
+    }
+    sidebarToggle.addEventListener('click', function() {
+        sidebar.classList.toggle('collapsed');
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        localStorage.setItem('sidebarCollapsed', isCollapsed);
+    });
 });
 
 function attachVideoEventListeners() {
@@ -332,7 +364,7 @@ async function loadPosts(offset = 0, filter = 'all post') {
                 likes: post.likes !== undefined && post.likes !== null ? Number(post.likes) : 0,
                 target_type: isShare ? post.target_type : null,
                 provider: post.provider || post.platform || '',
-                profile_image_url: post.profile_image_url // <-- add this line
+                profile_image_url: post.profile_image_url
             };
             
             console.log('Display post object:', displayPost); // Debug log
@@ -506,40 +538,143 @@ const additionalStyles = `
 
     .share-platforms {
         display: flex;
-        justify-content: space-between;
+        flex-direction: row;
+        gap: 10px;
         margin-bottom: 10px;
+        justify-content: stretch;
+        align-items: stretch;
     }
-
+    .share-platforms form {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        width: 100%;
+    }
     .share-platforms button {
-        flex: 1;
-        margin: 0 5px;
-        padding: 10px;
+        flex: 1 1 0;
+        margin: 0;
+        padding: 10px 0;
         border: none;
         border-radius: 4px;
         cursor: pointer;
         font-size: 14px;
-        transition: background 0.3s;
+        font-weight: 500;
+        transition: background 0.3s, color 0.3s;
+        width: 100%;
+        box-sizing: border-box;
+        max-width: 100%;
+        background: #e5e7eb;
+        color: #9ca3af;
+        pointer-events: auto;
+        display: block;
+        text-align: center;
     }
 
-    .share-platforms button:hover {
-        background: #e0e0e0;
+    .share-platforms button.active-share-btn {
+        background: #2563eb !important;
+        color: #fff !important;
+        cursor: pointer !important;
+        border: none !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+
+    .share-platforms button.greyed-out {
+        background: #e5e7eb !important;
+        color: #9ca3af !important;
+        cursor: not-allowed !important;
+        border: 1px solid #d1d5db !important;
+        opacity: 0.7 !important;
+        pointer-events: none !important;
+    }
+
+    .share-original-content {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px 0;
+    }
+
+    .share-original-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .share-original-header img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .share-original-header .share-user-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .share-original-header .share-username {
+        font-weight: 600;
+        font-size: 16px;
+        margin-bottom: 2px;
+    }
+
+    .share-original-header .share-date {
+        font-size: 12px;
+        color: #888;
+    }
+
+    .share-original-content .share-post-content {
+        margin-top: 4px;
+        font-size: 15px;
+        color: #222;
+    }
+
+    .share-original-content .share-media {
+        margin-top: 8px;
+        width: 100%;
+    }
+
+    .share-original-content .share-media img,
+    .share-original-content .share-media video {
+        max-width: 100%;
+        max-height: 220px;
+        border-radius: 8px;
+        display: block;
+        margin: 0 auto;
     }
 
     .share-main-btn {
         background: #2563eb;
         color: white;
         border: none;
-        padding: 10px;
+        padding: 12px 0;
         border-radius: 4px;
         cursor: pointer;
         font-size: 16px;
-        font-weight: 500;
-        transition: background 0.3s;
+        font-weight: 600;
+        transition: background 0.3s, color 0.3s;
         width: 100%;
+        margin-top: 8px;
+        margin-bottom: 0;
+        box-sizing: border-box;
+        display: block;
     }
-
-    .share-main-btn:hover {
-        background: #1d4ed8;
+    .share-main-btn.active-share-btn {
+        background: #2563eb !important;
+        color: #fff !important;
+        opacity: 1 !important;
+        cursor: pointer !important;
+        border: none !important;
+    }
+    .share-main-btn.greyed-out {
+        background: #e5e7eb !important;
+        color: #9ca3af !important;
+        cursor: not-allowed !important;
+        border: 1px solid #d1d5db !important;
+        opacity: 0.7 !important;
+        pointer-events: none !important;
     }
 `;
 
@@ -605,14 +740,14 @@ function createPostElement(post) {
     }
 
     // --- Provider tag for OAuth posts (original or shared) ---
-    let provider = post.provider || post.platform || '';
+    let provider = (post.provider || post.platform || '').trim().toLowerCase();
+    console.log('Provider value:', provider, 'for post:', post); // Debug
     let providerTagHTML = '';
-    // Update providerTagHTML style
     if (provider === 'heybleepi' || provider === 'hershive') {
         providerTagHTML = `
             <span class="platform-oauth-tag" style="
                 display:inline-block;
-                margin-top:2px;
+                margin-left:8px;
                 background:#e3f0ff;
                 color:#2563eb;
                 font-size:12px;
@@ -620,8 +755,9 @@ function createPostElement(post) {
                 padding:2px 10px;
                 border-radius:12px;
                 letter-spacing:0.3px;
+                vertical-align:middle;
             ">
-                Shared post from ${provider.charAt(0).toUpperCase() + provider.slice(1)}
+                • Shared post from ${provider.charAt(0).toUpperCase() + provider.slice(1)}
             </span>
         `;
     }
@@ -638,22 +774,7 @@ function createPostElement(post) {
                         <h3 class="post-author">${post.author || 'Anonymous'}</h3>
                         <span class="post-timestamp">
                             ${getTimeDifference(post.timestamp)}
-                            ${provider === 'heybleepi' || provider === 'hershive' ? `
-                                <span class="platform-oauth-tag" style="
-                                    display:inline-block;
-                                    margin-left:8px;
-                                    background:#e3f0ff;
-                                    color:#2563eb;
-                                    font-size:12px;
-                                    font-weight:500;
-                                    padding:2px 10px;
-                                    border-radius:12px;
-                                    letter-spacing:0.3px;
-                                    vertical-align:middle;
-                                ">
-                                    • Shared post from ${provider.charAt(0).toUpperCase() + provider.slice(1)}
-                                </span>
-                            ` : ''}
+                            ${providerTagHTML}
                             <br>
                             <span class="local-time">${convertUTCMySQLToLocal(post.timestamp)}</span>
                         </span>
@@ -693,22 +814,7 @@ function createPostElement(post) {
                         <h3 class="post-author">${post.author || 'Anonymous'}</h3>
                         <span class="post-timestamp">
                             ${getTimeDifference(post.timestamp)}
-                            ${provider === 'heybleepi' || provider === 'hershive' ? `
-                                <span class="platform-oauth-tag" style="
-                                    display:inline-block;
-                                    margin-left:8px;
-                                    background:#e3f0ff;
-                                    color:#2563eb;
-                                    font-size:12px;
-                                    font-weight:500;
-                                    padding:2px 10px;
-                                    border-radius:12px;
-                                    letter-spacing:0.3px;
-                                    vertical-align:middle;
-                                ">
-                                    • Shared post from ${provider.charAt(0).toUpperCase() + provider.slice(1)}
-                                </span>
-                            ` : ''}
+                            ${providerTagHTML}
                             <br>
                             <span class="local-time">${convertUTCMySQLToLocal(post.timestamp)}</span>
                         </span>
@@ -982,30 +1088,27 @@ function debugLocalStorage() {
 }
 
 // Function to delete a post
-function deletePost(postId) {
-    // Retrieve posts from local storage
-    let posts = JSON.parse(localStorage.getItem('devhive_posts') || '[]');
-    
-    // Find the index of the post to delete
-    const postIndex = posts.findIndex(post => post.id === postId);
-    
-    if (postIndex !== -1) {
-        // Remove the post from the array
-        posts.splice(postIndex, 1);
-        
-        // Update local storage
-        localStorage.setItem('devhive_posts', JSON.stringify(posts));
-        
-        // Remove the post element from the DOM
-        const postElement = document.querySelector(`.social-post[data-post-id="${postId}"]`);
-        if (postElement) {
-            postElement.remove();
+async function deletePost(postId) {
+    try {
+        // Send delete request to backend
+        const response = await fetch('/../api/posts/delete-post.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ post_id: postId })
+        });
+        const result = await response.json();
+        if (result.status === 'success') {
+            // Remove the post element from the DOM
+            const postElement = document.querySelector(`.social-post[data-post-id="${postId}"]`);
+            if (postElement) {
+                postElement.remove();
+            }
+            showNotification('Post deleted successfully');
+        } else {
+            showNotification(result.message || 'Failed to delete post');
         }
-        
-        // Show notification
-        showNotification('Post deleted successfully');
-    } else {
-        showNotification('Post not found');
+    } catch (error) {
+        showNotification('Error deleting post');
     }
 }
 
@@ -1130,12 +1233,15 @@ function createPreviewModal(post) {
         </div>
     `;
 
+    // Add to body
     document.body.appendChild(modalContainer);
 
+    // Close modal functionality
     const closeBtn = modalContainer.querySelector('.preview-modal-close');
     const editBtn = modalContainer.querySelector('.preview-edit-btn');
     const shareBtn = modalContainer.querySelector('.preview-share-btn');
 
+    // Close modal when clicking close button or outside modal
     closeBtn.addEventListener('click', () => {
         modalContainer.remove();
     });
@@ -1146,11 +1252,13 @@ function createPreviewModal(post) {
         }
     });
 
+    // Edit post functionality (placeholder)
     editBtn.addEventListener('click', () => {
         // TODO: Implement edit post functionality
         alert('Edit post functionality coming soon!');
     });
 
+    // Share post functionality
     shareBtn.addEventListener('click', () => {
         sharePost(post, shareBtn);
         modalContainer.remove();
@@ -1159,7 +1267,9 @@ function createPreviewModal(post) {
     return modalContainer;
 }
 
+// Function to toggle like
 function toggleLike(post, likeBtn) {
+    // Always ensure post_id is a number
     let postId = post.post_id;
     if (typeof postId === 'string') {
         const match = postId.match(/(\d+)$/);
@@ -1170,6 +1280,7 @@ function toggleLike(post, likeBtn) {
             return;
         }
     }
+    // Retrieve user ID from localStorage
     const userId = localStorage.getItem('user_id');
     
     console.log('Attempting to like post:', post);
@@ -1203,7 +1314,10 @@ function toggleLike(post, likeBtn) {
     .then(data => {
         console.log('Like Response:', data);
         if (data.status === 'success') {
+            // Update like button UI
             likeBtn.classList.toggle('liked');
+            // Update like count
+            // Find the correct likes-count element for this post
             const postElement = likeBtn.closest('.social-post');
             const likesCountEl = postElement ? postElement.querySelector('.likes-count') : null;
             if (likesCountEl) {
@@ -1237,6 +1351,7 @@ function showLikeError(message) {
     setTimeout(() => { errorDiv.remove(); }, 5000);
 }
 
+// Function to load comments for a post
 async function loadComments(id, commentsList, postElement, isShare = false) {
     try {
         const param = isShare ? 'share_id' : 'post_id';
@@ -1266,6 +1381,7 @@ async function loadComments(id, commentsList, postElement, isShare = false) {
                         ${deleteBtnHTML}
                     </div>
                 `;
+                // Add delete handler if button exists
                 if (deleteBtnHTML) {
                     const btn = commentElement.querySelector('.comment-delete-btn');
                     btn.addEventListener('click', async (e) => {
@@ -1282,6 +1398,7 @@ async function loadComments(id, commentsList, postElement, isShare = false) {
                             const res = await resp.json();
                             if (res.status === 'success') {
                                 showNotification('Comment deleted.');
+                                // Reload comments
                                 const id = isShare ? postElement._postData.share_id : (postElement._postData.post_id || postElement._postData.id);
                                 await loadComments(id, commentsList, postElement, isShare);
                             } else {
@@ -1294,6 +1411,7 @@ async function loadComments(id, commentsList, postElement, isShare = false) {
                 }
                 commentsList.appendChild(commentElement);
             });
+            // Update comment count
             if (!postElement) postElement = commentsList.closest('.social-post');
             if (postElement) {
                 const commentsCountElement = postElement.querySelector('.comments-count');
@@ -1301,6 +1419,7 @@ async function loadComments(id, commentsList, postElement, isShare = false) {
                     commentsCountElement.innerHTML = `<i class="icon-comment">💬</i> ${result.data.total}`;
                 }
             }
+            // Show the comments section
             const commentsSection = commentsList.closest('.comments-section');
             if (commentsSection) commentsSection.classList.add('show');
         } else {
@@ -1318,6 +1437,7 @@ async function addComment(post, commentText, commentsList, postElement) {
             showNotification('Please log in to comment');
             return;
         }
+        // Use post_id for originals, share_id for shared posts
         const formData = new FormData();
         if (post.isShare && post.share_id) {
             formData.append('share_id', post.share_id);
@@ -1325,6 +1445,9 @@ async function addComment(post, commentText, commentsList, postElement) {
             formData.append('post_id', post.post_id || post.id);
         }
         formData.append('content', commentText);
+        // Always include token if available (use the correct key)
+        const token = localStorage.getItem('user_token') || localStorage.getItem('token') || localStorage.getItem('oauth_token');
+        if (token) formData.append('token', token);
         const response = await fetch('../api/posts/add-comment.php', {
             method: 'POST',
             body: formData,
@@ -1339,6 +1462,7 @@ async function addComment(post, commentText, commentsList, postElement) {
         }
         const result = await response.json();
         if (result.status === 'success') {
+            // Reload comments and update count
             const id = post.isShare && post.share_id ? post.share_id : (post.post_id || post.id);
             await loadComments(id, commentsList, postElement, post.isShare);
             const commentsSection = commentsList.closest('.comments-section');
@@ -1403,34 +1527,47 @@ function copyPostLink(post) {
 function openShareModal(post) {
     const modal = document.getElementById('share-modal-overlay');
     modal.style.display = 'flex';
+  
+    // Ensure currentUser is loaded before updating buttons
+    if (!currentUser) {
+        getCurrentUser().then(() => {
+            updateShareButtonsByProvider();
+        });
+    } else {
+        updateShareButtonsByProvider();
+    }
 
+    // Set the post_id as a data attribute for later retrieval -changes/
     modal.setAttribute('data-current-post-id', post.post_id || post.id);
 
+    // Render post preview
     const preview = modal.querySelector('.share-original-content');
     let mediaHTML = '';
 
+    // Images
     if (post.images && post.images.length > 0) {
-        mediaHTML += `<div class="post-media-gallery">` +
+        mediaHTML += `<div class="share-media">` +
             post.images.map(img => `<img src="${img}" alt="Post Image">`).join('') +
             `</div>`;
     }
+    // Video
     if (post.video && post.video.url) {
         mediaHTML += `
-            <div class="post-media-video">
+            <div class="share-media">
                 <video src="${post.video.url}" controls poster="${post.video.thumbnail || ''}"></video>
             </div>
         `;
     }
 
     preview.innerHTML = `
-    <div class="post-header">
-        <img src="../assets/human.png" alt="Profile" class="profile-pic">
-        <div>
-            <strong>${post.author || 'Anonymous'}</strong>
-            <div style="font-size:12px;color:#888;">${convertUTCMySQLToLocal(post.timestamp)}</div>
+    <div class="share-original-header">
+        <img src="../assets/human.png" alt="Profile">
+        <div class="share-user-info">
+            <span class="share-username">${post.author || 'Anonymous'}</span>
+            <span class="share-date">${convertUTCMySQLToLocal(post.timestamp)}</span>
         </div>
     </div>
-    <div class="post-content">${escapeHTML(post.content)}</div>
+    <div class="share-post-content">${escapeHTML(post.content)}</div>
     ${mediaHTML}
     `;
 
@@ -1441,43 +1578,54 @@ function openShareModal(post) {
     });
 
     const shareBtn = modal.querySelector('.share-main-btn');
+    // Remove previous event listeners by replacing the button with a clone
     const newShareBtn = shareBtn.cloneNode(true);
     shareBtn.parentNode.replaceChild(newShareBtn, shareBtn);
 
     newShareBtn.addEventListener('click', async () => {
-        const user_id = Number(localStorage.getItem('user_id')) || 1;
+        const post_id = modal.getAttribute('data-current-post-id');
         const caption = modal.querySelector('.share-caption').value.trim();
-        const isReshare = post.isShare && post.share_id && !isNaN(Number(post.share_id));
-        const postIdToShare = post.post_id;
-        const shareIdToShare = isReshare ? Number(post.share_id) : undefined;
 
+        // Get user_id from currentUser
+        if (!currentUser || !currentUser.user_id) {
+            showNotification('You must be logged in to share.');
+            return;
+        }
+
+        // Prepare payload for internal share
         const payload = {
-            post_id: postIdToShare,
-            user_id: user_id,
+            post_id: Number(post_id),
+            user_id: Number(currentUser.user_id),
             platform: 'devhive',
             caption: caption
         };
-        if (shareIdToShare) {
-            payload.share_id = shareIdToShare;
+
+        // If this is a reshare of a shared post, add share_id
+        if (post.isShare && post.share_id) {
+            payload.share_id = Number(post.share_id);
         }
 
-        const response = await sharePostToBackend(payload);
-        if (response && response.status === 'success') {
-            alert('shared successfully.');
-            loadPosts(0, 'all post');
-        } else {
-            alert('Failed to share post.');
+        try {
+            const response = await fetch('/api/posts/share.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+                credentials: 'include'
+            });
+            const result = await response.json();
+            console.log('Share to Devhive result:', result);
+            if (result.status === 'success') {
+                showNotification('Post shared to Devhive!');
+                modal.style.display = 'none';
+                loadPosts(0, 'all post'); // Reload posts
+            } else {
+                showNotification(result.message || 'Failed to share post.');
+            }
+        } catch (e) {
+            showNotification('Failed to share post.');
         }
-        modal.style.display = 'none';
     });
 }
-
-var btn = document.createElement('button');
-btn.innerText = 'Test Like';
-btn.className = 'btn-like';
-btn.setAttribute('data-post-id', 'test');
-btn.onclick = function() { alert('Test Like Clicked!'); };
-document.body.appendChild(btn);
 
 document.querySelectorAll('.share-btn-heybleepi, .share-btn-hershive').forEach(btn => {
   btn.addEventListener('click', function(e) {
@@ -1485,8 +1633,97 @@ document.querySelectorAll('.share-btn-heybleepi, .share-btn-hershive').forEach(b
     const post_id = modal.getAttribute('data-current-post-id');
     const form = btn.closest('form');
     form.querySelector('input[name="share_post_id"]').value = post_id;
-    const caption = modal.querySelector('.share-caption').value;
-    form.querySelector('textarea[name="caption"]').value = caption;
-
+    // Use the textarea value as content
+    const captionInput = modal.querySelector('.share-caption');
+    form.querySelector('input[name="content"]').value = captionInput ? captionInput.value : '';
+    // Set the provider
+    if (btn.classList.contains('share-btn-hershive')) {
+      form.querySelector('input[name="share_to_other"]').value = 'hershive';
+    } else if (btn.classList.contains('share-btn-heybleepi')) {
+      form.querySelector('input[name="share_to_other"]').value = 'heybleepi';
+    }
+    form.submit();
   });
+});
+
+function updateShareButtonsByProvider() {
+    const btnHershive = document.querySelector('.share-btn-hershive');
+    const btnHeybleepi = document.querySelector('.share-btn-heybleepi');
+    const btnDevhive = document.querySelector('.share-main-btn');
+
+    console.log('updateShareButtonsByProvider: currentUser =', currentUser);
+
+    if (!btnHershive || !btnHeybleepi || !btnDevhive) {
+        console.warn('Share buttons not found!');
+        return;
+    }
+
+    // Always show all buttons
+    btnHershive.style.display = '';
+    btnHeybleepi.style.display = '';
+    btnDevhive.style.display = '';
+
+    // Remove all disabled/active styles first
+    [btnHershive, btnHeybleepi, btnDevhive].forEach(btn => {
+        btn.disabled = false;
+        btn.classList.remove('greyed-out');
+        btn.classList.remove('active-share-btn');
+    });
+
+    if (currentUser && currentUser.provider === 'hershive') {
+        btnHershive.disabled = false;
+        btnHershive.classList.add('active-share-btn');
+        btnHeybleepi.disabled = true;
+        btnHeybleepi.classList.add('greyed-out');
+        btnDevhive.disabled = false;
+        btnDevhive.classList.add('active-share-btn');
+    } else if (currentUser && currentUser.provider === 'heybleepi') {
+        btnHeybleepi.disabled = false;
+        btnHeybleepi.classList.add('active-share-btn');
+        btnHershive.disabled = true;
+        btnHershive.classList.add('greyed-out');
+        btnDevhive.disabled = false;
+        btnDevhive.classList.add('active-share-btn');
+    } else if (currentUser && currentUser.provider === 'devhive') {
+        btnDevhive.disabled = false;
+        btnDevhive.classList.add('active-share-btn');
+        btnHershive.disabled = true;
+        btnHershive.classList.add('greyed-out');
+        btnHeybleepi.disabled = true;
+        btnHeybleepi.classList.add('greyed-out');
+    } else {
+        btnDevhive.disabled = false;
+        btnDevhive.classList.add('active-share-btn');
+        btnHershive.disabled = true;
+        btnHershive.classList.add('greyed-out');
+        btnHeybleepi.disabled = true;
+        btnHeybleepi.classList.add('greyed-out');
+    }
+}
+
+// Prevent click on greyed-out buttons
+document.querySelectorAll('.share-btn-hershive, .share-btn-heybleepi').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        if (btn.disabled) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+        // ...existing submit logic...
+    });
+});
+
+console.log('CurrentUser after login:', currentUser);
+
+document.addEventListener('DOMContentLoaded', function () {
+    // Sync share-caption textarea to hidden input in the form
+    const modal = document.getElementById('share-modal-overlay');
+    const captionTextarea = modal.querySelector('.share-caption');
+    const shareForm = modal.querySelector('#share-form');
+    const captionHiddenInput = shareForm.querySelector('input[name="caption"]');
+    if (captionTextarea && captionHiddenInput) {
+        captionTextarea.addEventListener('input', function () {
+            captionHiddenInput.value = captionTextarea.value;
+        });
+    }
 });

@@ -2,9 +2,16 @@
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+ini_set('error_log', __DIR__ . '/../../../error.log');
 
 session_start();
 require_once __DIR__ . '/../../../config/database.php';
+
+if (isset($_GET['logout']) && $_GET['logout'] == 1) {
+    session_destroy();
+    header("Location: oauth_authorize.php?client_id=" . urlencode($_GET['client_id'] ?? '') . "&redirect_uri=" . urlencode($_GET['redirect_uri'] ?? ''));
+    exit;
+}
 
 $client_id = $_GET['client_id'] ?? $_POST['client_id'] ?? '';
 $redirect_uri = $_GET['redirect_uri'] ?? $_POST['redirect_uri'] ?? '';
@@ -27,7 +34,6 @@ if ($client_id && $redirect_uri) {
         ) {
             die("Redirect URI mismatch.");
         }
-        // Allow any query parameters
     } else {
         die("Invalid client ID.");
     }
@@ -57,10 +63,7 @@ if (isset($_POST['allow'])) {
             $stmt->execute();
         }
 
-        // Append token to redirect_uri
         $redir = $redirect_uri . (strpos($redirect_uri, '?') === false ? '?' : '&') . "token=$token";
-        // Optionally add provider if your client expects it and it's not already in the URL
-        // $redir .= "&provider=devhive";
 
         error_log("OAUTH REDIRECT: $redir");
         header("Location: $redir");
@@ -84,17 +87,26 @@ if (!isset($_SESSION['user_id'])) {
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $stmt->bind_result($user_id, $hashed_password);
-        if ($stmt->fetch() && password_verify($password, $hashed_password)) {
-            $_SESSION['user_id'] = $user_id;
-            header("Location: oauth_authorize.php?client_id=$client_id&redirect_uri=" . urlencode($redirect_uri));
-            exit;
+
+        if ($stmt->fetch()) {
+            error_log("User found for email: $email");
+            if (password_verify($password, $hashed_password)) {
+                error_log("Password verified for user: $user_id");
+                $_SESSION['user_id'] = $user_id;
+                header("Location: oauth_authorize.php?client_id=$client_id&redirect_uri=" . urlencode($redirect_uri));
+                exit;
+            } else {
+                error_log("Password mismatch for user: $user_id");
+                $error = "Invalid credentials.";
+            }
         } else {
+            error_log("No user found for email: $email");
             $error = "Invalid credentials.";
         }
         $stmt->close();
     }
  
-// Show login form?>
+// login form?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -106,7 +118,8 @@ if (!isset($_SESSION['user_id'])) {
   <div class="card-container">
     <div class="auth-card">
       <h2>Authorize Access</h2>
-      <p>The application <strong><?= htmlspecialchars($client_id) ?></strong> is requesting permission to access your account.</p>
+      <p>The application <strong><?= htmlspecialchars($client_id) ?></strong> 
+        is requesting permission to access your account.</p>
       <?php if ($error) echo "<p class='error-message'>$error</p>"; ?>
       <form method="POST" class="auth-form">
         <input type="hidden" name="client_id" value="<?= htmlspecialchars($client_id) ?>">
@@ -134,16 +147,28 @@ if (!isset($_SESSION['user_id'])) {
     <title>Authorize Application</title>
     <link rel="stylesheet" href="./oauth_authorize.css">
 </head>
-<body>
-    <div class="container">
-        <h1>Authorize Access</h1>
-        <p>The application <strong><?= htmlspecialchars($client_id) ?></strong> is requesting permission to access your account.</p>
-        <form method="post" class="button-group">
-            <input type="hidden" name="client_id" value="<?= htmlspecialchars($client_id) ?>">
-            <input type="hidden" name="redirect_uri" value="<?= htmlspecialchars($redirect_uri) ?>">
-            <button type="submit" name="allow" class="btn btn-allow">Allow</button>
-            <button type="submit" name="deny" class="btn btn-deny">Deny</button>
-        </form>
+<body class="devhive-bg">
+    <div class="card-container">
+        <div class="card">
+            <h1 class="card-title">Authorize Access</h1>
+            <p class="card-desc">
+                The application <strong><?= htmlspecialchars($client_id) ?></strong> 
+                is requesting permission to access your account.
+            </p>
+            <form method="post">
+                <input type="hidden" name="client_id" value="<?= htmlspecialchars($client_id) ?>">
+                <input type="hidden" name="redirect_uri" value="<?= htmlspecialchars($redirect_uri) ?>">
+                <div class="button-group">
+                    <button type="submit" name="allow" class="btn-allow">Allow</button>
+                    <button type="submit" name="deny" class="btn-deny">Deny</button>
+                </div>
+            </form>
+            <div class="card-footer">
+                <a href="?client_id=<?= urlencode($client_id) ?>&redirect_uri=<?= urlencode($redirect_uri) ?>&logout=1" style="color:#2563eb;text-decoration:underline;">
+                    Login with another account
+                </a>
+            </div>
+        </div>
     </div>
 </body>
 </html>

@@ -6,47 +6,50 @@
     <title>Global Wall - DevHive</title>
     <link href="https://fonts.googleapis.com/css2?family=Coda+Caption:wght@800&family=Inter:wght@400;500;600&display=swap" 
         rel="stylesheet">
-    <link rel="stylesheet" href="globalwall.css">
+    <link rel="stylesheet" href="global_wall.css">
 </head>
 <body>
     <div class="dashboard-container">
         <div class="main-content">
-            <aside class="sidebar">
-                <ul class="nav-menu">
-                    <li>
-                        <a href="../dashboard/dashboard.html">
-                            <img src="../assets/DASHBOARD.png" alt="Dashboard">
-                            Dashboard
-                        </a>
-                    </li>
-                    <li class="active">
-                        <a href="../global_wall/global_wall.html">
-                            <img src="../assets/global_feed.png" alt="Global Wall">
-                            Global Wall
-                        </a>
-                    </li>
-                    <li>
-                        <a href="../user_profile/user_profile.html">
-                            <img src="../assets/human.png" alt="Profile">
-                            Profile
-                        </a>
-                    </li>
-                    <li>
-                        <a href="../create_post/create_post.html">
-                            <img src="../assets/create_post.png" alt="Create Post">
-                            Create Post
-                        </a>
-                    </li>
-                    <li>
-                        <a href="../setting/setting.html">
-                            <img src="../assets/settings.png" alt="Settings">
-                            Settings
-                        </a>
-                    </li>
-                </ul>
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <span class="toggle-icon">&#9776;</span>
+                    </button>
+                </div>
+                <div class="menu-item">
+                    <a href="../dashboard/dashboard.html">
+                        <img src="../assets/DASHBOARD.png" alt="Dashboard">
+                        <span class="menu-text">Dashboard</span>
+                    </a>
+                </div>
+                <div class="menu-item active">
+                    <a href="../global_wall/global_wall.html">
+                        <img src="../assets/global_feed.png" alt="Global Wall">
+                        <span class="menu-text">Global Wall</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a href="../user_profile/user_profile.html">
+                        <img src="../assets/human.png" alt="Profile">
+                        <span class="menu-text">Profile</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a href="../create_post/create_post.html">
+                        <img src="../assets/create_post.png" alt="Create Post">
+                        <span class="menu-text">Create Post</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a href="../setting/setting.html">
+                        <img src="../assets/settings.png" alt="Settings">
+                        <span class="menu-text">Settings</span>
+                    </a>
+                </div>
             </aside>
 
-            <div class="global-wall-content">
+            <div class="dashboard-content">
                 <h1 class="page-title">Global Wall</h1>
                 <div class="global-wall-header">
                     <div class="post-filters">
@@ -55,28 +58,31 @@
                 </div>
 
                 <div class="global-wall-posts">
+                    <!-- post-card for each post -->
                 </div>
             </div>
         </div>
     </div>
     <div id="share-modal-overlay" class="share-modal-overlay" style="display:none;">
-        <div class="share-modal">
+       <div class="share-modal">
         <button class="close-share-modal" title="Close">&times;</button>
         <h2>Share Post</h2>
+        <textarea class="share-caption" placeholder="say something about this" style="width:100%;margin:10px 0 16px 0;resize:vertical;min-height:48px;"></textarea>
         <div class="share-original-preview">
-            <div class="share-original-content"></div>
+          <div class="share-original-content"></div>
         </div>
         <div class="share-platforms">
-            <form action="/api/posts/share-create-post.php" method="POST" id="share-form">
+          <form action="/api/posts/share-create-post.php" method="POST" id="share-form">
             <input type="hidden" name="share_post_id" value="">
-            <textarea class="share-caption" name="caption" placeholder="Say something about this..."></textarea>
-            <button type="submit" value="hershive" name="share_to_other" class="share-btn-hershive active">Share to Hershive</button>
-            <button type="submit" value="heybleepi" name="share_to_other" class="share-btn-heybleepi active">Share to Heybleepi</button>
-            </form>
+            <input type="hidden" name="share_to_other" value="">
+            <input type="hidden" name="content" value="">
+            <button type="button" class="share-btn-hershive" style="display:none;">Share to Hershive</button>
+            <button type="button" class="share-btn-heybleepi" style="display:none;">Share to Heybleepi</button>
+          </form>
         </div>
         <button class="share-main-btn">Share to Devhive</button>
-        </div>
+      </div>
     </div>
     <script src="global_wall.js"></script>
 </body>
-</html>
+</html
