@@ -1,0 +1,192 @@
+[2025-06-12 15:11:44] Invalid Request Method
+Server Info:
+Array
+(
+    [REQUEST_METHOD] => GET
+    [CONTENT_TYPE] => N/A
+    [PHP_SAPI] => litespeed
+    [SERVER_PROTOCOL] => HTTP/1.1
+    [REMOTE_ADDR] => 222.127.154.216
+    [HTTP_USER_AGENT] => PostmanRuntime/7.43.3
+)
+
+Context:
+Array
+(
+    [method] => GET
+)
+
+
+[2025-06-12 15:11:44] Critical Error
+Server Info:
+Array
+(
+    [REQUEST_METHOD] => GET
+    [CONTENT_TYPE] => N/A
+    [PHP_SAPI] => litespeed
+    [SERVER_PROTOCOL] => HTTP/1.1
+    [REMOTE_ADDR] => 222.127.154.216
+    [HTTP_USER_AGENT] => PostmanRuntime/7.43.3
+)
+
+Context:
+Array
+(
+    [error_message] => Only POST method is allowed
+    [error_trace] => #0 {main}
+)
+
+
+[2025-06-12 15:12:11] Invalid Content-Type
+Server Info:
+Array
+(
+    [REQUEST_METHOD] => POST
+    [CONTENT_TYPE] => N/A
+    [PHP_SAPI] => litespeed
+    [SERVER_PROTOCOL] => HTTP/1.1
+    [REMOTE_ADDR] => 222.127.154.216
+    [HTTP_USER_AGENT] => PostmanRuntime/7.43.3
+)
+
+Context:
+Array
+(
+    [content_type] => 
+)
+
+
+[2025-06-12 15:12:11] Critical Error
+Server Info:
+Array
+(
+    [REQUEST_METHOD] => POST
+    [CONTENT_TYPE] => N/A
+    [PHP_SAPI] => litespeed
+    [SERVER_PROTOCOL] => HTTP/1.1
+    [REMOTE_ADDR] => 222.127.154.216
+    [HTTP_USER_AGENT] => PostmanRuntime/7.43.3
+)
+
+Context:
+Array
+(
+    [error_message] => Content-Type must be application/json
+    [error_trace] => #0 {main}
+)
+
+
+[2025-06-12 15:12:33] Invalid Content-Type
+Server Info:
+Array
+(
+    [REQUEST_METHOD] => POST
+    [CONTENT_TYPE] => N/A
+    [PHP_SAPI] => litespeed
+    [SERVER_PROTOCOL] => HTTP/1.1
+    [REMOTE_ADDR] => 222.127.154.216
+    [HTTP_USER_AGENT] => PostmanRuntime/7.43.3
+)
+
+Context:
+Array
+(
+    [content_type] => 
+)
+
+
+[2025-06-12 15:12:33] Critical Error
+Server Info:
+Array
+(
+    [REQUEST_METHOD] => POST
+    [CONTENT_TYPE] => N/A
+    [PHP_SAPI] => litespeed
+    [SERVER_PROTOCOL] => HTTP/1.1
+    [REMOTE_ADDR] => 222.127.154.216
+    [HTTP_USER_AGENT] => PostmanRuntime/7.43.3
+)
+
+Context:
+Array
+(
+    [error_message] => Content-Type must be application/json
+    [error_trace] => #0 {main}
+)
+
+
+[2025-06-12 15:13:52] Invalid Content-Type
+Server Info:
+Array
+(
+    [REQUEST_METHOD] => POST
+    [CONTENT_TYPE] => N/A
+    [PHP_SAPI] => litespeed
+    [SERVER_PROTOCOL] => HTTP/1.1
+    [REMOTE_ADDR] => 222.127.154.216
+    [HTTP_USER_AGENT] => PostmanRuntime/7.43.3
+)
+
+Context:
+Array
+(
+    [content_type] => 
+    [allowed_types] => Array
+        (
+            [0] => application/json
+            [1] => text/json
+        )
+
+)
+
+
+[2025-06-12 15:16:13] Invalid or Missing Content-Type
+Server Info:
+Array
+(
+    [REQUEST_METHOD] => POST
+    [CONTENT_TYPE] => N/A
+    [PHP_SAPI] => litespeed
+    [SERVER_PROTOCOL] => HTTP/1.1
+    [REMOTE_ADDR] => 222.127.154.216
+    [HTTP_USER_AGENT] => PostmanRuntime/7.43.3
+)
+
+Context:
+Array
+(
+    [content_type] => 
+    [allowed_types] => Array
+        (
+            [0] => application/json
+            [1] => text/json
+        )
+
+)
+
+
+[2025-06-12 15:18:35] Empty Request Body
+Server Info:
+Array
+(
+    [REQUEST_METHOD] => POST
+    [CONTENT_TYPE] => N/A
+    [HTTP_CONTENT_TYPE] => N/A
+    [PHP_SAPI] => litespeed
+    [SERVER_PROTOCOL] => HTTP/1.1
+    [REMOTE_ADDR] => 222.127.154.216
+    [HTTP_USER_AGENT] => PostmanRuntime/7.43.3
+    [ALL_HEADERS] => Array
+        (
+            [User-Agent] => PostmanRuntime/7.43.3
+            [Accept] => */*
+            [Postman-Token] => a2965a9f-7ef1-4723-9a58-c49f3b624767
+            [Host] => devhivespace.com
+            [Accept-Encoding] => gzip, deflate, br
+            [Connection] => keep-alive
+            [Content-Length] => 0
+        )
+
+)
+
+

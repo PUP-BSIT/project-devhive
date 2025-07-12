@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Post - devhivespace</title>
+    <!-- Favicon Configuration Start -->
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/favicon_io/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon_io/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon_io/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/favicon_io/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="../assets/favicon_io/android-chrome-512x512.png">
+    <link rel="manifest" href="../assets/favicon_io/site.webmanifest">
+    <!-- Favicon Configuration End -->
+    <link rel="stylesheet" href="create_post.css" />
+    <link 
+      href="https://fonts.googleapis.com/css2?family=Coda+Caption:wght@800&family=Inter:wght@400;500;600;700&display=swap" 
+      rel="stylesheet">
+  </head>
+  <body>
+    <div class="container">
+      <div class="left-section">
+        <aside class="sidebar" id="sidebar">
+          <div class="sidebar-header">
+            <button class="sidebar-toggle" id="sidebarToggle">
+              <span class="toggle-icon">☰</span>
+            </button>
+          </div>
+          <div class="menu-item">
+            <a href="../dashboard/dashboard.html">
+              <img src="../assets/DASHBOARD.png" alt="">
+              <span class="menu-text">Dashboard</span>
+            </a>
+          </div>
+          <div class="menu-item">
+            <a href="../global_wall/global_wall.html">
+              <img src="../assets/global_feed.png" alt="">
+              <span class="menu-text">Global Wall</span>
+            </a>
+          </div>
+          <div class="menu-item">
+            <a href="../user_profile/user_profile.html">
+              <img src="../assets/human.png" alt="">
+              <span class="menu-text">Profile</span>
+            </a>
+          </div>
+          <div class="menu-item active">
+            <a href="../create_post/create_post.html">
+              <img src="../assets/create_post.png" alt="">
+              <span class="menu-text">Create Post</span>
+            </a>
+          </div>
+          <div class="menu-item">
+            <a href="../setting/setting.html">
+              <img src="../assets/settings.png" alt="">
+              <span class="menu-text">Settings</span>
+            </a>
+          </div>
+        </aside>
+      </div>
+      
+      <div class="right-section">
+        <h1 class="page-title">Create Post</h1>
+
+        <main class="main-content">
+          <form id="post-form">
+            <div class="form-group">
+              <label class="form-label" for="post-content">Caption</label>
+              <div id="post-content" class="content-editor" contenteditable="true" placeholder="What's on your mind?"></div>
+
+              <div class="toolbar">
+                <button type="button" class="toolbar-btn" data-format="bold" title="Bold">
+                  <strong>B</strong>
+                </button>
+                <button type="button" class="toolbar-btn" data-format="italic" title="Italic">
+                  <em>I</em>
+                </button>
+                <button type="button" class="toolbar-btn" data-format="underline" title="Underline">
+                  <u>U</u>
+                </button>
+                <button type="button" id="image-upload-btn" class="toolbar-btn" title="Upload Image">
+                  🖼️
+                </button>
+                <button type="button" id="video-upload-btn" class="toolbar-btn" title="Upload Video">
+                  🎥
+                </button>
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              <button type="button" class="btn btn-secondary" id="preview-btn">Preview</button>
+              <button type="button" class="btn btn-primary" id="share-post-btn">Share Post</button>
+            </div>
+          </form>
+        </main>
+      </div>
+    </div>
+    <div class="preview-modal-container" style="display: none;">
+      <div class="preview-modal">
+        <div class="preview-modal-header">
+          <h2 class="preview-modal-title">Post Preview</h2>
+          <button class="preview-modal-close">&times;</button>
+        </div>
+        <div class="preview-modal-body">
+          <div class="preview-post">
+            <div class="post-header">
+              <div class="post-user-info">
+                <img src="../assets/default-profile.png" alt="Profile" class="profile-pic">
+                <div class="user-details">
+                  <h3 class="post-author">Your Name</h3>
+                  <span class="post-timestamp">Just now</span>
+                </div>
+              </div>
+            </div>
+            <div class="post-content">
+              <p class="post-text"></p>
+            </div>
+            <div class="preview-platforms">
+              <h4>Posting to:</h4>
+              <div class="platform-list"></div>
+            </div>
+          </div>
+        </div>
+        <div class="preview-modal-footer">
+          <button class="preview-cancel-btn">Cancel</button>
+          <button class="preview-confirm-btn">Confirm & Share</button>
+        </div>
+      </div>
+    </div>
+    <script src="create_post13.js"></script>
+  </body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Userinfo API Documentation</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7fafc; margin: 0; }
+    .container { max-width: 700px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px #0001; padding: 32px; }
+    h2 { margin-bottom: 18px; }
+    pre { background: #f1f5f9; border-radius: 6px; padding: 12px; }
+    .section { margin-bottom: 24px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Userinfo API Documentation</h2>
+    <div class="section">
+      <strong>Endpoint:</strong> <code>/api/oauth/userinfo.php</code>
+    </div>
+    <div class="section">
+      <strong>Method:</strong> <code>GET</code> or <code>POST</code>
+    </div>
+    <div class="section">
+      <strong>Headers:</strong>
+      <pre>Authorization: Bearer &lt;access_token&gt;</pre>
+    </div>
+    <div class="section">
+      <strong>Optional Query:</strong>
+      <pre>?fields=username,email,profile_picture</pre>
+    </div>
+    <div class="section">
+      <strong>Success Response:</strong>
+      <pre>{
+  "success": true,
+  "data": {
+    "id": 123,
+    "username": "johndoe",
+    "email": "john@example.com",
+    "profile_picture": "https://devhive.com/uploads/avatars/123.jpg",
+    "created_at": "2024-01-15T10:30:00Z"
+  }
+}</pre>
+    </div>
+    <div class="section">
+      <strong>Error Response:</strong>
+      <pre>{
+  "success": false,
+  "error": "invalid_token",
+  "error_description": "The access token provided is expired or invalid",
+  "error_code": "TOKEN_EXPIRED"
+}</pre>
+    </div>
+  </div>
+</body>
+</html>

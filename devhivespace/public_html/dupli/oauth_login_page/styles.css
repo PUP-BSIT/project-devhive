@@ -1,0 +1,94 @@
+body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #e6b800 url("../../public/assets/background.png") center center/cover no-repeat fixed;
+  position: relative;
+}
+
+/* Optional: darken overlay for less vibrance */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.13); /* Adjust opacity for more/less darkness */
+  pointer-events: none;
+  z-index: 0;
+}
+.login-container {
+  max-width: 350px;
+  margin: 60px auto;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  padding: 32px 28px 24px 28px;
+  position: relative;
+  z-index: 1;
+}
+h1 {
+  font-size: 1.6em;
+  margin-bottom: 18px;
+  color: #222;
+  text-align: center;
+}
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #333;
+}
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 10px 9px;
+  margin-bottom: 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  font-size: 1em;
+  background: #f9fafb;
+  transition: border 0.2s;
+}
+input:focus {
+  border-color: #6c47ff;
+  outline: none;
+}
+.login-btn {
+  width: 100%;
+  padding: 11px 0;
+  background: #6c47ff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: background 0.2s;
+}
+.login-btn:hover {
+  background: #5436c7;
+}
+.error-message {
+  color: #d32f2f;
+  background: #fff0f0;
+  border: 1px solid #f8bcbc;
+  border-radius: 4px;
+  padding: 8px 10px;
+  margin-top: 8px;
+  font-size: 0.97em;
+  text-align: center;
+}
+.oauth-footer {
+  margin-top: 18px;
+  font-size: 0.95em;
+  color: #888;
+  text-align: center;
+}
+.oauth-footer a {
+  color: #6c47ff;
+  text-decoration: none;
+}
+.oauth-footer a:hover {
+  text-decoration: underline;
+}

@@ -1,0 +1,77 @@
+<?php
+header('Content-Type: application/json');
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+error_reporting(E_ALL);
+ini_set('error_log', __DIR__ . '/../../../php-error.log');
+
+require_once __DIR__ . '/../../../config/database.php';
+require_once __DIR__ . '/../../../config/session_config.php';
+
+initializeSession();
+
+function respond($success, $message, $user_id = null, $redirect_url = null, $token = null) {
+    $response = ['success' => $success, 'message' => $message];
+    if ($user_id !== null) {
+        $response['user_id'] = $user_id;
+        
+        // Set user_id as a cookie
+        // Note: In production, use secure and httpOnly flags
+        setcookie('user_id', $user_id, time() + (86400 * 30), '/', '', false, false);
+    }
+    if ($redirect_url) $response['redirect_url'] = $redirect_url;
+    if ($token) $response['token'] = $token;
+    echo json_encode($response);
+    exit;
+}
+
+// Get POST data
+$data = json_decode(file_get_contents('php://input'), true);
+
+// Validate required fields
+if (empty($data['identifier']) || empty($data['password'])) {
+    respond(false, "Username/email and password are required.");
+}
+
+$identifier = $data['identifier'];
+$password = $data['password'];
+
+// Lookup user by username or email
+$stmt = $conn->prepare("SELECT user_id, username, password_hash FROM user WHERE username = ? OR email = ?");
+$stmt->bind_param("ss", $identifier, $identifier);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows === 0) {
+    respond(false, "Invalid username/email or password.");
+}
+
+$user = $result->fetch_assoc();
+$stmt->close();
+
+// Verify password
+if (!password_verify($password, $user['password_hash'])) {
+    respond(false, "Invalid username/email or password.");
+}
+
+// Set session
+$_SESSION['user_id'] = $user['user_id'];
+$_SESSION['username'] = $user['username'];
+
+// Fetch latest valid token for the user
+$token = null;
+$token_stmt = $conn->prepare("SELECT token FROM oauth_tokens WHERE user_id = ? AND expires_at > NOW() ORDER BY expires_at DESC LIMIT 1");
+$token_stmt->bind_param("i", $user['user_id']);
+$token_stmt->execute();
+$token_result = $token_stmt->get_result();
+if ($row = $token_result->fetch_assoc()) {
+    $token = $row['token'];
+}
+$token_stmt->close();
+
+// Build redirect URL with session ID in query string
+$sid = session_name() . '=' . session_id();
+$redirect_url = "/dashboard/dashboard.php?$sid";
+
+respond(true, "Login successful.", $user['user_id'], $redirect_url, $token);
+?>

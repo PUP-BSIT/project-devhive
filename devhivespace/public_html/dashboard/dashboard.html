@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, 
+                user-scalable=no" />
+    <meta name="theme-color" content="#4169E1" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent" />
+    <title>Dashboard - devhivespace</title>
+    <!-- Favicon Configuration Start -->
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/favicon_io/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon_io/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon_io/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/favicon_io/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="../assets/favicon_io/android-chrome-512x512.png">
+    <link rel="manifest" href="../assets/favicon_io/site.webmanifest">
+    <!-- Favicon Configuration End -->
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Coda+Caption:wght@800&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet" />
+  </head>
+  <body>
+      <div class="main-content">
+        <aside class="sidebar" id="sidebar">
+          <div class="sidebar-header">
+            <button class="sidebar-toggle" id="sidebarToggle">
+              <span class="toggle-icon">☰</span>
+            </button>
+          </div>
+          <div class="menu-item active">
+            <a href="../dashboard/dashboard.html">
+              <img src="../assets/DASHBOARD.png" alt="" />
+              <span class="menu-text">Dashboard</span>
+            </a>
+          </div>
+          <div class="menu-item">
+            <a href="../global_wall/global_wall.html">
+              <img src="../assets/global_feed.png" alt="" />
+              <span class="menu-text">Global Wall</span>
+            </a>
+          </div>
+          <div class="menu-item" data-page="profile">
+            <a href="../user_profile/user_profile.html">
+              <img src="../assets/human.png" alt="" />
+              <span class="menu-text">Profile</span>
+            </a>
+          </div>
+          <div class="menu-item">
+            <a href="../create_post/create_post.html">
+              <img src="../assets/create_post.png" alt="" />
+              <span class="menu-text">Create Post</span>
+            </a>
+          </div>
+          <div class="menu-item">
+            <a href="../setting/setting.html">
+              <img src="../assets/settings.png" alt="" />
+              <span class="menu-text">Settings</span>
+            </a>
+          </div>
+        </aside>
+
+        <div class="dashboard-content">
+          <h1>Dashboard</h1>
+
+          <div class="welcome-card">
+            <h2>Welcome back, <span id="dashboard-username">User</span>!</h2>
+          </div>
+
+          <div class="content-grid">
+            <section class="recent-posts">
+              <h2>Recent Post</h2>
+              <div class="posts-list" id="posts-list">
+                <!-- Recent posts will be loaded here by JS -->
+              </div>
+              <div id="no-posts-message" style="display:none; color: #888; margin-top: 1em;">No posts found.</div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="script15.js"></script>
+  </body>
+</html>

@@ -1,0 +1,36 @@
+[2025-06-12 15:04:48] Critical Error
+Context: Array
+(
+    [error_message] => Only POST method is allowed
+    [error_trace] => #0 {main}
+)
+
+Server Info:
+REQUEST_METHOD: GET
+CONTENT_TYPE: N/A
+PHP_SAPI: litespeed
+
+[2025-06-12 15:07:36] Critical Error
+Context: Array
+(
+    [error_message] => Only POST method is allowed
+    [error_trace] => #0 {main}
+)
+
+Server Info:
+REQUEST_METHOD: GET
+CONTENT_TYPE: N/A
+PHP_SAPI: litespeed
+
+[2025-06-12 15:08:12] Critical Error
+Context: Array
+(
+    [error_message] => Only POST method is allowed
+    [error_trace] => #0 {main}
+)
+
+Server Info:
+REQUEST_METHOD: GET
+CONTENT_TYPE: N/A
+PHP_SAPI: litespeed
+
