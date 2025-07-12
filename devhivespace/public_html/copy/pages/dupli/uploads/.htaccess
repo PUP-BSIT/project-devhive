@@ -1,0 +1,45 @@
+# Enable CORS
+Header set Access-Control-Allow-Origin "*"
+Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Range"
+
+# Handle video files
+<FilesMatch "\.(mp4|webm|ogg)$">
+    # Remove problematic headers that might cause 412 errors
+    Header unset ETag
+    Header unset Last-Modified
+    Header unset If-Match
+    Header unset If-None-Match
+    Header unset If-Modified-Since
+    Header unset If-Unmodified-Since
+    FileETag None
+    
+    # Set proper content type and enable byte-range requests
+    Header set Accept-Ranges "bytes"
+    Header set Content-Type "video/mp4"
+    
+    # Cache control
+    Header set Cache-Control "public, no-transform, max-age=31536000"
+    Header set X-Content-Type-Options "nosniff"
+</FilesMatch>
+
+# Enable video streaming
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteCond %{REQUEST_URI} \.(mp4|webm|ogg)$
+    RewriteRule ^ - [L]
+</IfModule>
+
+# Set proper permissions
+<IfModule mod_authz_core.c>
+    Require all granted
+</IfModule>
+
+# PHP settings for large file uploads
+<IfModule mod_php.c>
+    php_value upload_max_filesize 128M
+    php_value post_max_size 128M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule> 

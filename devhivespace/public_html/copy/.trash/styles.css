@@ -1,0 +1,39 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #000;
+  font-family: "Segoe UI", sans-serif;
+  color: white;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+h1 {
+  font-size: 4rem;
+  color: #119da4;
+  text-shadow: 0 0 20px #119da4;
+  margin: 0.3em 0;
+}
+
+h2 {
+  font-size: 1.8rem;
+  font-weight: normal;
+  color: #eee;
+  margin: 0.2em 0;
+}
+
+h2 .buzz {
+  color: #119da4;
+  font-weight: bold;
+}
+
+h3 {
+  font-size: 1.2rem;
+  color: #ccc;
+  margin-top: 1em;
+  font-style: italic;
+}

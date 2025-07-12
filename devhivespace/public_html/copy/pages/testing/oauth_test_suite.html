@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>DevHive OAuth Test Suite</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f7fafc;
+        margin: 0;
+      }
+      .container {
+        max-width: 700px;
+        margin: 40px auto;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px #0001;
+        padding: 32px;
+      }
+      h1 {
+        margin-bottom: 24px;
+      }
+      .app-list {
+        display: flex;
+        gap: 24px;
+        margin-bottom: 32px;
+      }
+      .app-card {
+        flex: 1;
+        background: #f1f5f9;
+        border-radius: 8px;
+        padding: 18px;
+        text-align: center;
+      }
+      .app-card img {
+        width: 48px;
+        height: 48px;
+      }
+      .app-card a {
+        display: block;
+        margin-top: 12px;
+        font-weight: bold;
+        color: #3182ce;
+        text-decoration: none;
+      }
+      .app-card a:hover {
+        text-decoration: underline;
+      }
+      .section {
+        margin-bottom: 24px;
+      }
+      .btn {
+        background: #3182ce;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 10px 20px;
+        font-size: 1em;
+        cursor: pointer;
+      }
+      .btn:disabled {
+        background: #bcd3f7;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>DevHive OAuth Test Suite</h1>
+      <div class="section">
+        <div class="app-list">
+          <div class="app-card">
+            <img src="heybleepi-logo.png" alt="HeyBleepi Logo" />
+            <div>HeyBleepi Social</div>
+            <a href="mock_heybleepi.html" target="_blank"
+              >Open HeyBleepi Mock</a
+            >
+          </div>
+          <div class="app-card">
+            <img src="hershive-logo.png" alt="Hershive Logo" />
+            <div>Hershive Network</div>
+            <a href="mock_hershive.html" target="_blank">Open Hershive Mock</a>
+          </div>
+          <div class="app-card">
+            <img src="socmed3-logo.png" alt="SocMed3 Logo" />
+            <div>SocMed3 Demo</div>
+            <a href="mock_socmed3.html" target="_blank">Open SocMed3 Mock</a>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <a href="oauth_flow_debugger.html" class="btn" target="_blank"
+          >OAuth Flow Debugger</a
+        >
+        <a href="api_call_tester.html" class="btn" target="_blank"
+          >API Call Tester</a
+        >
+        <a href="oauth_scenarios.html" class="btn" target="_blank"
+          >Test Scenarios</a
+        >
+        <a href="userinfo_docs.html" class="btn" target="_blank"
+          >Userinfo API Docs</a
+        >
+        <a href="testing_guide.html" class="btn" target="_blank"
+          >Testing Guide</a
+        >
+      </div>
+    </div>
+  </body>
+</html>

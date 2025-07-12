@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - devhivespace</title>
+    <!-- Favicon Configuration Start -->
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/favicon_io/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon_io/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../assets/favicon_io/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="../assets/favicon_io/android-chrome-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="../assets/favicon_io/android-chrome-512x512.png">
+    <link rel="manifest" href="../assets/favicon_io/site.webmanifest">
+    <!-- Favicon Configuration End -->
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Coda+Caption:wght@800&family=Inter:wght@400;500;600;700&display=swap" 
+        rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="main-content">
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <button class="sidebar-toggle" id="sidebarToggle">
+                        <span class="toggle-icon">☰</span>
+                    </button>
+                </div>
+                <div class="menu-item">
+                    <a href="../dashboard/dashboard.html">
+                        <img src="../assets/DASHBOARD.png" alt="">
+                        <span class="menu-text">Dashboard</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a href="../global_wall/global_wall.html">
+                        <img src="../assets/global_feed.png" alt="">
+                        <span class="menu-text">Global Wall</span>
+                    </a>
+                </div>
+                <div class="menu-item active">
+                    <a href="../user_profile/user_profile.html">
+                        <img src="../assets/human.png" alt="">
+                        <span class="menu-text">Profile</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a href="../create_post/create_post.html">
+                        <img src="../assets/create_post.png" alt="">
+                        <span class="menu-text">Create Post</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a href="../setting/setting.html">
+                        <img src="../assets/settings.png" alt="">
+                        <span class="menu-text">Settings</span>
+                    </a>
+                </div>
+            </aside>
+
+            <div class="dashboard-content">
+                <h1>Profile</h1>
+
+                <div class="profile-card">
+                    <div class="profile-info">
+                        <div class="profile-avatar">
+                            <img id="user-profile-avatar" src="../assets/human.png" 
+                                alt="Profile Picture">
+                        </div>
+                        <div class="profile-details">
+                            <h2>Your Name</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-tabs">
+                    <button class="tab-btn active">Posts</button>
+                </div>
+
+                <div class="posts-section">
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="user_profile22.js"></script>
+</body>
+</html>

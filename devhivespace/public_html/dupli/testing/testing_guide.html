@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DevHive OAuth Testing Guide</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7fafc; margin: 0; }
+    .container { max-width: 700px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px #0001; padding: 32px; }
+    h2 { margin-bottom: 18px; }
+    ul { margin-bottom: 18px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>DevHive OAuth Testing Guide</h2>
+    <ul>
+      <li>Open a mock client (HeyBleepi, Hershive, SocMed3) from the <a href="oauth-test-suite.html">Test Suite</a>.</li>
+      <li>Click "Login with DevHive" to start the OAuth flow.</li>
+      <li>Authorize or deny access on the DevHive consent page.</li>
+      <li>Observe token exchange and API calls in the mock client UI.</li>
+      <li>Use the API Call Tester for direct endpoint testing.</li>
+      <li>Try error scenarios: deny consent, use invalid/expired tokens, test rate limits.</li>
+      <li>Check the logs and debug panels for request/response details.</li>
+    </ul>
+    <p>For more scenarios, see <a href="oauth-scenarios.html">OAuth Test Scenarios</a>.</p>
+  </div>
+</body>
+</html>

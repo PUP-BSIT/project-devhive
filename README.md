@@ -1,6 +1,7 @@
 <div align="center">
+<img src="devhivespace/public_html/assets/devhive_logo.png" alt="DevHive Logo" width="150"/>
 
-# DevHiveSpace  
+# devhivespace  
 🌐 A fun and aesthetically looking social media platform built for everyone!
 
 ---

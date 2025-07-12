@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - DevHive</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Coda+Caption:wght@800&family=Inter:wght@400;500;600;700&display=swap" 
+        rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="main-content">
+            <aside class="sidebar">
+                <div class="menu-item">
+                    <a href="../dashboard/index.html">
+                        <img src="../assets/DASHBOARD.png" alt="">
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a href="../global_wall/index.html">
+                        <img src="../assets/global_feed.png" alt="">
+                        <span>Global Wall</span>
+                    </a>
+                </div>
+                <div class="menu-item active">
+                    <a href="../user_profile/index.html">
+                        <img src="../assets/human.png" alt="">
+                        <span>Profile</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a href="../create_post/index.html">
+                        <img src="../assets/create_post.png" alt="">
+                        <span>Create Post</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a href="../setting/index.html">
+                        <img src="../assets/settings.png" alt="">
+                        <span>Settings</span>
+                    </a>
+                </div>
+            </aside>
+
+            <div class="dashboard-content">
+                <h1>Profile</h1>
+
+                <div class="profile-card">
+                    <div class="profile-info">
+                        <div class="profile-avatar">
+                            <img id="user-profile-avatar" src="../assets/human.png" 
+                                alt="Profile Picture">
+                        </div>
+                        <div class="profile-details">
+                            <h2>Your Name</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-tabs">
+                    <button class="tab-btn active">Posts</button>
+                </div>
+
+                <div class="posts-section">
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

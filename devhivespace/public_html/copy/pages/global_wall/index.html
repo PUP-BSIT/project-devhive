@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Wall - copy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Coda+Caption:wght@800&family=Inter:wght@400;500;600&display=swap" 
+        rel="stylesheet">
+    <link rel="stylesheet" href="/copy/pages/global_wall/styles.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="main-content">
+            <aside class="sidebar">
+                <ul class="nav-menu">
+                    <li>
+                        <a href="/copy/pages/dashboard/index.html">
+                            <img src="../assets/DASHBOARD.png" alt="Dashboard">
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="active">
+                        <a href="/copy/pages/global_wall/index.html">
+                            <img src="../assets/global_feed.png" alt="Global Wall">
+                            Global Wall
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/copy/pages/user_profile/index.html">
+                            <img src="../assets/human.png" alt="Profile">
+                            Profile
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/copy/pages/create_post/index.html">
+                            <img src="../assets/create_post.png" alt="Create Post">
+                            Create Post
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/copy/pages/setting/index.html">
+                            <img src="../assets/settings.png" alt="Settings">
+                            Settings
+                        </a>
+                    </li>
+                </ul>
+            </aside>
+
+            <div class="global-wall-content">
+                <h1 class="page-title">Global Wall</h1>
+                <div class="global-wall-header">
+                    <div class="post-filters">
+                        <button class="active">All Post</button>
+                    </div>
+                </div>
+
+                <div class="global-wall-posts">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="share-modal-overlay" class="share-modal-overlay" style="display:none;">
+      <div class="share-modal">
+        <button class="close-share-modal" title="Close">&times;</button>
+        <h2>Share Post</h2>
+        <textarea class="share-caption" placeholder="Say something about this..."></textarea>
+        <div class="share-original-preview">
+          <div class="share-original-content"></div>
+        </div>
+        <div class="share-platforms">
+          <button class="share-btn-devhive active" disabled>DevHive</button>
+          <button class="share-btn-hershive" disabled style="opacity:0.5;cursor:not-allowed;">Hershive</button>
+          <button class="share-btn-heybleepi" disabled style="opacity:0.5;cursor:not-allowed;">Heybleepi</button>
+        </div>
+        <button class="share-main-btn">Share</button>
+        <div class="share-link-row">
+          <label>Page link</label>
+          <input class="share-link-input" readonly>
+          <button class="copy-link-btn" title="Copy link">📋</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/copy/pages/global_wall/script.js"></script>
+</body>
+</html>

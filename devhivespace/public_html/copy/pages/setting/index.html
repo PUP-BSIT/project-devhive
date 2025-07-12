@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Dashboard - copy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Coda+Caption:wght@800&family=Inter:wght@400;500;600;700&display=swap" 
+        rel="stylesheet">
+    <link rel="stylesheet" href="/copy/pages/setting/styles.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="main-content">
+            <aside class="sidebar">
+                <div class="menu-item">
+                    <a href="/copy/pages/dashboard/index.html">
+                        <img src="../assets/DASHBOARD.png" alt="">
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a href="/copy/pages/global_wall/index.html">
+                        <img src="../assets/global_feed.png" alt="">
+                        <span>Global Wall</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a href="/copy/pages/user_profile/index.html">
+                        <img src="../assets/human.png" alt="">
+                        <span>Profile</span>
+                    </a>
+                </div>
+                <div class="menu-item">
+                    <a href="/copy/pages/create_post/index.html">
+                        <img src="../assets/create_post.png" alt="">
+                        <span>Create Post</span>
+                    </a>
+                </div>
+                <div class="menu-item active">
+                    <a href="/copy/pages/setting/index.html">
+                        <img src="../assets/settings.png" alt="">
+                        <span>Settings</span>
+                    </a>
+                </div>
+            </aside>
+
+            <div class="settings-content">
+                <h1 class="page-title">Settings</h1>
+
+                <div class="settings-container">
+                    <div class="settings-section">
+                        <h2>Account Settings</h2>
+
+                        <form id="account-settings-form">
+                            <div class="profile-section">
+                                <div class="profile-avatar">
+                                    <img id="profile-image" src="../assets/default-avatar.png" alt="Profile Avatar">
+                                </div>
+                                <input type="file" id="photo-upload" accept="image/*" style="display:none;">
+                                <button type="button" id="change-photo-btn" class="change-photo-btn">Change photo</button>
+                            </div>
+
+                            <div class="setting-item">
+                                <label class="setting-label" for="display-name">Display Name</label>
+                                <input type="text" id="display-name" class="form-input" placeholder="Enter your display name">
+                            </div>
+
+                            <div class="setting-item">
+                                <label class="setting-label" for="email">Email</label>
+                                <input type="email" id="email" class="form-input" placeholder="Enter your email">
+                            </div>
+
+                            <div class="setting-item">
+                                <label class="setting-label">Change Password</label>
+                                <div class="password-change-fields">
+                                    <input type="password" id="current-password" class="form-input" placeholder="Current Password">
+                                    <input type="password" id="new-password" class="form-input" placeholder="New Password">
+                                    <input type="password" id="confirm-password" class="form-input" placeholder="Confirm New Password">
+                                </div>
+                                <button type="button" id="change-password-btn" class="update-btn">Update Password</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="settings-section">
+                        <h2>Account Management</h2>
+                        <div class="setting-item">
+                            <label class="setting-label">Delete Account</label>
+                            <button id="delete-account-btn" class="action-btn danger">Delete My Account</button>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="setting-item">
+                            <button id="save-changes-btn" class="save-btn">Save Changes</button>
+                            <button id="logout-btn" class="logout-btn">Log Out</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/copy/pages/setting/script.js"></script>
+</body>
+</html>
