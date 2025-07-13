@@ -13,6 +13,12 @@ seamless and interactive experience.
 
 ---
 
+## 🎥 Project Defense Video
+Web Development Project Defense | DEVHIVE Group - devhivespace
+[Watch on YouTube!] https://youtu.be/0dSF3WK5m4w 
+
+--- 
+
 ## 🚀 Features of DevHiveSpace
 
 • User-friendly interface  
